@@ -1,0 +1,5 @@
+[database]
+path = "data/db/eden.db"
+
+[data]
+items_path = "data/raw/items.json"
