@@ -2,10 +2,10 @@
 //!
 //! It is used to share state such as configuration and database connections
 //! across different requests.
-use std::sync::Arc;
+
+use std::sync::{Arc, Mutex};
 
 use rusqlite::Connection;
-use tokio::sync::Mutex;
 
 use crate::core::config::Config;
 

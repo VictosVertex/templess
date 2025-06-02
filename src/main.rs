@@ -1,6 +1,5 @@
 use templess::start;
 
-#[tokio::main]
-async fn main() {
-    start().await.expect("Failed to start the application");
+fn main() {
+    start().expect("Failed to start the application");
 }
