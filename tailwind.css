@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@theme {
+  --font-poppins: 'Poppins';
+  --hue: 270;
+  --accent-hue: 290;
+  --success-hue: 144;
+  --error-hue: 25;
+  --warning-hue: 100;
+
+  --color-background: oklch(15% 0.03 var(--hue));
+  --color-foreground: oklch(99% 0.03 var(--hue));
+  --color-foreground-secondary: oklch(65% 0.03 var(--hue));
+  --color-card: oklch(20% 0.03 var(--hue));
+  --color-border: oklch(40% 0.03 var(--hue));
+  --color-accent: oklch(70% 0.20 var(--accent-hue));
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-poppins select-none
+  }
+}
