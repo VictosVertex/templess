@@ -3,7 +3,7 @@
 //! It represents a character class in Dark Age of Camelot,
 //! including its numeric identifier, name, and associated realm.
 
-use strum::FromRepr;
+use strum::{Display, EnumIter, FromRepr};
 
 use crate::core::domain::realm::Realm;
 
@@ -25,7 +25,7 @@ use crate::core::domain::realm::Realm;
 /// - [`name`](#method.name): Returns the display name of the class.
 /// - [`realm`](#method.realm): Returns the associated realm of the class.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromRepr)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromRepr, EnumIter, Display)]
 pub enum Class {
     /// Paladin class from Albion.
     Paladin = 1,
@@ -227,5 +227,11 @@ impl Class {
             | Class::Valewalker
             | Class::Banshee => &Realm::Hibernia,
         }
+    }
+}
+
+impl Into<u16> for Class {
+    fn into(self) -> u16 {
+        self as u16
     }
 }

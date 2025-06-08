@@ -11,7 +11,7 @@ use super::{class::Class, item_bonus::ItemBonus, item_type::ItemType, realm::Rea
 ///
 /// This struct contains all the properties of an item after it has been parsed and validated
 /// from raw data sources such as JSON.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Item {
     /// The unique identifier for the item.
     pub id: i32,

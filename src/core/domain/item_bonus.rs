@@ -6,7 +6,7 @@ use super::stat::Stat;
 /// Represents an item bonus in the game.
 ///
 /// Specifies how much of a specific stat is applied to an item.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ItemBonus {
     /// The stat of this bonus.
     ///
