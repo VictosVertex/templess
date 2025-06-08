@@ -1,10 +1,12 @@
+//! This module defines the home page, the first page users see when they open the application.
+
 use dioxus::prelude::*;
 use strum::IntoEnumIterator;
 
 use crate::core::domain::{class::Class, realm::Realm};
 use crate::gui::components::select::Select;
 
-/// Home page
+/// The first page users can interact with when they open the application.
 #[component]
 pub fn HomePage() -> Element {
     let mut selected_realm = use_signal(|| Realm::Albion);
@@ -28,13 +30,13 @@ pub fn HomePage() -> Element {
                 "New Template"
             }
             Select {
-                items: realms,
+                options: realms,
                 on_select: move |realm_id| {
                     selected_realm.set(Realm::from_repr(realm_id).unwrap_or(Realm::Albion));
                 }
             }
             Select {
-                items: classes,
+                options: classes,
                 on_select: move |class_id| {
                     selected_class.set(Class::from_repr(class_id).unwrap_or(Class::Paladin));
                 }

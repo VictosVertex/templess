@@ -230,8 +230,8 @@ impl Class {
     }
 }
 
-impl Into<u16> for Class {
-    fn into(self) -> u16 {
-        self as u16
+impl From<Class> for u16 {
+    fn from(class: Class) -> Self {
+        class as u16
     }
 }

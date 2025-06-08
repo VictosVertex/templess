@@ -12,6 +12,9 @@ use crate::gui::routes::Route;
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const POPPINS_FONT: Asset = asset!("/assets/fonts/Poppins-Regular.ttf");
 
+/// Main application component that initializes the GUI.
+///
+/// It sets up the application state, loads assets and instantiates the router.
 #[component]
 fn App() -> Element {
     let config = load_config("config.toml").expect("Failed to load configuration");

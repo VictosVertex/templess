@@ -35,8 +35,8 @@ impl Realm {
     }
 }
 
-impl Into<u16> for Realm {
-    fn into(self) -> u16 {
-        self as u16
+impl From<Realm> for u16 {
+    fn from(realm: Realm) -> Self {
+        realm as u16
     }
 }

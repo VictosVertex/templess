@@ -1,14 +1,23 @@
+//! This module defines a reusable (dropdown) Select component.
+
 use std::fmt::Display;
 
 use dioxus::prelude::*;
 
+/// The struct that holds the properties for the Select component.
 #[derive(Props, Clone, PartialEq)]
 pub struct SelectProps<T: Into<u16> + Clone + PartialEq + Display + 'static> {
+    /// An optional label that shows above the select element.
     pub label: Option<String>,
-    pub items: Vec<T>,
+
+    /// The options to be displayed in the select dropdown.
+    pub options: Vec<T>,
+
+    /// The event handler that is called when an item is selected.
     pub on_select: EventHandler<u16>,
 }
 
+/// A reusable Select component that displays a dropdown list of options.
 #[component]
 pub fn Select<T: Into<u16> + Clone + PartialEq + Display + 'static>(
     props: SelectProps<T>,
@@ -41,7 +50,7 @@ pub fn Select<T: Into<u16> + Clone + PartialEq + Display + 'static>(
                         let value = event.value().parse::<u16>().unwrap_or(0);
                         props.on_select.call(value);
                     },
-                    {props.items.iter().map(|item: &T| {
+                    {props.options.iter().map(|item: &T| {
                         rsx! {
                             option {
                                 value: "{item.clone().into() as u16}",

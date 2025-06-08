@@ -1,7 +1,10 @@
+//! This modudle defines the header component.
+
 use dioxus::prelude::*;
 use dioxus_free_icons::Icon;
 use dioxus_free_icons::icons::ld_icons::{LdLineChart, LdSave, LdSettings, LdUpload};
 
+/// The header component that displays the title and some general action buttons.
 #[component]
 pub fn Header() -> Element {
     rsx! {
