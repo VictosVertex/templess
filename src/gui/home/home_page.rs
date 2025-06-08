@@ -9,10 +9,12 @@ use crate::core::domain::item::Item;
 use crate::core::domain::template::Template;
 use crate::core::domain::{class::Class, realm::Realm};
 use crate::gui::components::select::Select;
+use crate::gui::routes::Route;
 
 /// The first page users can interact with when they open the application.
 #[component]
 pub fn HomePage() -> Element {
+    let nav = navigator();
     let app_state = use_context::<Signal<AppState>>();
     let mut selected_realm = use_signal(|| Realm::Albion);
     let mut selected_class = use_signal(|| Class::Paladin);
@@ -46,6 +48,8 @@ pub fn HomePage() -> Element {
             let mut template_guard = binding.template.lock().expect("Failed to lock template");
             *template_guard = Some(template);
             println!("Template created: {:?}", template_guard);
+
+            nav.push(Route::DashboardPage {});
         }
     };
 

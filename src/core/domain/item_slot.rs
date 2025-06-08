@@ -1,4 +1,7 @@
 //! This module defines the `ItemSlot` enum, which represents various item slots in a game.
+
+use std::fmt::Display;
+
 use strum::FromRepr;
 
 /// Represents the different item slots available in the game.
@@ -80,5 +83,15 @@ impl ItemSlot {
     /// This is useful for database operations or when an integer representation is needed.
     pub fn id(&self) -> i32 {
         *self as i32
+    }
+}
+
+impl Display for ItemSlot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ItemSlot::Ring2 => write!(f, "Ring"),
+            ItemSlot::Bracer2 => write!(f, "Bracer"),
+            _ => write!(f, "{:?}", self),
+        }
     }
 }

@@ -4,3 +4,4 @@ pub mod app;
 pub mod components;
 pub mod home;
 pub mod routes;
+pub mod dashboard;

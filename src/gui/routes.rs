@@ -2,6 +2,7 @@
 
 use crate::gui::components::layout::Layout;
 use crate::gui::home::HomePage;
+use crate::gui::dashboard::DashboardPage;
 use dioxus::prelude::*;
 
 /// Structure of the GUI's routing system.
@@ -15,4 +16,8 @@ pub enum Route {
     #[layout(Layout)]
     #[route("/")]
     HomePage {},
+
+    /// Dashboard route, the main interactive page of the application.
+    #[route("/dashboard")]
+    DashboardPage {},
 }
