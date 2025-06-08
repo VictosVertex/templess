@@ -3,12 +3,17 @@
 use dioxus::prelude::*;
 use strum::IntoEnumIterator;
 
+use crate::app_state::AppState;
+use crate::core::database::item_sql::get_items_by_class;
+use crate::core::domain::item::Item;
+use crate::core::domain::template::Template;
 use crate::core::domain::{class::Class, realm::Realm};
 use crate::gui::components::select::Select;
 
 /// The first page users can interact with when they open the application.
 #[component]
 pub fn HomePage() -> Element {
+    let app_state = use_context::<Signal<AppState>>();
     let mut selected_realm = use_signal(|| Realm::Albion);
     let mut selected_class = use_signal(|| Class::Paladin);
 
@@ -21,6 +26,28 @@ pub fn HomePage() -> Element {
             class.realm() == realm
         })
         .collect::<Vec<_>>();
+    
+    let submit = {
+        move |_| {
+            let binding = app_state.read().clone();
+            let mut items_guard = binding.items.lock().expect("Failed to lock items");
+            let connection = binding.db_connection.lock().expect("Failed to lock database connection");
+            let items: Vec<Item> = get_items_by_class(&connection, *selected_class.read())
+                .expect("Failed to get items by class");
+            *items_guard = items; // Update the vector in AppState
+            println!("Selected Items count: {}", items_guard.len());
+            println!("Selected Realm: {:?}", selected_realm.read());
+            println!("Selected Class: {:?}", selected_class.read());
+
+            let template = Template::new(
+                *selected_class.read(),
+            );
+
+            let mut template_guard = binding.template.lock().expect("Failed to lock template");
+            *template_guard = Some(template);
+            println!("Template created: {:?}", template_guard);
+        }
+    };
 
     rsx! {
         div {
@@ -43,9 +70,7 @@ pub fn HomePage() -> Element {
             }
             button {
                 class: "mt-4 p-3 rounded-md bg-accent/80 hover:bg-accent hover:scale-102 transition-all",
-                onclick: move |_| {
-                    println!("Template created!");
-                },
+                onclick: submit,
                 h1 {
                     class: "blur-none",
                     "Create Template"}

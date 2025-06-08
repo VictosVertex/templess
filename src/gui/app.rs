@@ -25,6 +25,8 @@ fn App() -> Element {
     let app_state = AppState {
         config: Arc::new(Mutex::new(config)),
         db_connection: Arc::new(Mutex::new(connection)),
+        template: Arc::new(Mutex::new(None)),
+        items: Arc::new(Mutex::new(Vec::new())),
     };
 
     use_context_provider(|| Signal::new(app_state));
