@@ -7,7 +7,7 @@ use strum::FromRepr;
 /// Each variant corresponds to a specific type of item, such as crush, slash, thrust, etc.
 #[repr(u16)]
 #[derive(Debug, Clone, Copy, FromRepr, PartialEq)]
-pub enum ItemSlot {
+pub enum ItemType {
     /// Represents the crush melee weapon type from Albion.
     Crush = 2,
 
@@ -128,7 +128,7 @@ pub enum ItemSlot {
     Unknown = 1000, // Placeholder for unknown item types
 }
 
-impl ItemSlot {
+impl ItemType {
     /// Converts the `ItemType` to its corresponding numeric ID.
     ///
     /// # Returns
