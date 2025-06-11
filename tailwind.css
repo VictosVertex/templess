@@ -19,4 +19,9 @@
   body {
     @apply bg-background text-foreground font-poppins select-none
   }
+
+  .base-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) rgba(255, 255, 255, 0.0);
+  }
 }

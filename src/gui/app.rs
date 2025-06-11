@@ -7,6 +7,7 @@ use dioxus::prelude::*;
 
 use crate::app_state::AppState;
 use crate::core::config::load_config;
+use crate::gui::components::modal::{Modal, ModalContext};
 use crate::gui::routes::Route;
 
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
@@ -23,13 +24,16 @@ fn App() -> Element {
         rusqlite::Connection::open(config.database.path.clone()).expect("Failed to open database");
 
     let app_state = AppState {
-        config: Arc::new(Mutex::new(config)),
+        config: Arc::new(config),
         db_connection: Arc::new(Mutex::new(connection)),
         template: Arc::new(Mutex::new(None)),
         items: Arc::new(Mutex::new(Vec::new())),
     };
 
     use_context_provider(|| Signal::new(app_state));
+    use_context_provider(|| Signal::new(ModalContext {
+        content: None,
+    }));
 
     let font_face_style = format!(
         r#"
@@ -49,6 +53,7 @@ fn App() -> Element {
         style { "{font_face_style}" }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
+        Modal {  }
     }
 }
 /// Launches the graphical user interface

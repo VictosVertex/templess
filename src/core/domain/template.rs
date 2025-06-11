@@ -1,6 +1,6 @@
 //! This moldule defines the template entity.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot};
 
@@ -21,7 +21,7 @@ pub struct Template {
     pub class: Class,
 
     /// The slots and their associated items.
-    pub slots: HashMap<ItemSlot, Item>
+    pub slots: HashMap<ItemSlot, Arc<Item>>
 }
 
 
@@ -37,5 +37,25 @@ impl Template {
             class,
             slots: HashMap::new(),
         }
+    }
+
+    /// Set a specific item in a given slot.
+    ///
+    /// # Arguments
+    /// * `slot` - The item slot where the item should be placed.
+    /// * `item` - The item to be placed in the slot.
+    pub fn set_item(&mut self, slot: ItemSlot, item: Arc<Item>) {
+        self.slots.insert(slot, item);
+    }
+
+    /// Get the item in a specific slot.
+    ///
+    /// # Arguments
+    /// * `slot` - The item slot to retrieve the item from.
+    ///
+    /// # Returns
+    /// An `Option` containing a reference to the item if it exists, or `None` if the slot is empty.
+    pub fn get_item(&self, slot: &ItemSlot) -> Option<&Arc<Item>> {
+        self.slots.get(slot)
     }
 }

@@ -12,7 +12,7 @@ use strum::FromRepr;
 /// the enum contains `Ring2` and `Bracer2` to represent the second instance of these slots.
 /// These do not exist in the game database, but may simplify logic in the codebase.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr, PartialEq)]
+#[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash)]
 pub enum ItemSlot {
     /// Represents the head slot.
     Head = 21,

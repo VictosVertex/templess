@@ -1,5 +1,7 @@
 //! This module defines the home page, the first page users see when they open the application.
 
+use std::sync::Arc;
+
 use dioxus::prelude::*;
 use strum::IntoEnumIterator;
 
@@ -36,7 +38,7 @@ pub fn HomePage() -> Element {
             let connection = binding.db_connection.lock().expect("Failed to lock database connection");
             let items: Vec<Item> = get_items_by_class(&connection, *selected_class.read())
                 .expect("Failed to get items by class");
-            *items_guard = items; // Update the vector in AppState
+            *items_guard = items.into_iter().map(Arc::new).collect();
             println!("Selected Items count: {}", items_guard.len());
             println!("Selected Realm: {:?}", selected_realm.read());
             println!("Selected Class: {:?}", selected_class.read());

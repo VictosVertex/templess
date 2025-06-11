@@ -1,5 +1,6 @@
 use std::vec;
 
+use dioxus::html::div;
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons::LdPlus};
 
@@ -15,7 +16,7 @@ pub fn Inventory() -> Element {
     let inner_radius = 120.0;
 
     let middle_slots = 6;
-    let middle_radius = 280.0;
+    let middle_radius = 240.0;
     let center = Point { x: 350.0, y: 350.0 };
 
     let armor_map = vec![
@@ -51,9 +52,8 @@ pub fn Inventory() -> Element {
         .map(|(slot_type, icon)| {
             rsx! {
                 InventorySlot {
-                    class: "h-[100px] w-[100px]",
+                    class: "h-[70px] w-[70px]",
                     slot_type: slot_type,
-                    items: vec![],
                     icon: rsx! {
                         Icon {
                             icon: icon,
@@ -71,9 +71,8 @@ pub fn Inventory() -> Element {
         .map(|(slot_type, icon)| {
             rsx! {
                 InventorySlot {
-                    class: "!h-[50px] !w-[50px] !rounded-full",
+                    class: "h-[50px] w-[50px] !rounded-full",
                     slot_type: slot_type,
-                    items: vec![],
                     icon: rsx! {
                         Icon {
                             icon: icon,
@@ -92,9 +91,8 @@ pub fn Inventory() -> Element {
         .map(|(slot_type, icon)| {
             rsx! {
                 InventorySlot {
-                    class: "h-[100px] w-[100px] !rounded-none",
+                    class: "h-[70px] w-[70px] !rounded-none",
                     slot_type: slot_type,
-                    items: vec![],
                     icon: rsx! {
                         Icon {
                             icon: icon,
@@ -108,7 +106,7 @@ pub fn Inventory() -> Element {
 
     rsx! {
         div {
-            class: "relative w-[700px] h-[700px] mx-auto mt-40 flex flex-col",
+            class: "relative w-[700px] h-[700px] mx-auto flex flex-col",
             div {
                 div {
                     class: "absolute w-16 h-16 bg-accent rounded-full flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
@@ -132,12 +130,17 @@ pub fn Inventory() -> Element {
             }
         }
         div {  
-                class: "flex gap-8 items-center justrify-center mx-auto mt-16",
-                {weapon_slots.iter().map(|(slot)| {
+            class: "flex gap-8 items-center justrify-center mx-auto",
+            {
+                weapon_slots.iter().map(|slot| {
                     rsx! {
-                        {slot}
+                            div {
+                                {slot}
+                            }
+                        }
                     }
-                })}
+                )
             }
+        }
     }
 }
