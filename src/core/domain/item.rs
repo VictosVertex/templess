@@ -5,13 +5,13 @@
 //!
 //! As that it is the most likely to be changed as requirements evolve.
 
-use super::{class::Class, item_bonus::ItemBonus, item_type::ItemType, realm::Realm};
+use super::{class::Class, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm};
 
 /// Represents an item in the game.
 ///
 /// This struct contains all the properties of an item after it has been parsed and validated
 /// from raw data sources such as JSON.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Item {
     /// The unique identifier for the item.
     pub id: i32,
@@ -25,8 +25,8 @@ pub struct Item {
     /// The type of object.
     pub object_type: u16,
 
-    /// The type of the item.
-    pub item_type: ItemType,
+    /// The slot of the item.
+    pub item_slot: ItemSlot,
 
     /// The level of the item.
     pub level: u16,

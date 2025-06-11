@@ -1,13 +1,13 @@
 //! This module defines the `Realm` enum, representing the realms in the game.
 
-use strum::{EnumString, FromRepr};
+use strum::{Display, EnumIter, EnumString, FromRepr};
 
 /// Represents the realms in the game.
 ///
 /// The `Realm` enum defines the four realms: All, Albion, Midgard, and Hibernia.
 /// Each variant corresponds to a specific realm, with `All` representing all realms combined.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, EnumString, FromRepr)]
+#[derive(Debug, Clone, Copy, EnumString, FromRepr, PartialEq, EnumIter, Display)]
 pub enum Realm {
     /// Represents all realms combined.
     All,
@@ -32,5 +32,11 @@ impl Realm {
     /// Returns the ID of the realm.
     pub fn id(&self) -> u16 {
         *self as u16
+    }
+}
+
+impl From<Realm> for u16 {
+    fn from(realm: Realm) -> Self {
+        realm as u16
     }
 }

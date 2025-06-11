@@ -8,3 +8,4 @@ pub mod item_type;
 pub mod realm;
 pub mod stat;
 pub mod stat_category;
+pub mod template;

@@ -1,6 +1,6 @@
 //! This module contains the sql queries for handling items in the database.
 
-use crate::core::domain::{class::Class, item::Item, item_type::ItemType, realm::Realm};
+use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot, realm::Realm};
 use rusqlite::{Connection, params};
 use std::error::Error;
 
@@ -44,7 +44,7 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<(),
                 item.name,
                 item.model,
                 item.object_type,
-                item.item_type.id(),
+                item.item_slot.id(),
                 item.level,
                 item.quality,
                 item.weapon_hand,
@@ -131,7 +131,7 @@ pub fn get_items_by_class(
         class, class_id, realm_id
     );
     let items = stmt.query_map(params![class_id, realm_id], |row| {
-        let item_type = ItemType::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_type repr");
+        let item_type = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
         let realm = Realm::from_repr(row.get::<_, u16>(10)?).expect("Invalid realm repr");
 
         Ok(Item {
@@ -139,7 +139,7 @@ pub fn get_items_by_class(
             name: row.get(1)?,
             model: row.get(2)?,
             object_type: row.get(3)?,
-            item_type,
+            item_slot: item_type,
             level: row.get(5)?,
             quality: row.get(6)?,
             weapon_hand: row.get(7)?,

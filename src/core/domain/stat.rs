@@ -9,7 +9,7 @@ use strum::FromRepr;
 ///
 /// Each variant corresponds to a specific stat, such as strength, dexterity, etc.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr)]
+#[derive(Debug, Clone, Copy, FromRepr, PartialEq)]
 pub enum Stat {
     /// Represents the strength stat.
     ///
