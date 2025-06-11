@@ -1,16 +1,16 @@
 //! This module defines the modal component and its context.
-//! 
+//!
 //! The modal component is used to display content in a dialog box on top of everything else.
 //! In order to not interfere with styling and layout of the rest of the application,
 //! the modal is designed such that it can be used near the root of the component tree.
-//! 
-//! To achieve this, it uses a context to manage the content displayed in the modal. 
+//!
+//! To achieve this, it uses a context to manage the content displayed in the modal.
 //! The state of the context determines whether the modal is visible and what content it displays.
 
 use dioxus::prelude::*;
 
 /// The context for the modal component.
-/// 
+///
 /// It holds the content to be displayed in the modal and
 /// thereby determines the visibility and content of the modal.
 #[derive(Clone)]

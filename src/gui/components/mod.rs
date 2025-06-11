@@ -2,5 +2,5 @@
 
 pub mod header;
 pub mod layout;
-pub mod select;
 pub mod modal;
+pub mod select;

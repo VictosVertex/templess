@@ -7,7 +7,10 @@ use std::sync::{Arc, Mutex};
 
 use rusqlite::Connection;
 
-use crate::core::{config::Config, domain::{item::Item, template::Template}};
+use crate::core::{
+    config::Config,
+    domain::{item::Item, template::Template},
+};
 
 /// This struct holds the application state, including configuration,
 #[derive(Clone)]

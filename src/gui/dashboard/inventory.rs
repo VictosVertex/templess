@@ -1,8 +1,8 @@
-use std::vec;
+//! This module defines the Inventory component for the dashboard.
 
-use dioxus::html::div;
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons::LdPlus};
+use std::vec;
 
 use crate::core::domain::item_slot::ItemSlot;
 use crate::gui::dashboard::{
@@ -10,6 +10,14 @@ use crate::gui::dashboard::{
     inventory_slot::InventorySlot,
 };
 
+/// The Inventory component displays the player's inventory.
+///
+/// It is used to visualize and select items for different slots in the player's template.
+/// The items selected in the inventory will be used in the optimization process where the goal
+/// is to fill the unspecified slots with the best possible items.
+///
+/// Thus each inventory, a set of items associated with a character class, represents
+/// a specific problem instance of the optimization problem this application is trying to solve.
 #[component]
 pub fn Inventory() -> Element {
     let inner_slots = 8;
@@ -46,7 +54,6 @@ pub fn Inventory() -> Element {
         (ItemSlot::Ranged, LdPlus),
     ];
 
-
     let armor_slots: Vec<Element> = armor_map
         .into_iter()
         .map(|(slot_type, icon)| {
@@ -65,7 +72,6 @@ pub fn Inventory() -> Element {
         })
         .collect();
 
-
     let jewelry_slots: Vec<Element> = jewelry_map
         .into_iter()
         .map(|(slot_type, icon)| {
@@ -83,8 +89,6 @@ pub fn Inventory() -> Element {
             }
         })
         .collect();
-
-    
 
     let weapon_slots: Vec<Element> = weapon_maps
         .into_iter()
@@ -129,7 +133,7 @@ pub fn Inventory() -> Element {
                 }
             }
         }
-        div {  
+        div {
             class: "flex gap-8 items-center justrify-center mx-auto",
             {
                 weapon_slots.iter().map(|slot| {

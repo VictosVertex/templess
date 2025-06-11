@@ -6,9 +6,9 @@ use dioxus::prelude::*;
 use crate::gui::dashboard::inventory::Inventory;
 
 /// The main page the users can interact with when they opened a template.
-/// 
+///
 /// This page should contain the main data representation and functionality
-/// for the template, such as viewing stats, adding items and starting the 
+/// for the template, such as viewing stats, adding items and starting the
 /// optimization process.
 #[component]
 pub fn DashboardPage() -> Element {

@@ -31,9 +31,7 @@ fn App() -> Element {
     };
 
     use_context_provider(|| Signal::new(app_state));
-    use_context_provider(|| Signal::new(ModalContext {
-        content: None,
-    }));
+    use_context_provider(|| Signal::new(ModalContext { content: None }));
 
     let font_face_style = format!(
         r#"
