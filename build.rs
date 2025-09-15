@@ -171,6 +171,7 @@ mod bundle {
         let header_path = clingo_source_path.join("libclingo").join("clingo.h");
         let bindings = bindgen::Builder::default()
             .header(header_path.to_str().unwrap())
+            .raw_line("#![allow(missing_docs)]")
             .no_copy("clingo_model")
             .no_copy("clingo_solve_handle")
             .no_copy("clingo_control")
@@ -217,13 +218,13 @@ mod bundle {
             patch_clingo_manually(&repo_path);
         }
 
+        generate_bindings(&manifest_dir, &repo_path);
+
         let path = build_libraries(repo_path.to_str().unwrap());
 
         println_warning(format!("Clingo built and installed to: {}", path.display()).as_str());
 
         copy_libs_to_project(&manifest_dir, &path);
-
-        generate_bindings(&manifest_dir, &repo_path);
     }
 }
 
