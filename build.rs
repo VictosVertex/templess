@@ -235,9 +235,5 @@ fn main() {
         bundle::run();
     }
 
-    #[cfg(not(feature = "bundle-clingo"))]
-    {
-        link_libraries(&manifest_dir);
-        println!("KEKLAOLA")
-    }
+    link_libraries(&manifest_dir);
 }
