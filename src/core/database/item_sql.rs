@@ -1,8 +1,30 @@
 //! This module contains the sql queries for handling items in the database.
 
-use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot, realm::Realm};
+use crate::core::domain::{
+    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm, stat::Stat,
+};
 use rusqlite::{Connection, params};
 use std::error::Error;
+use serde::Deserialize;
+
+/// Helper struct for deserializing item bonus data from JSON.
+/// 
+/// This is used to make it easier to aggregate bonuses
+/// directly in the SQL query and then convert them into `ItemBonus` structs.
+#[derive(Deserialize)]
+struct BonusData {
+    stat_id: u16,
+    value: u16,
+}
+
+impl From<BonusData> for ItemBonus {
+    fn from(data: BonusData) -> Self {
+        ItemBonus {
+            stat: Stat::from_repr(data.stat_id).expect("Invalid stat ID from database"),
+            value: data.value,
+        }
+    }
+}
 
 /// Inserts a vector of items into the database.
 ///
@@ -112,24 +134,46 @@ pub fn get_items_by_class(
             i.instrument_type, 
             i.is_tradable,
             i.utility_single, 
-            i.utility
+            i.utility,
+            json_group_array(
+            json_object('stat_id', istat.stat_id, 'value', istat.value)
+            ) FILTER (WHERE istat.stat_id IS NOT NULL) as bonuses_json
          FROM 
             item i
          LEFT JOIN 
             item_class ic ON ic.item_id = i.id
+         LEFT JOIN 
+            item_stat istat ON istat.item_id = i.id
          WHERE 
             ic.class_id = ?
             OR NOT EXISTS (
             SELECT 1 FROM item_class ic2 WHERE ic2.item_id = i.id
             )
-            AND (i.realm = ? OR i.realm = 0)",
+            AND (i.realm = ? OR i.realm = 0)
+         GROUP BY
+            i.id",
     )?;
     let class_id = class.id();
     let realm_id = class.realm().id();
+
     println!("Querying items for class {class:?} (id: {class_id}, realm: {realm_id})");
     let items = stmt.query_map(params![class_id, realm_id], |row| {
         let item_type = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
         let realm = Realm::from_repr(row.get::<_, u16>(10)?).expect("Invalid realm repr");
+        let bonuses_json: Option<String> = row.get(18)?;
+        let bonuses: Vec<ItemBonus> = match bonuses_json {
+            Some(json) => {
+                let bonus_data: Vec<BonusData> = serde_json::from_str(&json).map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        18,
+                        rusqlite::types::Type::Text,
+                        Box::new(e),
+                    )
+                })?;
+                bonus_data.into_iter().map(ItemBonus::from).collect()
+            }
+            None => vec![],
+        };
 
         Ok(Item {
             id: row.get(0)?,
@@ -150,15 +194,15 @@ pub fn get_items_by_class(
             is_tradable: row.get::<_, u8>(15)? != 0,
             utility_single: row.get(16)?,
             utility: row.get(17)?,
-            allowed_classes: vec![], // This should be filled later if needed
-            bonuses: vec![],         // This should be filled later if needed
+            allowed_classes: vec![],
+            bonuses,
             proc1_json: None,
             proc2_json: None,
             use1_json: None,
             use2_json: None,
             passive_json: None,
             react1_json: None,
-            react2_json: None, // This should be filled later if needed
+            react2_json: None,
         })
     })?;
 
