@@ -3,6 +3,10 @@ name = "templess"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# This feature will automatically clone and build clingo from source
+bundle-clingo = []
+
 [dependencies]
 rusqlite = { version = "0.36.0", features = ["bundled"] }
 serde = {version = "1.0.219", features = ["derive"]}
@@ -11,6 +15,7 @@ strum = {version = "0.27.1", features = ["derive"]}
 toml = "0.8.22"
 dioxus = { version = "0.6.1", features = ["desktop", "router"] }
 dioxus-free-icons = { version = "0.9.0", features= ["lucide"] }
+bitflags = "2.9.4"
 
 [lib]
 name = "templess"
@@ -34,3 +39,7 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
+
+[build-dependencies]
+bindgen = "0.72.0"
+cmake = "0.1.54"

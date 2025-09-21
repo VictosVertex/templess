@@ -91,7 +91,7 @@ impl Display for ItemSlot {
         match self {
             ItemSlot::Ring2 => write!(f, "Ring"),
             ItemSlot::Bracer2 => write!(f, "Bracer"),
-            _ => write!(f, "{:?}", self),
+            _ => write!(f, "{self:?}"),
         }
     }
 }

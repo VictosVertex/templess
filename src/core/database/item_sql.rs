@@ -126,10 +126,7 @@ pub fn get_items_by_class(
     )?;
     let class_id = class.id();
     let realm_id = class.realm().id();
-    println!(
-        "Querying items for class {:?} (id: {}, realm: {})",
-        class, class_id, realm_id
-    );
+    println!("Querying items for class {class:?} (id: {class_id}, realm: {realm_id})");
     let items = stmt.query_map(params![class_id, realm_id], |row| {
         let item_type = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
         let realm = Realm::from_repr(row.get::<_, u16>(10)?).expect("Invalid realm repr");

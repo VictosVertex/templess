@@ -50,7 +50,7 @@ pub fn HomePage() -> Element {
 
             let mut template_guard = binding.template.lock().expect("Failed to lock template");
             *template_guard = Some(template);
-            println!("Template created: {:?}", template_guard);
+            println!("Template created: {template_guard:?}");
 
             nav.push(Route::DashboardPage {});
         }

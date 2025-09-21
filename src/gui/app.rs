@@ -37,13 +37,12 @@ fn App() -> Element {
         r#"
         @font-face {{
             font-family: 'Poppins';
-            src: url('{}');
+            src: url('{POPPINS_FONT}');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
         }}
         "#,
-        POPPINS_FONT,
     );
 
     rsx! {
