@@ -20,7 +20,7 @@ pub fn ItemSelectionDetails(props: ItemSelectionDetailsProps) -> Element {
         class: "flex flex-col",
         h1 {
             class: "text-xl font-bold mb-4",
-            "{props.item.name}"
+            "Item Details"
         }
             div {
                 class: "overflow-y-auto h-full base-scrollbar",
@@ -32,11 +32,11 @@ pub fn ItemSelectionDetails(props: ItemSelectionDetailsProps) -> Element {
                             class: "text-left text-foreground-secondary p-y-2",
                             th {
                                 class: "text-left bg-card",
-                                "Name"
+                                "Stat"
                             }
                             th {
                                 class: "text-right bg-card",
-                                "Utility"
+                                "Value"
                             }
                         }
                     }
@@ -45,7 +45,7 @@ pub fn ItemSelectionDetails(props: ItemSelectionDetailsProps) -> Element {
                             props.item.bonuses.iter().map(|bonus| {
                                 rsx! {
                                     tr {
-                                        class: "hover:bg-accent/20 transition-all duration-200",
+                                        class: "hover:bg-accent/20",
                                         td {
                                             class: "text-left",
                                             "{bonus.stat:?}"
