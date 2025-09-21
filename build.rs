@@ -180,6 +180,7 @@ mod bundle {
             .allowlist_type("clingo_options.*")
             .allowlist_type("clingo_model.*")
             .allowlist_type("clingo_solve_handle.*")
+            .allowlist_type("clingo_solve_result_.*")
             .allowlist_type("clingo_symbol.*")
             .allowlist_type("clingo_error.*")
             .allowlist_function("clingo_control_.*")

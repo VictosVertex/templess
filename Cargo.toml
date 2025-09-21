@@ -15,6 +15,7 @@ strum = {version = "0.27.1", features = ["derive"]}
 toml = "0.8.22"
 dioxus = { version = "0.6.1", features = ["desktop", "router"] }
 dioxus-free-icons = { version = "0.9.0", features= ["lucide"] }
+bitflags = "2.9.4"
 
 [lib]
 name = "templess"
