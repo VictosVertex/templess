@@ -4,11 +4,11 @@ use crate::core::domain::{
     class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm, stat::Stat,
 };
 use rusqlite::{Connection, params};
-use std::error::Error;
 use serde::Deserialize;
+use std::error::Error;
 
 /// Helper struct for deserializing item bonus data from JSON.
-/// 
+///
 /// This is used to make it easier to aggregate bonuses
 /// directly in the SQL query and then convert them into `ItemBonus` structs.
 #[derive(Deserialize)]
