@@ -74,7 +74,7 @@ pub enum ClingoError {
 impl std::fmt::Display for ClingoError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ClingoError::NulError(e) => write!(f, "NulError: {}", e),
+            ClingoError::NulError(e) => write!(f, "NulError: {e}"),
             ClingoError::Internal {
                 message,
                 internal_code,
@@ -82,11 +82,10 @@ impl std::fmt::Display for ClingoError {
             } => {
                 write!(
                     f,
-                    "Internal error: {} (code: {:?}): {}",
-                    message, internal_code, internal_message
+                    "Internal error: {message} (code: {internal_code:?}): {internal_message}"
                 )
             }
-            ClingoError::Bindings { message } => write!(f, "Bindings error: {}", message),
+            ClingoError::Bindings { message } => write!(f, "Bindings error: {message}"),
         }
     }
 }
@@ -102,7 +101,7 @@ impl ClingoError {
     ///
     /// # Returns
     /// - A `ClingoError::Internal` instance containing the provided message,
-    ///  the internal error code, and the internal error message from the Clingo API.
+    ///   the internal error code, and the internal error message from the Clingo API.
     pub fn new_internal(message: String) -> Self {
         let internal_message = unsafe {
             let ptr = clingo_error_message();

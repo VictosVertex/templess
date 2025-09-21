@@ -33,7 +33,7 @@ impl Control {
     ///
     /// # Errors
     /// - `Err(ClingoError)` if there was an error during the creation process
-    ///    of the control.
+    ///   of the control.
     pub fn new() -> Result<Self, ClingoError> {
         let mut control_pointer: *mut clingo_control_t = std::ptr::null_mut();
 
@@ -101,7 +101,7 @@ impl Control {
             params: std::ptr::null(),
             size: 0,
         };
-        let parts = vec![part];
+        let parts = [part];
 
         let success = unsafe {
             clingo_control_ground(
@@ -132,7 +132,7 @@ impl Control {
     ///
     /// # Errors
     /// - `Err(ClingoError)` if there was an error during the solving process
-    ///  of the program.
+    ///   of the program.
     pub fn solve<F>(&self, mut event_handler: F) -> Result<SolveResult, ClingoError>
     where
         F: FnMut(SolveEvent) -> bool,
@@ -175,7 +175,7 @@ impl Control {
     ///
     /// # Errors
     /// - `Err(ClingoError)` if there was an error during the retrieval process
-    ///  of the configuration.
+    ///   of the configuration.
     pub fn configuration_mut(&mut self) -> Result<Configuration, ClingoError> {
         let mut conf = std::ptr::null_mut();
 
@@ -189,7 +189,7 @@ impl Control {
             ClingoError::new_internal("Received null pointer for configuration".to_owned())
         })?;
 
-        Ok(Configuration::new(conf)?)
+        Configuration::new(conf)
     }
 }
 
@@ -233,7 +233,7 @@ where
 
             match model {
                 Err(e) => {
-                    eprintln!("Error retrieving model: {:?}", e);
+                    eprintln!("Error retrieving model: {e:?}");
                     false
                 }
                 Ok(m) => {
@@ -246,7 +246,7 @@ where
         2 => event_handler(SolveEvent::Statistics),
         3 => event_handler(SolveEvent::Finish),
         _ => {
-            eprintln!("Unknown event type: {:?}", event_type);
+            eprintln!("Unknown event type: {event_type:?}");
             false
         }
     }

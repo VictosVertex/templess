@@ -34,7 +34,7 @@ impl Model {
     ///
     /// # Errors
     /// - `Err(ClingoError)` if there was an error during the retrieval process
-    ///     of the model number.
+    ///   of the model number.
     pub fn number(&self) -> Result<u64, ClingoError> {
         let mut number = 0;
 
@@ -58,7 +58,7 @@ impl Model {
     ///
     /// # Errors
     /// - `Err(ClingoError)` if there was an error during the retrieval process
-    ///    of the model symbols.
+    ///   of the model symbols.
     pub fn symbols(&self, show: u32) -> Result<Vec<Symbol>, ClingoError> {
         let mut size: usize = 0;
 

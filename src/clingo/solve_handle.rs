@@ -21,7 +21,7 @@ impl SolveHandle {
     ///
     /// # Parameters
     /// - `inner`: The `NonNull<clingo_solve_handle_t>` to
-    ///     wrap.
+    ///   wrap.
     ///
     /// # Returns
     /// - A new `SolveHandle` instance.

@@ -8,7 +8,7 @@
 /// # Parameters
 /// - `message`: The warning message to print.
 fn println_warning(message: &str) {
-    println!("cargo::warning={}", message);
+    println!("cargo::warning={message}");
 }
 
 /// Links the clingo libraries to the Rust project.
@@ -17,7 +17,7 @@ fn println_warning(message: &str) {
 /// - `manifest_dir`: The directory of the Cargo manifest.
 fn link_libraries(manifest_dir: &str) {
     println_warning("Linking clingo libraries...");
-    println!("cargo:rustc-link-search=native={}/lib", manifest_dir);
+    println!("cargo:rustc-link-search=native={manifest_dir}/lib");
     println!("cargo:rustc-link-lib=static=clingo");
     println!("cargo:rustc-link-lib=static=reify");
     println!("cargo:rustc-link-lib=static=potassco");
@@ -88,7 +88,7 @@ mod bundle {
             .expect("Failed to execute 'git clone'. Is git installed and in your PATH?");
 
         if !status.success() {
-            panic!("'git clone' command failed with exit status: {}.", status);
+            panic!("'git clone' command failed with exit status: {status}.");
         }
     }
 
@@ -135,12 +135,12 @@ mod bundle {
         let libs_to_copy = ["clingo", "reify", "potassco", "clasp", "gringo"];
 
         for lib_name in libs_to_copy {
-            let source_file = build_lib_dir.join(format!("{}.lib", lib_name));
-            let dest_file = project_lib_dir.join(format!("{}.lib", lib_name));
+            let source_file = build_lib_dir.join(format!("{lib_name}.lib"));
+            let dest_file = project_lib_dir.join(format!("{lib_name}.lib"));
 
             if source_file.exists() {
                 fs::copy(&source_file, &dest_file)
-                    .expect(&format!("Failed to copy {}", source_file.display()));
+                    .unwrap_or_else(|_| panic!("Failed to copy {}", source_file.display()));
                 println_warning(
                     format!(
                         "Copied {} to {}",
