@@ -12,3 +12,8 @@ To run the app with hot reloading, use
 ```bash
 dx serve --hot-reload true
 ```
+
+To run with rust hot patching
+```bash
+dx serve --hotpatch
+```
