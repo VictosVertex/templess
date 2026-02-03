@@ -3781,6 +3781,7 @@ dependencies = [
 name = "templess"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bindgen",
  "bitflags 2.10.0",
  "cmake",

@@ -16,6 +16,7 @@ toml = "0.9.11"
 dioxus = { version = "0.7.3", features = ["desktop", "router"] }
 dioxus-free-icons = { version = "0.10.0", features= ["lucide"] }
 bitflags = "2.10.0"
+anyhow = "1.0.100"
 
 [lib]
 name = "templess"
