@@ -1,3 +1,5 @@
+//! This module defines the attribute overview component for the dashboard.
+
 use anyhow::anyhow;
 use dioxus::prelude::*;
 use std::collections::HashMap;
@@ -16,6 +18,9 @@ struct ComputedAttributes {
     toa: HashMap<Stat, StatData>,
 }
 
+/// The AttributeOverview component displays the current values of all attributes for the template.
+///
+/// Attributes are computed based on the currently selected class and items in the template.
 #[component]
 pub fn AttributeOverview() -> Element {
     let app_state = use_context::<Signal<AppState>>();
@@ -28,7 +33,7 @@ pub fn AttributeOverview() -> Element {
             .map_err(|e| format!("Failed to lock template mutex: {}", e))?;
         let template = template_guard
             .as_ref()
-            .ok_or_else(|| "No template active")?;
+            .ok_or("No template active")?;
 
         let mut stats_map = HashMap::new();
         let mut caps_map = HashMap::new();
@@ -89,7 +94,7 @@ pub fn AttributeOverview() -> Element {
                             Stat::AcuityCap => class_acuity_stat.and_then(|s| s.cap_stat()),
                             _ => Some(bonus.stat),
                         };
-                        
+
                         if let Some(entry) = target.and_then(|s| caps_map.get_mut(&s)) {
                             entry.value += bonus.value;
                         }

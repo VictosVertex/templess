@@ -231,6 +231,18 @@ impl Class {
         }
     }
 
+    /// Returns the skill lines associated with the class.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::class::Class;
+    /// use templess::core::domain::stat::Stat;
+    /// use std::collections::HashSet;
+    /// let class = Class::Bard;
+    /// let skill_lines: HashSet<Stat> = class.skill_lines();
+    /// assert!(skill_lines.contains(&Stat::Music));
+    /// assert!(skill_lines.contains(&Stat::Nurture));
+    /// ```
     pub fn skill_lines(&self) -> HashSet<Stat> {
         use crate::core::domain::stat::Stat::*;
         use Class::*;
@@ -251,6 +263,15 @@ impl Class {
         lines
     }
 
+    /// Returns the acuity stat associated with the class, if any.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::class::Class;
+    /// use templess::core::domain::stat::Stat;
+    /// let class = Class::Bard;
+    /// assert_eq!(class.acuity_stat(), Some(Stat::Charisma));
+    /// ```
     pub fn acuity_stat(&self) -> Option<Stat> {
         use crate::core::domain::stat::Stat::*;
         use Class::*;

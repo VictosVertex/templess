@@ -516,11 +516,13 @@ impl Stat {
                 cap: 26,
                 category: StatCategory::PhysicalStatCaps,
             },
-            IntelligenceCap | PietyCap | EmpathyCap | CharismaCap | AcuityCap | PowerPoolCap => StatInfo {
-                utility: 2.0,
-                cap: 26,
-                category: StatCategory::AcuityStatCaps,
-            },
+            IntelligenceCap | PietyCap | EmpathyCap | CharismaCap | AcuityCap | PowerPoolCap => {
+                StatInfo {
+                    utility: 2.0,
+                    cap: 26,
+                    category: StatCategory::AcuityStatCaps,
+                }
+            }
             HitpointsCap => StatInfo {
                 utility: 2.0,
                 cap: 200,
@@ -634,6 +636,14 @@ impl Stat {
         self.info().category
     }
 
+    /// Returns the base stat associated with this cap stat, if any.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::stat::Stat;
+    /// let cap_stat = Stat::IntelligenceCap;
+    /// assert_eq!(cap_stat.base_stat(), Some(Stat::Intelligence));
+    /// ```
     pub fn base_stat(&self) -> Option<Stat> {
         use Stat::*;
         match self {
@@ -652,6 +662,14 @@ impl Stat {
         }
     }
 
+    /// Returns the cap stat associated with this base stat, if any.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::stat::Stat;
+    /// let base_stat = Stat::Intelligence;
+    /// assert_eq!(base_stat.cap_stat(), Some(Stat::IntelligenceCap));
+    /// ```
     pub fn cap_stat(&self) -> Option<Self> {
         match self {
             Stat::Strength => Some(Stat::StrengthCap),

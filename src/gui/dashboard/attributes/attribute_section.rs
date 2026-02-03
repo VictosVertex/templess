@@ -1,7 +1,16 @@
+//! This module defines the `AttributeSection` component,
+//! which is responsible for displaying a section of character attributes
+//! such as stats, resists, skills, and ToA bonuses.
+
 use dioxus::prelude::*;
 
 use crate::gui::dashboard::attributes::stat_data::StatData;
 
+/// The AttributeSection component displays a section of attributes with a title and a list of stats.
+///
+/// # Props
+/// - `title`: The title of the attribute section.
+/// - `stats`: A vector of `StatData` representing the stats to display in this section.
 #[component]
 pub fn AttributeSection(title: String, stats: Vec<StatData>) -> Element {
     rsx! {
