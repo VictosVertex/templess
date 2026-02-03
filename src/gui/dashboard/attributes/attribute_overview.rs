@@ -41,12 +41,15 @@ pub fn AttributeOverview() -> Element {
 
         for stat in Stat::iter() {
             match stat.category() {
-                StatCategory::Stats => {
-                    if stat.is_physical_stat() || Some(stat) == class_acuity_stat {
+                StatCategory::PhysicalStats => {
+                    stats_map.insert(stat, StatData::new(stat));
+                }
+                StatCategory::AcuityStats => {
+                    if Some(stat) == class_acuity_stat {
                         stats_map.insert(stat, StatData::new(stat));
                     }
                 }
-                StatCategory::StatCaps => {
+                StatCategory::PhysicalStatCaps | StatCategory::AcuityStatCaps => {
                     caps_map.insert(stat, StatData::new(stat));
                 }
                 StatCategory::Resists => {
@@ -62,23 +65,32 @@ pub fn AttributeOverview() -> Element {
         for item in template.slots.values() {
             for bonus in &item.bonuses {
                 match bonus.stat.category() {
-                    StatCategory::Stats => {
+                    StatCategory::PhysicalStats => {
+                        if let Some(entry) = stats_map.get_mut(&bonus.stat) {
+                            entry.value += bonus.value;
+                        }
+                    }
+                    StatCategory::AcuityStats => {
                         let target = match bonus.stat {
                             Stat::Acuity => class_acuity_stat,
                             _ => Some(bonus.stat),
                         };
-
                         if let Some(entry) = target.and_then(|s| stats_map.get_mut(&s)) {
                             entry.value += bonus.value;
                         }
                     }
-                    StatCategory::StatCaps => {
+                    StatCategory::PhysicalStatCaps => {
+                        if let Some(entry) = caps_map.get_mut(&bonus.stat) {
+                            entry.value += bonus.value;
+                        }
+                    }
+                    StatCategory::AcuityStatCaps => {
                         let target = match bonus.stat {
-                            Stat::AcuityCap => class_acuity_stat.and_then(|stat| stat.cap_stat()),
+                            Stat::AcuityCap => class_acuity_stat.and_then(|s| s.cap_stat()),
                             _ => Some(bonus.stat),
                         };
-
-                        if let Some(entry) = target.and_then(|stat| caps_map.get_mut(&stat)) {
+                        
+                        if let Some(entry) = target.and_then(|s| caps_map.get_mut(&s)) {
                             entry.value += bonus.value;
                         }
                     }

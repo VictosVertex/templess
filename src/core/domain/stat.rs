@@ -495,28 +495,36 @@ impl Stat {
     const fn info(self) -> StatInfo {
         use Stat::*;
         match self {
-            Strength | Dexterity | Constitution | Quickness | Intelligence | Piety | Empathy
-            | Charisma | Acuity => StatInfo {
+            Strength | Dexterity | Constitution | Quickness => StatInfo {
                 utility: 0.66,
                 cap: 75,
-                category: StatCategory::Stats,
+                category: StatCategory::PhysicalStats,
+            },
+            Intelligence | Piety | Empathy | Charisma | Acuity => StatInfo {
+                utility: 0.66,
+                cap: 75,
+                category: StatCategory::AcuityStats,
             },
             Hitpoints => StatInfo {
                 utility: 0.25,
                 cap: 200,
-                category: StatCategory::Stats,
+                category: StatCategory::PhysicalStats,
             },
 
-            StrengthCap | DexterityCap | ConstitutionCap | QuicknessCap | IntelligenceCap
-            | PietyCap | EmpathyCap | CharismaCap | AcuityCap | PowerPoolCap => StatInfo {
+            StrengthCap | DexterityCap | ConstitutionCap | QuicknessCap => StatInfo {
                 utility: 2.0,
                 cap: 26,
-                category: StatCategory::StatCaps,
+                category: StatCategory::PhysicalStatCaps,
+            },
+            IntelligenceCap | PietyCap | EmpathyCap | CharismaCap | AcuityCap | PowerPoolCap => StatInfo {
+                utility: 2.0,
+                cap: 26,
+                category: StatCategory::AcuityStatCaps,
             },
             HitpointsCap => StatInfo {
                 utility: 2.0,
                 cap: 200,
-                category: StatCategory::StatCaps,
+                category: StatCategory::PhysicalStatCaps,
             },
 
             BodyResist | ColdResist | CrushResist | EnergyResist | HeatResist | MatterResist
@@ -624,14 +632,6 @@ impl Stat {
     /// Returns the category associated with this stat.
     pub fn category(&self) -> StatCategory {
         self.info().category
-    }
-
-    pub fn is_physical_stat(&self) -> bool {
-        use Stat::*;
-        matches!(
-            self,
-            Strength | Dexterity | Constitution | Quickness | Hitpoints
-        )
     }
 
     pub fn base_stat(&self) -> Option<Stat> {
