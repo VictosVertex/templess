@@ -3,9 +3,11 @@
 //! It represents a character class in Dark Age of Camelot,
 //! including its numeric identifier, name, and associated realm.
 
+use std::collections::HashSet;
+
 use strum::{Display, EnumIter, FromRepr};
 
-use crate::core::domain::realm::Realm;
+use crate::core::domain::{realm::Realm, stat::Stat};
 
 /// Representation of a character class in Dark Age of Camelot.
 ///
@@ -226,6 +228,36 @@ impl Class {
             | Class::Animist
             | Class::Valewalker
             | Class::Banshee => &Realm::Hibernia,
+        }
+    }
+
+    pub fn skill_lines(&self) -> HashSet<Stat> {
+        use crate::core::domain::stat::Stat::*;
+        use Class::*;
+
+        let mut lines = HashSet::new();
+
+        let mut add = |stats: &[Stat]| {
+            for stat in stats {
+                lines.insert(*stat);
+            }
+        };
+
+        match self {
+            Bard => add(&[Nurture, Regrowth, Music, Blade, Blunt]),
+            _ => {}
+        }
+
+        lines
+    }
+
+    pub fn acuity_stat(&self) -> Option<Stat> {
+        use crate::core::domain::stat::Stat::*;
+        use Class::*;
+
+        match self {
+            Bard => Some(Charisma),
+            _ => None,
         }
     }
 }

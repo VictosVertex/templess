@@ -60,13 +60,10 @@ pub fn Inventory() -> Element {
             rsx! {
                 InventorySlot {
                     class: "h-[70px] w-[70px]",
-                    slot_type: slot_type,
+                    slot_type,
                     icon: rsx! {
-                        Icon {
-                            icon: icon,
-                            class: "text-foreground-secondary text-3xl"
-                        }
-                    }
+                        Icon { icon, class: "text-foreground-secondary text-3xl" }
+                    },
                 }
             }
         })
@@ -78,13 +75,10 @@ pub fn Inventory() -> Element {
             rsx! {
                 InventorySlot {
                     class: "h-[50px] w-[50px] !rounded-full",
-                    slot_type: slot_type,
+                    slot_type,
                     icon: rsx! {
-                        Icon {
-                            icon: icon,
-                            class: "text-foreground-secondary text-3xl"
-                        }
-                    }
+                        Icon { icon, class: "text-foreground-secondary text-3xl" }
+                    },
                 }
             }
         })
@@ -96,54 +90,48 @@ pub fn Inventory() -> Element {
             rsx! {
                 InventorySlot {
                     class: "h-[70px] w-[70px] !rounded-none",
-                    slot_type: slot_type,
+                    slot_type,
                     icon: rsx! {
-                        Icon {
-                            icon: icon,
-                            class: "text-foreground-secondary text-3xl"
-                        }
-                    }
+                        Icon { icon, class: "text-foreground-secondary text-3xl" }
+                    },
                 }
             }
         })
         .collect();
 
     rsx! {
-        div {
-            class: "relative w-[700px] h-[700px] mx-auto flex flex-col",
-            div {
+        div { class: "flex flex-col",
+            div { class: "relative w-[700px] h-[700px] mx-auto flex flex-col",
                 div {
-                    class: "absolute w-16 h-16 bg-accent rounded-full flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
-                }
-                Circle {
-                    total_slots: inner_slots,
-                    radius: inner_radius,
-                    slots: jewelry_slots,
-                    center: center.clone(),
-                    rotation: 0.5,
-                    slot_size: 100.0,
-                }
-                Circle {
-                    total_slots: middle_slots,
-                    radius: middle_radius,
-                    slots: armor_slots,
-                    center: center,
-                    rotation: 0.0,
-                    slot_size: 100.0,
+                    div { class: "absolute w-16 h-16 bg-accent rounded-full flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" }
+                    Circle {
+                        total_slots: inner_slots,
+                        radius: inner_radius,
+                        slots: jewelry_slots,
+                        center: center.clone(),
+                        rotation: 0.5,
+                        slot_size: 100.0,
+                    }
+                    Circle {
+                        total_slots: middle_slots,
+                        radius: middle_radius,
+                        slots: armor_slots,
+                        center,
+                        rotation: 0.0,
+                        slot_size: 100.0,
+                    }
                 }
             }
-        }
-        div {
-            class: "flex gap-8 items-center justrify-center mx-auto",
-            {
-                weapon_slots.iter().map(|slot| {
-                    rsx! {
-                            div {
-                                {slot}
+            div { class: "flex gap-8 items-center justrify-center mx-auto",
+                {
+                    weapon_slots
+                        .into_iter()
+                        .map(|slot| {
+                            rsx! {
+                                div { {slot} }
                             }
-                        }
-                    }
-                )
+                        })
+                }
             }
         }
     }

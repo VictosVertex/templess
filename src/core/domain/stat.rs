@@ -3,7 +3,7 @@
 //! Stats are an integral part of the game mechanics, representing various attributes
 //! and increases to skill-lines of characters.
 
-use strum::{Display, EnumString, FromRepr, EnumIter};
+use strum::{Display, EnumIter, EnumString, FromRepr};
 
 use crate::core::domain::stat_category::StatCategory;
 
@@ -11,7 +11,20 @@ use crate::core::domain::stat_category::StatCategory;
 ///
 /// Each variant corresponds to a specific stat, such as strength, dexterity, etc.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash, EnumString, Display, EnumIter, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    FromRepr,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumString,
+    Display,
+    EnumIter,
+    PartialOrd,
+    Ord,
+)]
 #[strum(serialize_all = "snake_case")]
 pub enum Stat {
     /// Represents the strength stat.
