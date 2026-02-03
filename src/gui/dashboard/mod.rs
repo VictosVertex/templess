@@ -4,6 +4,7 @@
 //! This includes viewing and selecting items, viewing stats, starting the
 //! optimization and seeing the results.
 
+pub mod attributes;
 pub mod dashboard_page;
 pub use dashboard_page::DashboardPage;
 pub mod circle;

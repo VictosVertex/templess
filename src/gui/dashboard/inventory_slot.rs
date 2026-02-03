@@ -28,7 +28,9 @@ pub fn InventorySlot(props: InventorySlotProps) -> Element {
     let app_state = use_context::<Signal<AppState>>();
 
     let load_items = move |_| {
-        let content = rsx! {ItemSelectionModal {slot_type: props.slot_type} };
+        let content = rsx! {
+            ItemSelectionModal { slot_type: props.slot_type }
+        };
         modal_ctx.write().content = Some(content);
     };
 
@@ -55,8 +57,9 @@ pub fn InventorySlot(props: InventorySlotProps) -> Element {
                         "bg-accent/50 hover:bg-accent/20 hover:border-accent"
                     } else {
                         "bg-card hover:bg-accent/20 hover:border-accent"
-                    }
+                    },
                 ),
+                {props.icon}
             }
         }
     }

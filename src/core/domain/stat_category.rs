@@ -13,13 +13,13 @@ use strum::FromRepr;
 #[derive(Debug, Clone, Copy, FromRepr)]
 pub enum StatCategory {
     /// Represents general stats like strength, dexterity, etc.
-    Stats = 0,
+    PhysicalStats = 0,
 
     /// Represents acuity stats, which are specific to caster classes.
     AcuityStats = 1,
 
     /// Represents stat cap increases for regular stats.
-    StatCaps = 2,
+    PhysicalStatCaps = 2,
 
     /// Represents stat cap increases for acuity stats.
     AcuityStatCaps = 3,
@@ -51,7 +51,7 @@ pub enum StatCategory {
 
 impl StatCategory {
     /// Returns the numeric identifier of the stat category.
-    pub fn id(&self) -> i32 {
-        *self as i32
+    pub fn id(&self) -> u16 {
+        *self as u16
     }
 }

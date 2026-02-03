@@ -3,13 +3,29 @@
 //! Stats are an integral part of the game mechanics, representing various attributes
 //! and increases to skill-lines of characters.
 
-use strum::FromRepr;
+use strum::{Display, EnumIter, EnumString, FromRepr};
+
+use crate::core::domain::stat_category::StatCategory;
 
 /// Represents the various stats in the game.
 ///
 /// Each variant corresponds to a specific stat, such as strength, dexterity, etc.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr, PartialEq)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    FromRepr,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumString,
+    Display,
+    EnumIter,
+    PartialOrd,
+    Ord,
+)]
+#[strum(serialize_all = "snake_case")]
 pub enum Stat {
     /// Represents the strength stat.
     ///
@@ -469,159 +485,135 @@ pub enum Stat {
     /// Represents another unknown stat.
     UnknownStuffAgain2 = 101,
 }
-
-type StatInfo = (&'static str, f32, i32);
-
-/// Maps stat IDs to their names, utility per point, and cap values.
-///
-/// # Parameters
-/// - `id`: The ID of the stat.
-///
-/// # Returns
-/// A tuple containing the name of the stat, its utility per point, and its cap value.
-fn stat_info_map(id: u16) -> StatInfo {
-    match id {
-        1u16 => ("strength", 0.67, 75),
-        2u16 => ("dexterity", 0.67, 75),
-        3u16 => ("constitution", 0.67, 75),
-        4u16 => ("quickness", 0.67, 75),
-        5u16 => ("intelligence", 0.67, 75),
-        6u16 => ("piety", 0.67, 75),
-        7u16 => ("empathy", 0.67, 75),
-        8u16 => ("charisma", 0.67, 75),
-        156u16 => ("acuity", 0.67, 75),
-        10u16 => ("hitpoints", 0.25, 200),
-        201u16 => ("strength_cap", 2.0, 26),
-        202u16 => ("dexterity_cap", 2.0, 26),
-        203u16 => ("constitution_cap", 2.0, 26),
-        204u16 => ("quickness_cap", 2.0, 26),
-        205u16 => ("intelligence_cap", 2.0, 26),
-        206u16 => ("piety_cap", 2.0, 26),
-        207u16 => ("empathy_cap", 2.0, 26),
-        208u16 => ("charisma_cap", 2.0, 26),
-        209u16 => ("acuity_cap", 2.0, 26),
-        210u16 => ("hitpoints_cap", 2.0, 200),
-        211u16 => ("power_pool_cap", 2.0, 26),
-        11u16 => ("body_resist", 2.0, 26),
-        12u16 => ("cold_resist", 2.0, 26),
-        13u16 => ("crush_resist", 2.0, 26),
-        14u16 => ("energy_resist", 2.0, 26),
-        15u16 => ("heat_resist", 2.0, 26),
-        16u16 => ("matter_resist", 2.0, 26),
-        17u16 => ("slash_resist", 2.0, 26),
-        18u16 => ("spirit_resist", 2.0, 26),
-        19u16 => ("thrust_resist", 2.0, 26),
-        116u16 => ("essence_resist", 2.0, 26),
-        21u16 => ("body", 5.0, 11),
-        22u16 => ("chants", 5.0, 11),
-        26u16 => ("death_servant", 5.0, 11),
-        27u16 => ("deathsight", 5.0, 11),
-        29u16 => ("earth", 5.0, 11),
-        30u16 => ("enhancement", 5.0, 11),
-        32u16 => ("fire", 5.0, 11),
-        34u16 => ("cold", 5.0, 11),
-        35u16 => ("instruments", 5.0, 11),
-        37u16 => ("matter", 5.0, 11),
-        38u16 => ("mind", 5.0, 11),
-        39u16 => ("pain_working", 5.0, 11),
-        42u16 => ("rejuvenation", 5.0, 11),
-        45u16 => ("smiting", 5.0, 11),
-        46u16 => ("soul_rending", 5.0, 11),
-        47u16 => ("spirit", 5.0, 11),
-        51u16 => ("wind", 5.0, 11),
-        57u16 => ("mending", 5.0, 11),
-        58u16 => ("augmentation", 5.0, 11),
-        60u16 => ("darkness", 5.0, 11),
-        61u16 => ("suppression", 5.0, 11),
-        62u16 => ("runecarving", 5.0, 11),
-        63u16 => ("stormcalling", 5.0, 11),
-        64u16 => ("beastcraft", 5.0, 11),
-        65u16 => ("light", 5.0, 11),
-        66u16 => ("void", 5.0, 11),
-        67u16 => ("mana", 5.0, 11),
-        69u16 => ("battlesongs", 5.0, 11),
-        70u16 => ("enchantments", 5.0, 11),
-        76u16 => ("mentalism", 5.0, 11),
-        77u16 => ("regrowth", 5.0, 11),
-        78u16 => ("nurture", 5.0, 11),
-        79u16 => ("nature", 5.0, 11),
-        80u16 => ("music", 5.0, 11),
-        84u16 => ("valor", 5.0, 11),
-        85u16 => ("subterranean", 5.0, 11),
-        86u16 => ("bone_army", 5.0, 11),
-        87u16 => ("verdant", 5.0, 11),
-        88u16 => ("creeping", 5.0, 11),
-        89u16 => ("arboreal", 5.0, 11),
-        94u16 => ("pacification", 5.0, 11),
-        98u16 => ("summoning", 5.0, 11),
-        163u16 => ("all_magic_skills", 5.0, 11),
-        20u16 => ("two_handed", 5.0, 11),
-        25u16 => ("crushing", 5.0, 11),
-        33u16 => ("flexible_weapon", 5.0, 11),
-        41u16 => ("polearm", 5.0, 11),
-        44u16 => ("slashing", 5.0, 11),
-        48u16 => ("staff", 5.0, 11),
-        50u16 => ("thrusting", 5.0, 11),
-        52u16 => ("sword", 5.0, 11),
-        53u16 => ("hammer", 5.0, 11),
-        54u16 => ("axe", 5.0, 11),
-        56u16 => ("spear", 5.0, 11),
-        72u16 => ("blade", 5.0, 11),
-        73u16 => ("blunt", 5.0, 11),
-        74u16 => ("piercing", 5.0, 11),
-        75u16 => ("large_weapon", 5.0, 11),
-        82u16 => ("celtic_spear", 5.0, 11),
-        90u16 => ("scythe", 5.0, 11),
-        92u16 => ("hand_to_hand", 5.0, 11),
-        164u16 => ("all_melee_skills", 5.0, 11),
-        168u16 => ("all_archery_skills", 5.0, 11),
-        93u16 => ("short_bow", 5.0, 11),
-        83u16 => ("recurve_bow", 5.0, 11),
-        68u16 => ("composite", 5.0, 11),
-        36u16 => ("long_bow", 5.0, 11),
-        91u16 => ("thrown_weapon", 5.0, 11),
-        24u16 => ("crossbow", 5.0, 11),
-        167u16 => ("all_dual_wielding_skills", 5.0, 11),
-        81u16 => ("celtic_dual", 5.0, 11),
-        55u16 => ("left_axe", 5.0, 11),
-        28u16 => ("dual_wield", 5.0, 11),
-        23u16 => ("critical_strike", 5.0, 11),
-        43u16 => ("shield", 5.0, 11),
-        40u16 => ("parry", 5.0, 11),
-        31u16 => ("envenom", 5.0, 11),
-        49u16 => ("stealth", 5.0, 11),
-        95u16 => ("savagery", 5.0, 11),
-        96u16 => ("nightshade", 5.0, 11),
-        97u16 => ("pathfinding", 5.0, 11),
-        148u16 => ("armor_factor", 1.0, 50),
-        153u16 => ("spell_range", 2.0, 25),
-        155u16 => ("melee_speed", 2.0, 10),
-        173u16 => ("melee_damage", 2.0, 10),
-        174u16 => ("ranged_damage", 2.0, 10),
-        188u16 => ("archery_speed", 2.0, 10),
-        190u16 => ("buff_effectiveness", 2.0, 25),
-        191u16 => ("casting_speed", 2.0, 10),
-        193u16 => ("debuff_effectiveness", 2.0, 25),
-        195u16 => ("healing_effectiveness", 2.0, 25),
-        196u16 => ("power_pool_toa", 2.0, 25),
-        197u16 => ("resist_pierce", 2.0, 10),
-        198u16 => ("spell_damage", 2.0, 10),
-        199u16 => ("spell_duration", 2.0, 25),
-        200u16 => ("style_damage", 2.0, 10),
-        254u16 => ("arcane_syphon", 2.0, 10),
-        194u16 => ("fatigue", 0.0, 100),
-        165u16 => ("all_focus_levels", 0.0, 50),
-        115u16 => ("unknown_ranger_stuff", 0.0, 100),
-        99u16 => ("unknown_stuff_again", 0.0, 100),
-        101u16 => ("unknown_stuff_again2", 0.0, 100),
-        _ => ("unknown", 0.0, 0),
-    }
+struct StatInfo {
+    pub utility: f32,
+    pub cap: u16,
+    pub category: StatCategory,
 }
 
 impl Stat {
+    const fn info(self) -> StatInfo {
+        use Stat::*;
+        match self {
+            Strength | Dexterity | Constitution | Quickness => StatInfo {
+                utility: 0.66,
+                cap: 75,
+                category: StatCategory::PhysicalStats,
+            },
+            Intelligence | Piety | Empathy | Charisma | Acuity => StatInfo {
+                utility: 0.66,
+                cap: 75,
+                category: StatCategory::AcuityStats,
+            },
+            Hitpoints => StatInfo {
+                utility: 0.25,
+                cap: 200,
+                category: StatCategory::PhysicalStats,
+            },
+
+            StrengthCap | DexterityCap | ConstitutionCap | QuicknessCap => StatInfo {
+                utility: 2.0,
+                cap: 26,
+                category: StatCategory::PhysicalStatCaps,
+            },
+            IntelligenceCap | PietyCap | EmpathyCap | CharismaCap | AcuityCap | PowerPoolCap => {
+                StatInfo {
+                    utility: 2.0,
+                    cap: 26,
+                    category: StatCategory::AcuityStatCaps,
+                }
+            }
+            HitpointsCap => StatInfo {
+                utility: 2.0,
+                cap: 200,
+                category: StatCategory::PhysicalStatCaps,
+            },
+
+            BodyResist | ColdResist | CrushResist | EnergyResist | HeatResist | MatterResist
+            | SlashResist | SpiritResist | ThrustResist | EssenceResist => StatInfo {
+                utility: 2.0,
+                cap: 26,
+                category: StatCategory::Resists,
+            },
+
+            Body | Chants | DeathServant | Deathsight | Earth | Enhancement | Fire | Cold
+            | Instruments | Matter | Mind | PainWorking | Rejuvenation | Smiting | SoulRending
+            | Spirit | Wind | Mending | Augmentation | Darkness | Suppression | Runecarving
+            | Stormcalling | Beastcraft | Light | Void | Mana | Battlesongs | Enchantments
+            | Mentalism | Regrowth | Nurture | Nature | Music | Valor | Subterranean | BoneArmy
+            | Verdant | Creeping | Arboreal | Pacification | Summoning | AllMagicSkills => {
+                StatInfo {
+                    utility: 5.0,
+                    cap: 11,
+                    category: StatCategory::MagicSkills,
+                }
+            }
+            TwoHanded | Crushing | FlexibleWeapon | Polearm | Slashing | Staff | Thrusting
+            | Sword | Hammer | Axe | Spear | Blade | Blunt | Piercing | LargeWeapon
+            | CelticSpear | Scythe | HandToHand | AllMeleeSkills => StatInfo {
+                utility: 5.0,
+                cap: 11,
+                category: StatCategory::MeleeSkills,
+            },
+            AllArcherySkills | ShortBow | RecurveBow | Composite | LongBow | ThrownWeapon
+            | Crossbow => StatInfo {
+                utility: 5.0,
+                cap: 11,
+                category: StatCategory::ArcherySkills,
+            },
+            AllDualWieldingSkills | CelticDual | LeftAxe | DualWield => StatInfo {
+                utility: 5.0,
+                cap: 11,
+                category: StatCategory::DualWieldingSkills,
+            },
+            CriticalStrike | Shield | Parry | Envenom | Stealth | Savagery | Nightshade
+            | Pathfinding => StatInfo {
+                utility: 5.0,
+                cap: 11,
+                category: StatCategory::OtherSkills,
+            },
+
+            ArmorFactor => StatInfo {
+                utility: 1.0,
+                cap: 50,
+                category: StatCategory::OtherStats,
+            },
+
+            SpellRange | BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness
+            | PowerPoolToa | SpellDuration => StatInfo {
+                utility: 2.0,
+                cap: 25,
+                category: StatCategory::ToaBonuses,
+            },
+
+            MeleeSpeed | MeleeDamage | RangedDamage | ArcherySpeed | CastingSpeed
+            | ResistPierce | SpellDamage | StyleDamage | ArcaneSyphon => StatInfo {
+                utility: 2.0,
+                cap: 10,
+                category: StatCategory::ToaBonuses,
+            },
+
+            Fatigue => StatInfo {
+                utility: 0.0,
+                cap: 100,
+                category: StatCategory::OtherStats,
+            },
+            AllFocusLevels => StatInfo {
+                utility: 0.0,
+                cap: 50,
+                category: StatCategory::OtherStats,
+            },
+            UnknownRangerStuff | UnknownStuffAgain | UnknownStuffAgain2 => StatInfo {
+                utility: 0.0,
+                cap: 100,
+                category: StatCategory::OtherStats,
+            },
+        }
+    }
+
     /// Returns the name of the stat.
-    pub fn name(&self) -> &'static str {
-        stat_info_map(self.id()).0
+    pub fn name(&self) -> String {
+        self.to_string()
     }
 
     /// Returns the ID of the stat as a `u16`.
@@ -631,16 +623,67 @@ impl Stat {
 
     /// Returns the ID of the stat as an `f32`.
     pub fn utility_per_point(&self) -> f32 {
-        stat_info_map(self.id()).1
+        self.info().utility
     }
 
     /// Returns the cap value of the stat.
     pub fn cap(&self) -> u16 {
-        stat_info_map(self.id()).2 as u16
+        self.info().cap
     }
 
-    /// Returns the category IDs associated with this stat.
-    pub fn category_ids(&self) -> &'static [u8] {
-        &[1, 2, 3]
+    /// Returns the category associated with this stat.
+    pub fn category(&self) -> StatCategory {
+        self.info().category
+    }
+
+    /// Returns the base stat associated with this cap stat, if any.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::stat::Stat;
+    /// let cap_stat = Stat::IntelligenceCap;
+    /// assert_eq!(cap_stat.base_stat(), Some(Stat::Intelligence));
+    /// ```
+    pub fn base_stat(&self) -> Option<Stat> {
+        use Stat::*;
+        match self {
+            StrengthCap => Some(Strength),
+            DexterityCap => Some(Dexterity),
+            ConstitutionCap => Some(Constitution),
+            QuicknessCap => Some(Quickness),
+            IntelligenceCap => Some(Intelligence),
+            PietyCap => Some(Piety),
+            EmpathyCap => Some(Empathy),
+            CharismaCap => Some(Charisma),
+            AcuityCap => Some(Acuity),
+            HitpointsCap => Some(Hitpoints),
+            PowerPoolCap => Some(PowerPoolToa),
+            _ => None,
+        }
+    }
+
+    /// Returns the cap stat associated with this base stat, if any.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::stat::Stat;
+    /// let base_stat = Stat::Intelligence;
+    /// assert_eq!(base_stat.cap_stat(), Some(Stat::IntelligenceCap));
+    /// ```
+    pub fn cap_stat(&self) -> Option<Self> {
+        match self {
+            Stat::Strength => Some(Stat::StrengthCap),
+            Stat::Dexterity => Some(Stat::DexterityCap),
+            Stat::Constitution => Some(Stat::ConstitutionCap),
+            Stat::Quickness => Some(Stat::QuicknessCap),
+            Stat::Intelligence => Some(Stat::IntelligenceCap),
+            Stat::Piety => Some(Stat::PietyCap),
+            Stat::Empathy => Some(Stat::EmpathyCap),
+            Stat::Charisma => Some(Stat::CharismaCap),
+            Stat::Acuity => Some(Stat::AcuityCap),
+            Stat::Hitpoints => Some(Stat::HitpointsCap),
+            Stat::PowerPoolToa => Some(Stat::PowerPoolCap),
+            _ => None,
+        }
     }
 }
