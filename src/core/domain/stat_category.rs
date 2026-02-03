@@ -51,7 +51,7 @@ pub enum StatCategory {
 
 impl StatCategory {
     /// Returns the numeric identifier of the stat category.
-    pub fn id(&self) -> i32 {
-        *self as i32
+    pub fn id(&self) -> u16 {
+        *self as u16
     }
 }
