@@ -426,6 +426,9 @@
   .gap-y-1 {
     row-gap: calc(var(--spacing) * 1);
   }
+  .overflow-auto {
+    overflow: auto;
+  }
   .overflow-hidden {
     overflow: hidden;
   }

@@ -10,7 +10,7 @@ pub fn AppLayout(children: Element) -> Element {
     rsx! {
         div { class: "grid grid-rows-[auto_1fr] min-h-screen",
             Header {}
-            {children}
+            div { class: "w-full overflow-auto", {children} }
         }
     }
 }
