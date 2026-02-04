@@ -2,8 +2,8 @@
 //!
 //! It defines the structure of the database tables used in the application.
 
-use rusqlite::Connection;
 use anyhow::Result;
+use rusqlite::Connection;
 
 /// Creates the necessary database tables if they do not already exist.
 ///

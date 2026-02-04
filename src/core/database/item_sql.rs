@@ -1,11 +1,12 @@
 //! This module contains the sql queries for handling items in the database.
 
 use crate::core::domain::{
-    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm, stat::Stat,
+    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, item_type::ItemType,
+    realm::Realm, stat::Stat,
 };
+use anyhow::Result;
 use rusqlite::{Connection, params};
 use serde::Deserialize;
-use anyhow::Result;
 /// Helper struct for deserializing item bonus data from JSON.
 ///
 /// This is used to make it easier to aggregate bonuses
@@ -64,7 +65,7 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<()>
                 item.id,
                 item.name,
                 item.model,
-                item.object_type,
+                item.object_type.id(),
                 item.item_slot.id(),
                 item.level,
                 item.quality,
@@ -110,10 +111,7 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<()>
 /// # Returns
 /// - `Ok(Vec<Item>)`: A vector of `Item` objects that match the specified class.
 /// - `Err(Box<dyn Error>)`: If an error occurs during the query execution.
-pub fn get_items_by_class(
-    connection: &Connection,
-    class: Class,
-) -> Result<Vec<Item>> {
+pub fn get_items_by_class(connection: &Connection, class: Class) -> Result<Vec<Item>> {
     let mut stmt = connection.prepare(
         "SELECT 
             i.id, 
@@ -157,7 +155,11 @@ pub fn get_items_by_class(
 
     println!("Querying items for class {class:?} (id: {class_id}, realm: {realm_id})");
     let items = stmt.query_map(params![class_id, realm_id], |row| {
-        let item_type = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
+        let object_type = ItemType::from_repr(row.get::<_, u16>(3)?).expect(&format!(
+            "Unknown object_type ID: {}",
+            row.get::<_, u16>(3)?
+        ));
+        let item_slot = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
         let realm = Realm::from_repr(row.get::<_, u16>(10)?).expect("Invalid realm repr");
         let bonuses_json: Option<String> = row.get(18)?;
         let bonuses: Vec<ItemBonus> = match bonuses_json {
@@ -178,8 +180,8 @@ pub fn get_items_by_class(
             id: row.get(0)?,
             name: row.get(1)?,
             model: row.get(2)?,
-            object_type: row.get(3)?,
-            item_slot: item_type,
+            object_type,
+            item_slot,
             level: row.get(5)?,
             quality: row.get(6)?,
             weapon_hand: row.get(7)?,
@@ -205,5 +207,16 @@ pub fn get_items_by_class(
         })
     })?;
 
-    Ok(items.collect::<Result<Vec<_>, _>>()?)
+    let potential_items: Vec<Item> = items.collect::<Result<Vec<_>, _>>()?;
+
+    let allowed_types = class.allowed_item_types();
+
+    let filtered_items: Vec<Item> = potential_items
+        .into_iter()
+        .filter(|item| allowed_types.contains(&item.object_type))
+        .collect();
+
+    println!("Filtered down to {} usable items", filtered_items.len());
+
+    Ok(filtered_items)
 }

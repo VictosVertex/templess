@@ -3,7 +3,8 @@
 //! `RawItems` are items as they are found in the json data scraped from the game server's website.
 
 use crate::core::domain::{
-    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm, stat::Stat,
+    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, item_type::ItemType,
+    realm::Realm, stat::Stat,
 };
 
 use serde::Deserialize;
@@ -131,10 +132,11 @@ impl RawItem {
 
         let id = self.id.parse().expect("Failed to parse id");
         let model = self.model.parse().expect("Failed to parse model");
-        let object_type = self
+        let object_type_id = self
             .object_type
             .parse()
             .expect("Failed to parse object_type");
+        let object_type = ItemType::from_repr(object_type_id).expect("Invalid object_type repr");
         let item_slot_id = self
             .item_type
             .parse::<u16>()

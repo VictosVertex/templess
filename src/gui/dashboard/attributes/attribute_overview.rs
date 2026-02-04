@@ -31,9 +31,7 @@ pub fn AttributeOverview() -> Element {
             .template
             .lock()
             .map_err(|e| format!("Failed to lock template mutex: {}", e))?;
-        let template = template_guard
-            .as_ref()
-            .ok_or("No template active")?;
+        let template = template_guard.as_ref().ok_or("No template active")?;
 
         let mut stats_map = HashMap::new();
         let mut caps_map = HashMap::new();

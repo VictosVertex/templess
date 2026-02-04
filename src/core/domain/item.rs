@@ -5,6 +5,8 @@
 //!
 //! As that it is the most likely to be changed as requirements evolve.
 
+use crate::core::domain::item_type::ItemType;
+
 use super::{class::Class, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm};
 
 /// Represents an item in the game.
@@ -23,7 +25,7 @@ pub struct Item {
     pub model: i32,
 
     /// The type of object.
-    pub object_type: u16,
+    pub object_type: ItemType,
 
     /// The slot of the item.
     pub item_slot: ItemSlot,
