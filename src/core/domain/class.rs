@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use strum::{Display, EnumIter, FromRepr};
 
-use crate::core::domain::{realm::Realm, stat::Stat};
+use crate::core::domain::{item_type::ItemType, realm::Realm, stat::Stat};
 
 /// Representation of a character class in Dark Age of Camelot.
 ///
@@ -280,6 +280,39 @@ impl Class {
             Bard => Some(Charisma),
             _ => None,
         }
+    }
+
+    /// Returns the allowed item types for the class.
+    ///
+    /// # Examples
+    /// ```
+    /// use templess::core::domain::class::Class;
+    /// use templess::core::domain::item_type::ItemType;
+    /// use std::collections::HashSet;
+    /// let class = Class::Bard;
+    /// let item_types: HashSet<ItemType> = class.allowed_item_types();
+    /// assert!(item_types.contains(&ItemType::Instrument));
+    /// assert!(item_types.contains(&ItemType::Jewelry));
+    /// ```
+    pub fn allowed_item_types(&self) -> HashSet<ItemType> {
+        use crate::core::domain::item_type::ItemType::*;
+        use Class::*;
+        let mut items = HashSet::new();
+
+        let mut add = |types: &[ItemType]| {
+            for item_type in types {
+                items.insert(*item_type);
+            }
+        };
+
+        add(&[Jewelry, Magical]);
+
+        match self {
+            Bard => add(&[Reinforced, Instrument, Blade, Blunt]),
+            _ => {}
+        }
+
+        items
     }
 }
 

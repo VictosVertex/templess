@@ -6,7 +6,7 @@ use strum::FromRepr;
 ///
 /// Each variant corresponds to a specific type of item, such as crush, slash, thrust, etc.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr, PartialEq)]
+#[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash)]
 pub enum ItemType {
     /// Represents the crush melee weapon type from Albion.
     Crush = 2,

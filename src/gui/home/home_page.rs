@@ -57,30 +57,24 @@ pub fn HomePage() -> Element {
     };
 
     rsx! {
-        div {
-            class: "flex flex-col w-80 gap-4 border-border p-4 mt-50 text-foreground mx-auto",
-            h1 {
-                class: "text-xl font-bold",
-                "New Template"
-            }
+        div { class: "flex flex-col w-80 gap-4 border-border p-4 mt-50 text-foreground mx-auto",
+            h1 { class: "text-xl font-bold", "New Template" }
             Select {
                 options: realms,
                 on_select: move |realm_id| {
                     selected_realm.set(Realm::from_repr(realm_id).unwrap_or(Realm::Albion));
-                }
+                },
             }
             Select {
                 options: classes,
                 on_select: move |class_id| {
                     selected_class.set(Class::from_repr(class_id).unwrap_or(Class::Paladin));
-                }
+                },
             }
             button {
                 class: "mt-4 p-3 rounded-md bg-accent/80 hover:bg-accent hover:scale-102 transition-all",
                 onclick: submit,
-                h1 {
-                    class: "blur-none",
-                    "Create Template"}
+                h1 { class: "blur-none", "Create Template" }
             }
         }
     }
