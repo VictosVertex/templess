@@ -4,14 +4,21 @@ use dioxus::prelude::*;
 
 use crate::gui::{components::header::Header, routes::Route};
 
-/// The main layout component that makes some components available
-/// to all routes.
+/// The application layout that includes the header and a content area.
+#[component]
+pub fn AppLayout(children: Element) -> Element {
+    rsx! {
+        div { class: "grid grid-rows-[auto_1fr] min-h-screen",
+            Header {}
+            div { class: "w-full overflow-auto", {children} }
+        }
+    }
+}
+
+/// The main layout component that wraps the application routes.
 #[component]
 pub fn Layout() -> Element {
     rsx! {
-        div {
-            Header {}
-            Outlet::<Route> {}
-        }
+        AppLayout { Outlet::<Route> {} }
     }
 }

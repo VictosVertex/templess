@@ -4,9 +4,9 @@
 
 use std::{fs::File, io::BufReader};
 
-use crate::core::{database::item_sql::insert_items, domain::item::Item};
-
 use super::raw_item::RawItem;
+use crate::core::{database::item_sql::insert_items, domain::item::Item};
+use anyhow::Result;
 
 /// Initializes items in the database from a JSON file.
 ///
@@ -16,15 +16,11 @@ use super::raw_item::RawItem;
 ///
 /// # Returns
 /// A `Result` indicating success or failure. If successful, it returns `Ok(())`.
-/// If an error occurs, it returns a `Box<dyn std::error::Error>` containing the error details.
-pub fn initialize_items(
-    connection: &mut rusqlite::Connection,
-    data_path: String,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let file = File::open(&data_path).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+/// If an error occurs, it returns an `anyhow::Error` containing the error details.
+pub fn initialize_items(connection: &mut rusqlite::Connection, data_path: String) -> Result<()> {
+    let file = File::open(&data_path)?;
     let reader = BufReader::new(file);
-    let raw_items: Vec<RawItem> =
-        serde_json::from_reader(reader).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+    let raw_items: Vec<RawItem> = serde_json::from_reader(reader)?;
 
     println!("Found {} raw items", raw_items.len());
     let items = raw_items
