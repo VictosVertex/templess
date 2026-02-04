@@ -3,7 +3,7 @@
 //! It defines the structure of the database tables used in the application.
 
 use rusqlite::Connection;
-use std::error::Error;
+use anyhow::Result;
 
 /// Creates the necessary database tables if they do not already exist.
 ///
@@ -13,7 +13,7 @@ use std::error::Error;
 /// # Returns
 /// - `Ok(())` if the tables were created successfully.
 /// - `Err(Box<dyn Error>)` if an error occurred during the table creation.
-pub fn create_tables(connection: &Connection) -> Result<(), Box<dyn Error>> {
+pub fn create_tables(connection: &Connection) -> Result<()> {
     connection.execute(
         "CREATE TABLE IF NOT EXISTS item (
             id INTEGER PRIMARY KEY,

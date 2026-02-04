@@ -5,8 +5,7 @@ use crate::core::domain::{
 };
 use rusqlite::{Connection, params};
 use serde::Deserialize;
-use std::error::Error;
-
+use anyhow::Result;
 /// Helper struct for deserializing item bonus data from JSON.
 ///
 /// This is used to make it easier to aggregate bonuses
@@ -38,7 +37,7 @@ impl From<BonusData> for ItemBonus {
 /// # Returns
 /// - `Ok(())` if the insertion was successful.
 /// - `Err(Box<dyn Error>)` if an error occurred during the insertion.
-pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<(), Box<dyn Error>> {
+pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<()> {
     let transaction = connection.transaction()?;
 
     {
@@ -114,7 +113,7 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> Result<(),
 pub fn get_items_by_class(
     connection: &Connection,
     class: Class,
-) -> Result<Vec<Item>, Box<dyn Error>> {
+) -> Result<Vec<Item>> {
     let mut stmt = connection.prepare(
         "SELECT 
             i.id, 
