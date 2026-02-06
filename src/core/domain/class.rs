@@ -308,7 +308,7 @@ impl Class {
         add(&[Jewelry, Magical]);
 
         match self {
-            Bard => add(&[Reinforced, Instrument, Blade, Blunt]),
+            Bard => add(&[Reinforced, Instrument, Blade, Blunt, Shield]),
             _ => {}
         }
 
