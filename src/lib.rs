@@ -10,6 +10,7 @@ pub mod clingo;
 pub mod core;
 pub mod gui;
 pub mod initialization;
+pub mod optimization;
 
 /// Starts the application.
 pub fn start() -> Result<(), Box<dyn std::error::Error>> {

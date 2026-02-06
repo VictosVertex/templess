@@ -3,12 +3,15 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{Icon, icons::ld_icons::LdPlus};
 use std::vec;
+use tokio::task::spawn_blocking;
 
+use crate::app_state::AppState;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::gui::dashboard::{
     circle::{Circle, Point},
     inventory_slot::InventorySlot,
 };
+use crate::optimization::optimize::optimize;
 
 /// The Inventory component displays the player's inventory.
 ///
@@ -20,6 +23,8 @@ use crate::gui::dashboard::{
 /// a specific problem instance of the optimization problem this application is trying to solve.
 #[component]
 pub fn Inventory() -> Element {
+    let mut app_state = use_context::<Signal<AppState>>();
+    
     let inner_slots = 8;
     let inner_radius = 120.0;
 
@@ -98,12 +103,67 @@ pub fn Inventory() -> Element {
             }
         })
         .collect();
+    
+    let on_optimize = move |_| {
+        let state = app_state.read();
+
+        let template = match state.template.lock() {
+            Ok(guard) => match guard.clone() {
+                Some(tmp) => tmp,
+                None => {
+                    println!("Optimization aborted: No active template.");
+                    return;
+                }
+            },
+            Err(_) => {
+                println!("Warning: Template mutex was poisoned.");
+                return;
+            }
+        };
+
+        let items = match state.items.lock() {
+            Ok(guard) => guard.clone(),
+            Err(_) => {
+                println!("Warning: Items mutex was poisoned.");
+                return;
+            }
+        };
+
+        spawn(async move {
+            println!("Starting optimization...");
+
+            let result = spawn_blocking(move || optimize(template, items)).await;
+
+            match result {
+                Ok(optimization_result) => match optimization_result {
+                    Ok(new_template) => {
+                        println!("Optimization complete. Updating UI.");
+                        if let Ok(mut guard) = app_state.write().template.lock() {
+                            *guard = Some(new_template);
+                        }
+                    }
+                    Err(e) => println!("Optimization Error: {}", e),
+                },
+                Err(e) => println!("Worker Thread Crashed: {}", e),
+            }
+        });
+    };
 
     rsx! {
         div { class: "flex flex-col",
             div { class: "relative w-[700px] h-[700px] mx-auto flex flex-col",
                 div {
-                    div { class: "absolute w-16 h-16 bg-accent rounded-full flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" }
+                    button {
+                        class: "absolute w-24 h-24 bg-accent/40 rounded-full flex items-center justify-center
+                                top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                                transition-all duration-300 ease-in-out z-10 cursor-pointer
+                                border-2 border-accent text-accent
+                                hover:bg-accent/20
+                                ",
+                        onclick: on_optimize,
+
+                        span { class: "font-bold text-sm tracking-wider", "OPTIMIZE" }
+                    }
                     Circle {
                         total_slots: inner_slots,
                         radius: inner_radius,
