@@ -3,7 +3,7 @@
 
 /// Prints a warning message to Cargo.
 ///
-/// This is used because cargo warings are annoying.
+/// This is used because cargo warnings are annoying.
 ///
 /// # Parameters
 /// - `message`: The warning message to print.
@@ -23,7 +23,6 @@ fn link_libraries(manifest_dir: &str) {
     println!("cargo:rustc-link-lib=static=potassco");
     println!("cargo:rustc-link-lib=static=clasp");
     println!("cargo:rustc-link-lib=static=gringo");
-    println!("cargo:rustc-link-lib=dylib=msvcrt");
 }
 
 /// Module for bundling and building clingo from source.
@@ -104,7 +103,9 @@ mod bundle {
     /// The path to the installation directory of the built libraries.
     fn build_libraries(path: &str) -> PathBuf {
         use cmake::Config;
-        Config::new(path)
+        let mut config = Config::new(path);
+
+        config
             .very_verbose(true)
             .define("CLINGO_BUILD_SHARED", "OFF")
             .define("CLINGO_BUILD_STATIC", "ON")
@@ -113,8 +114,20 @@ mod bundle {
             .define("CLINGO_BUILD_WITH_LUA", "OFF")
             .define("CLINGO_INSTALL_LIB", "ON")
             .define("CLINGO_BUILD_APPS", "OFF")
-            .define("CLASP_BUILD_APP", "OFF")
-            .build()
+            .define("CLASP_BUILD_APP", "OFF");
+
+        let profile = match std::env::var("PROFILE") {
+            Ok(p) => p,
+            Err(_) => "debug".to_string(),
+        };
+
+        if profile == "release" {
+            let flags = "/MD /O2 /Ob2 /DNDEBUG /GL-";
+            config.define("CMAKE_CXX_FLAGS_RELEASE", flags);
+            config.define("CMAKE_C_FLAGS_RELEASE", flags);
+        }
+
+        config.build()
     }
 
     /// Copies the compiled clingo libraries to the Rust project's `lib/` directory.
