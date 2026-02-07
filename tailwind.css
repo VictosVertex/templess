@@ -15,6 +15,7 @@
   --color-accent: oklch(70% 0.20 var(--accent-hue));
   --color-error: oklch(70% 0.20 var(--error-hue));
   --color-success: oklch(70% 0.20 var(--success-hue));
+  --color-warning: oklch(70% 0.20 var(--warning-hue));
 }
 
 @layer base {
