@@ -1,2 +1,2 @@
-pub mod optimize;
 pub mod instance;
+pub mod optimize;

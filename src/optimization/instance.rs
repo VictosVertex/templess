@@ -1,6 +1,8 @@
-use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template};
-use std::{fmt::Write};
+use crate::core::domain::{
+    class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
+};
 use anyhow::Result;
+use std::fmt::Write;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 
@@ -9,11 +11,21 @@ pub fn item_atoms(items: &[Arc<Item>]) -> Result<String> {
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
 
     for item in items {
-        writeln!(asp, "item({}, {}, \"{}\").", item.id, item.item_slot.name(), item.name)?;
+        writeln!(
+            asp,
+            "item({}, {}, \"{}\").",
+            item.id,
+            item.item_slot.name(),
+            item.name
+        )?;
 
         for bonus in &item.bonuses {
             let stat_name = bonus.stat.to_string().to_lowercase();
-            writeln!(asp, "item_bonus({}, {}, {}).", item.id, stat_name, bonus.value)?;
+            writeln!(
+                asp,
+                "item_bonus({}, {}, {}).",
+                item.id, stat_name, bonus.value
+            )?;
         }
     }
     Ok(asp)
@@ -32,21 +44,11 @@ pub fn stat_atoms() -> Result<String> {
         )?;
 
         if let Some(cap) = stat.cap_stat() {
-            writeln!(
-                asp,
-                "stat_cap({}, {}).",
-                stat.name(),
-                cap.name()
-            )?;
+            writeln!(asp, "stat_cap({}, {}).", stat.name(), cap.name())?;
         }
 
         if let Some(base) = stat.base_stat() {
-            writeln!(
-                asp,
-                "stat_base({}, {}).",
-                stat.name(),
-                base.name()
-            )?;
+            writeln!(asp, "stat_base({}, {}).", stat.name(), base.name())?;
         }
     }
     Ok(asp)

@@ -1,6 +1,6 @@
 //! This module defines the `ItemSlot` enum, which represents various item slots in a game.
 
-use strum::{EnumIter, FromRepr, Display};
+use strum::{Display, EnumIter, FromRepr};
 
 /// Represents the different item slots available in the game.
 ///

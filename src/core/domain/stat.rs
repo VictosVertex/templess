@@ -579,8 +579,8 @@ impl Stat {
                 category: StatCategory::OtherStats,
             },
 
-            BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness
-            | PowerPoolToa | SpellDuration => StatInfo {
+            BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness | PowerPoolToa
+            | SpellDuration => StatInfo {
                 utility: 2.0,
                 cap: 25,
                 category: StatCategory::ToaBonuses,

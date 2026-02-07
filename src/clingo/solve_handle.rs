@@ -34,7 +34,9 @@ impl SolveHandle {
     pub fn resume(&mut self) -> Result<(), ClingoError> {
         let success = unsafe { clingo_solve_handle_resume(self.0.as_ptr()) };
         if !success {
-            return Err(ClingoError::new_internal("Failed to resume search".to_owned()));
+            return Err(ClingoError::new_internal(
+                "Failed to resume search".to_owned(),
+            ));
         }
         Ok(())
     }
@@ -42,7 +44,9 @@ impl SolveHandle {
     pub fn cancel(&mut self) -> Result<(), ClingoError> {
         let success = unsafe { clingo_solve_handle_cancel(self.0.as_ptr()) };
         if !success {
-            return Err(ClingoError::new_internal("Failed to cancel search".to_owned()));
+            return Err(ClingoError::new_internal(
+                "Failed to cancel search".to_owned(),
+            ));
         }
         Ok(())
     }
@@ -100,11 +104,7 @@ impl SolveHandle {
     pub fn wait(&self, timeout: f64) -> bool {
         let mut result = false;
         unsafe {
-            super::bindings::clingo_solve_handle_wait(
-                self.0.as_ptr(), 
-                timeout, 
-                &mut result
-            );
+            super::bindings::clingo_solve_handle_wait(self.0.as_ptr(), timeout, &mut result);
         }
         result
     }
