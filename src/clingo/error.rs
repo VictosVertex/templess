@@ -132,3 +132,9 @@ impl From<NulError> for ClingoError {
         ClingoError::NulError(error)
     }
 }
+
+impl From<ClingoError> for String {
+    fn from(error: ClingoError) -> String {
+        error.to_string()
+    }
+}
