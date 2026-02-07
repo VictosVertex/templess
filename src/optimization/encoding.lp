@@ -44,6 +44,4 @@ stat_total(STAT, BASE_TOTAL, UTILITY * BASE_TOTAL) :-
 
 #maximize {UTILITY: stat_total(_, _, UTILITY)}.
 
-#show slot_assigned/2.
-#show stat_raw_total/2.
-#show stat_total/3.
+#show slot_chosen/2.
