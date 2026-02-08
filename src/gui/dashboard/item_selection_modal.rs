@@ -29,17 +29,20 @@ pub fn ItemSelectionModal(props: ItemSelectionModalProps) -> Element {
         let binding = app_state.read().clone();
         match binding.items.lock() {
             Ok(items_guard) => {
+                let target_type = match props.slot_type {
+                    ItemSlot::Bracer2 => ItemSlot::Bracer,
+                    ItemSlot::Ring2 => ItemSlot::Ring,
+                    other => other,
+                };
                 let mut filtered_items = items_guard
                     .iter()
-                    .filter(|item| item.item_slot == props.slot_type)
+                    .filter(|item| item.item_slot == target_type)
                     .cloned()
                     .collect::<Vec<Arc<Item>>>();
 
-                filtered_items.sort_by(|a, b| {
-                    match b.utility.partial_cmp(&a.utility) {
-                        Some(ordering) => ordering,
-                        None => std::cmp::Ordering::Equal,
-                    }
+                filtered_items.sort_by(|a, b| match b.utility.partial_cmp(&a.utility) {
+                    Some(ordering) => ordering,
+                    None => std::cmp::Ordering::Equal,
                 });
 
                 filtered_items
@@ -58,7 +61,7 @@ pub fn ItemSelectionModal(props: ItemSelectionModalProps) -> Element {
             let state = app_state.write().clone();
             if let Ok(mut template_guard) = state.template.lock() {
                 if let Some(template) = template_guard.as_mut() {
-                    template.set_item(item.item_slot, item);
+                    template.set_item(props.slot_type, item);
                 }
             }
         }
