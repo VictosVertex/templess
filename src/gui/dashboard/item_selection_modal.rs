@@ -59,10 +59,10 @@ pub fn ItemSelectionModal(props: ItemSelectionModalProps) -> Element {
     let handle_select = move |_| {
         if let Some(item) = selected_item.read().clone() {
             let state = app_state.write().clone();
-            if let Ok(mut template_guard) = state.template.lock() {
-                if let Some(template) = template_guard.as_mut() {
-                    template.set_item(props.slot_type, item);
-                }
+            if let Ok(mut template_guard) = state.template.lock()
+                && let Some(template) = template_guard.as_mut()
+            {
+                template.set_item(props.slot_type, item);
             }
         }
         modal_context.write().content = None;

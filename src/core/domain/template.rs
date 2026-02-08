@@ -27,9 +27,9 @@ pub struct Template {
 impl Template {
     /// Creates a new template with the given name and class.
     ///
-    /// # Arguments
-    /// * `name` - The name of the template.
-    /// * `class` - The class associated with the template.
+    /// # Parameters
+    /// - `name`: The name of the template.
+    /// - `class`: The class associated with the template.
     pub fn new(class: Class) -> Self {
         Self {
             name: "Untitled Template".to_string(),
@@ -38,19 +38,27 @@ impl Template {
         }
     }
 
-    /// Set a specific item in a given slot.
+    /// Sets a specific item in a given slot.
     ///
-    /// # Arguments
-    /// * `slot` - The item slot where the item should be placed.
-    /// * `item` - The item to be placed in the slot.
+    /// # Parameters
+    /// - `slot`: The item slot where the item should be placed.
+    /// - `item`: The item to be placed in the slot.
     pub fn set_item(&mut self, slot: ItemSlot, item: Arc<Item>) {
         self.slots.insert(slot, item);
     }
 
-    /// Get the item in a specific slot.
+    /// Removes the item from a specific slot.
     ///
-    /// # Arguments
-    /// * `slot` - The item slot to retrieve the item from.
+    /// # Parameters
+    /// - `slot`: The item slot from which the item should be removed.
+    pub fn remove_item(&mut self, slot: &ItemSlot) {
+        self.slots.remove(slot);
+    }
+
+    /// Gets the item in a specific slot.
+    ///
+    /// # Parameters
+    /// - `slot`: The item slot to retrieve the item from.
     ///
     /// # Returns
     /// An `Option` containing a reference to the item if it exists, or `None` if the slot is empty.
