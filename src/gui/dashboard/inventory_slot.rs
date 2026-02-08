@@ -43,16 +43,20 @@ pub fn InventorySlot(props: InventorySlotProps) -> Element {
     });
 
     let has_item = maybe_item.read().is_some();
+    let slot_name = props.slot_type.name().replace('_', " ");
 
+    let props_class = match props.class.clone() {
+        Some(class) => class,
+        None => String::new(),
+    };
     rsx! {
         button {
-            class: "flex flex-col items-center justify-center cursor-pointer",
+            class: "flex flex-col items-center justify-center cursor-pointer capitalize",
             onclick: load_items,
-            "{props.slot_type}"
+            "{slot_name}"
             div {
                 class: format!(
-                    " rounded-b-full flex items-center justify-center border border-border transition-all duration-200 {} {}",
-                    props.class.clone().unwrap_or_default(),
+                    " rounded-b-full flex items-center justify-center border border-border transition-all duration-200 {props_class} {}",
                     if has_item {
                         "bg-accent/50 hover:bg-accent/20 hover:border-accent"
                     } else {
