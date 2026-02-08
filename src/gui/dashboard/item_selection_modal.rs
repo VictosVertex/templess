@@ -36,9 +36,10 @@ pub fn ItemSelectionModal(props: ItemSelectionModalProps) -> Element {
                     .collect::<Vec<Arc<Item>>>();
 
                 filtered_items.sort_by(|a, b| {
-                    b.utility
-                        .partial_cmp(&a.utility)
-                        .unwrap_or(std::cmp::Ordering::Equal)
+                    match b.utility.partial_cmp(&a.utility) {
+                        Some(ordering) => ordering,
+                        None => std::cmp::Ordering::Equal,
+                    }
                 });
 
                 filtered_items
