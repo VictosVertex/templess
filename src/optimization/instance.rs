@@ -1,3 +1,5 @@
+//! This module provides functions for generating ASP atoms for the optimization.
+
 use crate::core::domain::{
     class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
 };
@@ -6,6 +8,16 @@ use std::fmt::Write;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 
+/// Generates item related ASP atoms.
+///
+/// # Parameters
+/// - `items`: A slice of `Arc<Item>` representing the items to generate atoms for.
+///
+/// # Returns
+/// - `Ok(String)` containing the generated ASP atoms if successful.
+///
+/// # Errors
+/// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn item_atoms(items: &[Arc<Item>]) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
@@ -31,6 +43,13 @@ pub fn item_atoms(items: &[Arc<Item>]) -> Result<String> {
     Ok(asp)
 }
 
+/// Generates stat related ASP atoms.
+///
+/// # Returns
+/// - `Ok(String)` containing the generated ASP atoms if successful.
+///
+/// # Errors
+/// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn stat_atoms() -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- STATS ---")?;
@@ -54,6 +73,16 @@ pub fn stat_atoms() -> Result<String> {
     Ok(asp)
 }
 
+/// Generates class related ASP atoms.
+///
+/// # Parameters
+/// - `class`: A `Class` representing the character class to generate atoms for.
+///
+/// # Returns
+/// - `Ok(String)` containing the generated ASP atoms if successful.
+///
+/// # Errors
+/// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn class_atoms(class: Class) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- CLASS ---")?;
@@ -71,6 +100,16 @@ pub fn class_atoms(class: Class) -> Result<String> {
     Ok(asp)
 }
 
+/// Generates item slot related ASP atoms.
+///
+/// # Parameters
+/// - `template`: A reference to a `Template` containing the item slots to generate atoms for.
+///
+/// # Returns
+/// - `Ok(String)` containing the generated ASP atoms if successful.
+///
+/// # Errors
+/// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn slot_atoms(template: &Template) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- TEMPLATE ---")?;

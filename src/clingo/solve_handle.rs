@@ -31,6 +31,7 @@ impl SolveHandle {
         SolveHandle(inner)
     }
 
+    /// Resumes the solving process associated with this handle.
     pub fn resume(&mut self) -> Result<(), ClingoError> {
         let success = unsafe { clingo_solve_handle_resume(self.0.as_ptr()) };
         if !success {
@@ -41,6 +42,7 @@ impl SolveHandle {
         Ok(())
     }
 
+    /// Cancels the solving process associated with this handle.
     pub fn cancel(&mut self) -> Result<(), ClingoError> {
         let success = unsafe { clingo_solve_handle_cancel(self.0.as_ptr()) };
         if !success {
@@ -101,6 +103,13 @@ impl SolveHandle {
         })
     }
 
+    /// Waits for the specified amount of time to check for the next result.
+    ///
+    /// # Parameters
+    /// - `timeout`: The amount of time to wait in seconds.
+    ///
+    /// # Returns
+    /// - `true` if a result is available within the timeout period, `false` otherwise.
     pub fn wait(&self, timeout: f64) -> bool {
         let mut result = false;
         unsafe {

@@ -84,6 +84,9 @@ impl ItemSlot {
         *self as i32
     }
 
+    /// Returns the name of the item slot as a `String`.
+    ///
+    /// This does not differentiate between the first and second ring or bracer slots, as they are functionally the same.
     pub fn name(&self) -> String {
         match self {
             ItemSlot::Ring2 => "ring".to_string(),

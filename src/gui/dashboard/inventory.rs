@@ -13,7 +13,7 @@ use crate::gui::dashboard::{
     circle::{Circle, Point},
     inventory_slot::InventorySlot,
 };
-use crate::optimization::optimize::{OptimizeStatus, start_optimization_worker};
+use crate::optimization::worker::{OptimizeStatus, start_optimization_worker};
 
 #[derive(PartialEq, Clone)]
 enum UiState {
