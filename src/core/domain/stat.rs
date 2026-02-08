@@ -579,14 +579,14 @@ impl Stat {
                 category: StatCategory::OtherStats,
             },
 
-            SpellRange | BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness
-            | PowerPoolToa | SpellDuration => StatInfo {
+            BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness | PowerPoolToa
+            | SpellDuration => StatInfo {
                 utility: 2.0,
                 cap: 25,
                 category: StatCategory::ToaBonuses,
             },
 
-            MeleeSpeed | MeleeDamage | RangedDamage | ArcherySpeed | CastingSpeed
+            SpellRange | MeleeSpeed | MeleeDamage | RangedDamage | ArcherySpeed | CastingSpeed
             | ResistPierce | SpellDamage | StyleDamage | ArcaneSyphon => StatInfo {
                 utility: 2.0,
                 cap: 10,

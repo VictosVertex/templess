@@ -3,6 +3,8 @@
 
 use std::ptr::NonNull;
 
+use crate::clingo::bindings::{clingo_solve_handle_cancel, clingo_solve_handle_resume};
+
 use super::{
     bindings::{
         clingo_model_t, clingo_solve_handle_close, clingo_solve_handle_get,
@@ -27,6 +29,28 @@ impl SolveHandle {
     /// - A new `SolveHandle` instance.
     pub fn new(inner: NonNull<clingo_solve_handle_t>) -> Self {
         SolveHandle(inner)
+    }
+
+    /// Resumes the solving process associated with this handle.
+    pub fn resume(&mut self) -> Result<(), ClingoError> {
+        let success = unsafe { clingo_solve_handle_resume(self.0.as_ptr()) };
+        if !success {
+            return Err(ClingoError::new_internal(
+                "Failed to resume search".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Cancels the solving process associated with this handle.
+    pub fn cancel(&mut self) -> Result<(), ClingoError> {
+        let success = unsafe { clingo_solve_handle_cancel(self.0.as_ptr()) };
+        if !success {
+            return Err(ClingoError::new_internal(
+                "Failed to cancel search".to_owned(),
+            ));
+        }
+        Ok(())
     }
 
     /// Retrieves the model associated with the current solve handle.
@@ -78,6 +102,21 @@ impl SolveHandle {
             message: "Unknown or invalid bitflag combination in clingo_solve_result.",
         })
     }
+
+    /// Waits for the specified amount of time to check for the next result.
+    ///
+    /// # Parameters
+    /// - `timeout`: The amount of time to wait in seconds.
+    ///
+    /// # Returns
+    /// - `true` if a result is available within the timeout period, `false` otherwise.
+    pub fn wait(&self, timeout: f64) -> bool {
+        let mut result = false;
+        unsafe {
+            super::bindings::clingo_solve_handle_wait(self.0.as_ptr(), timeout, &mut result);
+        }
+        result
+    }
 }
 
 impl Drop for SolveHandle {
@@ -87,3 +126,5 @@ impl Drop for SolveHandle {
         }
     }
 }
+
+unsafe impl Send for SolveHandle {}

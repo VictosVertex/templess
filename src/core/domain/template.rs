@@ -12,7 +12,7 @@ use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot};
 ///
 /// This represents precisely the optimization problem this application
 /// is trying to solve.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Template {
     /// The name of the template.
     pub name: String,

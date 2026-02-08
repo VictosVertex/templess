@@ -69,6 +69,11 @@ pub enum ClingoError {
         /// A descriptive message about the context of the error
         message: &'static str,
     },
+    /// The operation is not valid for this symbol type
+    TypeError {
+        /// A descriptive message about the context of the type error
+        message: &'static str,
+    },
 }
 
 impl std::fmt::Display for ClingoError {
@@ -86,6 +91,7 @@ impl std::fmt::Display for ClingoError {
                 )
             }
             ClingoError::Bindings { message } => write!(f, "Bindings error: {message}"),
+            ClingoError::TypeError { message } => write!(f, "Type error: {message}"),
         }
     }
 }
@@ -125,10 +131,27 @@ impl ClingoError {
             internal_message,
         }
     }
+
+    /// Creates a new type error with the provided message.
+    ///
+    /// # Parameters
+    /// - `message`: A descriptive message about the type error.
+    ///
+    /// # Returns
+    /// - A `ClingoError::TypeError` instance containing the provided message.
+    pub fn new_type_error(message: &'static str) -> Self {
+        ClingoError::TypeError { message }
+    }
 }
 
 impl From<NulError> for ClingoError {
     fn from(error: NulError) -> Self {
         ClingoError::NulError(error)
+    }
+}
+
+impl From<ClingoError> for String {
+    fn from(error: ClingoError) -> String {
+        error.to_string()
     }
 }

@@ -1,22 +1,18 @@
 //! This module provides a safe Rust interface for interacting with
 //! the Clingo control API.
 
-use std::{
-    ffi::{CString, c_void},
-    ptr::NonNull,
-};
+use std::{ffi::CString, ptr::NonNull};
 
 use super::{
     bindings::{
         clingo_control_configuration, clingo_control_free, clingo_control_ground,
         clingo_control_load, clingo_control_new, clingo_control_solve, clingo_control_t,
-        clingo_literal_t, clingo_model_t, clingo_part, clingo_solve_event_type_t,
+        clingo_part,
     },
     configuration::Configuration,
     error::ClingoError,
     model::Model,
     solve_handle::SolveHandle,
-    solve_result::SolveResult,
 };
 
 /// The Clingo control structure.
@@ -122,50 +118,38 @@ impl Control {
         Ok(())
     }
 
-    /// Solves the grounded logic program in the control.
-    ///
-    /// # Parameters
-    /// - `event_handler`: A closure that handles events during the solving process.
+    /// Starts the solving process in asynchronous and yield mode, returning a handle to manage the solving process.
     ///
     /// # Returns
-    /// - `Ok(())` if the program was solved successfully.
-    ///
-    /// # Errors
-    /// - `Err(ClingoError)` if there was an error during the solving process
-    ///   of the program.
-    pub fn solve<F>(&self, mut event_handler: F) -> Result<SolveResult, ClingoError>
-    where
-        F: FnMut(SolveEvent) -> bool,
-    {
+    /// - `Ok(SolveHandle)` if the solving process was started successfully.
+    /// - `Err(ClingoError)` if there was an error during the starting process of the solving.
+    pub fn solve(&self) -> Result<SolveHandle, ClingoError> {
+        const ASYNC_YIELD_MODE: u32 = 3;
+
         let mut handle = std::ptr::null_mut();
-        let assumptions = [];
         let success = unsafe {
             clingo_control_solve(
                 self.inner.as_ptr(),
-                1,
-                assumptions.as_ptr() as *const clingo_literal_t,
+                ASYNC_YIELD_MODE,
+                std::ptr::null(),
                 0,
-                Some(unsafe_solve_callback::<F>),
-                &mut event_handler as *mut _ as *mut c_void,
+                None,
+                std::ptr::null_mut(),
                 &mut handle,
             )
         };
 
         if !success {
             return Err(ClingoError::new_internal(
-                "Failed to solve program".to_owned(),
+                "Failed to start solving".to_owned(),
             ));
         }
 
-        let handle_inner = NonNull::new(handle).ok_or_else(|| {
+        let inner = NonNull::new(handle).ok_or_else(|| {
             ClingoError::new_internal("Received null pointer for solve handle".to_owned())
         })?;
 
-        let mut real_handle = SolveHandle::new(handle_inner);
-
-        let final_result = real_handle.get()?;
-
-        Ok(final_result)
+        Ok(SolveHandle::new(inner))
     }
 
     /// Retrieves the configuration associated with the control.
@@ -214,40 +198,4 @@ pub enum SolveEvent<'a> {
     Finish,
 }
 
-unsafe extern "C" fn unsafe_solve_callback<F>(
-    event_type: clingo_solve_event_type_t,
-    event_data: *mut c_void,
-    user_data: *mut c_void,
-    _goon: *mut bool,
-) -> bool
-where
-    F: FnMut(SolveEvent) -> bool,
-{
-    let event_handler = unsafe { &mut *(user_data as *mut F) };
-
-    match event_type {
-        0 => {
-            let model = NonNull::new(event_data as *mut clingo_model_t).ok_or_else(|| {
-                ClingoError::new_internal("Received null pointer for model".to_owned())
-            });
-
-            match model {
-                Err(e) => {
-                    eprintln!("Error retrieving model: {e:?}");
-                    false
-                }
-                Ok(m) => {
-                    let mut model = Model::new(m);
-                    event_handler(SolveEvent::Model(&mut model))
-                }
-            }
-        }
-        1 => event_handler(SolveEvent::Unsat),
-        2 => event_handler(SolveEvent::Statistics),
-        3 => event_handler(SolveEvent::Finish),
-        _ => {
-            eprintln!("Unknown event type: {event_type:?}");
-            false
-        }
-    }
-}
+unsafe impl Send for Control {}
