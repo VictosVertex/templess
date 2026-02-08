@@ -118,17 +118,11 @@ pub fn ItemSelectionModal(props: ItemSelectionModalProps) -> Element {
                                     th { class: "text-right bg-card", "Utility" }
                                 }
                             }
-                            tbody {
-                                // Now we just inject the iterator variable
-                                {item_rows}
-                            }
+                            tbody { {item_rows} }
                         }
                     }
                 }
-                div { class: "flex flex-col w-1/3 h-full",
-                    // Now we just inject the view variable
-                    {details_view}
-                }
+                div { class: "flex flex-col w-1/3 h-full", {details_view} }
             }
             div { class: "flex",
                 button {
