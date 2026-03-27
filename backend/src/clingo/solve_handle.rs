@@ -1,0 +1,130 @@
+//! This module provides a safe Rust interface for interacting with
+//! the Clingo solve handle API.
+
+use std::ptr::NonNull;
+
+use crate::clingo::bindings::{clingo_solve_handle_cancel, clingo_solve_handle_resume};
+
+use super::{
+    bindings::{
+        clingo_model_t, clingo_solve_handle_close, clingo_solve_handle_get,
+        clingo_solve_handle_model, clingo_solve_handle_t,
+    },
+    error::ClingoError,
+    model::Model,
+    solve_result::SolveResult,
+};
+
+/// A handle for managing solving processes in Clingo.
+pub struct SolveHandle(NonNull<clingo_solve_handle_t>);
+
+impl SolveHandle {
+    /// Creates a new `SolveHandle` from a `NonNull<clingo_solve_handle_t>`.
+    ///
+    /// # Parameters
+    /// - `inner`: The `NonNull<clingo_solve_handle_t>` to
+    ///   wrap.
+    ///
+    /// # Returns
+    /// - A new `SolveHandle` instance.
+    pub fn new(inner: NonNull<clingo_solve_handle_t>) -> Self {
+        SolveHandle(inner)
+    }
+
+    /// Resumes the solving process associated with this handle.
+    pub fn resume(&mut self) -> Result<(), ClingoError> {
+        let success = unsafe { clingo_solve_handle_resume(self.0.as_ptr()) };
+        if !success {
+            return Err(ClingoError::new_internal(
+                "Failed to resume search".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Cancels the solving process associated with this handle.
+    pub fn cancel(&mut self) -> Result<(), ClingoError> {
+        let success = unsafe { clingo_solve_handle_cancel(self.0.as_ptr()) };
+        if !success {
+            return Err(ClingoError::new_internal(
+                "Failed to cancel search".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Retrieves the model associated with the current solve handle.
+    ///
+    /// # Returns
+    /// - `Ok(Some(Model))` if a model is available.
+    /// - `Ok(None)` if no model is available.
+    ///
+    /// # Errors
+    /// - `Err(ClingoError)` if an error occurs during retrieval.
+    pub fn model(&mut self) -> Result<Option<Model>, ClingoError> {
+        let mut model_ptr: *const clingo_model_t = std::ptr::null();
+        let success = unsafe { clingo_solve_handle_model(self.0.as_ptr(), &mut model_ptr) };
+        if !success {
+            return Err(ClingoError::new_internal(
+                "Failed to retrieve model from solve handle".to_owned(),
+            ));
+        }
+
+        if model_ptr.is_null() {
+            return Ok(None);
+        }
+
+        let model_non_null = NonNull::new(model_ptr as *mut clingo_model_t).ok_or_else(|| {
+            ClingoError::new_internal("Received null pointer for model".to_owned())
+        })?;
+
+        Ok(Some(Model::new(model_non_null)))
+    }
+
+    /// Retrieves the next result of the solving process.
+    ///
+    /// This function blocks until a result is available.
+    ///
+    /// # Returns
+    /// - `Ok(SolveResult)` if the result was retrieved successfully.
+    /// # Errors
+    /// - `Err(ClingoError)` if there was an error during the retrieval process
+    ///   of the solve result.
+    pub fn get(&mut self) -> Result<SolveResult, ClingoError> {
+        let mut result_bits = 0;
+        if !unsafe { clingo_solve_handle_get(self.0.as_ptr(), &mut result_bits) } {
+            return Err(ClingoError::new_internal(
+                "Call to clingo_solve_handle_get() failed".to_owned(),
+            ));
+        }
+
+        SolveResult::from_bits(result_bits).ok_or(ClingoError::Bindings {
+            message: "Unknown or invalid bitflag combination in clingo_solve_result.",
+        })
+    }
+
+    /// Waits for the specified amount of time to check for the next result.
+    ///
+    /// # Parameters
+    /// - `timeout`: The amount of time to wait in seconds.
+    ///
+    /// # Returns
+    /// - `true` if a result is available within the timeout period, `false` otherwise.
+    pub fn wait(&self, timeout: f64) -> bool {
+        let mut result = false;
+        unsafe {
+            super::bindings::clingo_solve_handle_wait(self.0.as_ptr(), timeout, &mut result);
+        }
+        result
+    }
+}
+
+impl Drop for SolveHandle {
+    fn drop(&mut self) {
+        unsafe {
+            clingo_solve_handle_close(self.0.as_ptr());
+        }
+    }
+}
+
+unsafe impl Send for SolveHandle {}
