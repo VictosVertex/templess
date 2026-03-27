@@ -1,5 +1,8 @@
 {
-  "devDependencies": {
-    "@tailwindcss/cli": "^4.1.8"
+  "name": "templess",
+  "private": true,
+  "scripts": {
+    "backend": "cargo run -p templess",
+    "frontend": "pnpm -C templess_ui dev"
   }
 }

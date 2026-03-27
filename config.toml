@@ -1,5 +1,5 @@
 [database]
-path = "data/db/eden.db"
+path = "backend/data/db/eden.db"
 
 [data]
-items_path = "data/raw/items.json"
+items_path = "backend/data/raw/items.json"
