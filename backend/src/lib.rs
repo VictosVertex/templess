@@ -13,7 +13,7 @@ use tokio::sync::broadcast;
 
 use crate::{
     api::{data, init},
-    core::config::load_config,
+    core::{config::load_config, database::schema::is_initialized},
     state::AppState,
 };
 pub use error::{Error, Result};
@@ -31,9 +31,10 @@ pub async fn start() {
     let config = Arc::new(load_config("config.toml").expect("Failed to load configuration"));
 
     let db_path_str = config.database.path.clone();
-    let db_exists = Path::new(&db_path_str).exists();
+    
 
     let connection = Connection::open(&db_path_str).expect("Failed to open database");
+    let db_exists = is_initialized(&connection).expect("Failed to check if database is initialized");
     let db_connection = Arc::new(Mutex::new(connection));
 
     let (sender, _receiver) = broadcast::channel(1024);

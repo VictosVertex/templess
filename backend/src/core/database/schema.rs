@@ -62,3 +62,14 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
 
     Ok(())
 }
+
+/// Checks if the database has been initialized by verifying the existence of the `item` table.
+/// 
+/// # Parameters
+/// - `connection`: A reference to the database connection.
+pub fn is_initialized(connection: &Connection) -> CoreResult<bool> {
+    let mut stmt = connection.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='item'")?;
+    let mut rows = stmt.query([])?;
+
+    Ok(rows.next()?.is_some())
+}
