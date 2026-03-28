@@ -11,7 +11,11 @@ use axum::{Router, routing::get};
 use rusqlite::Connection;
 use tokio::sync::broadcast;
 
-use crate::{api::init, core::config::load_config, state::AppState};
+use crate::{
+    api::{data, init},
+    core::config::load_config,
+    state::AppState,
+};
 pub use error::{Error, Result};
 mod api;
 pub mod clingo;
@@ -46,6 +50,7 @@ pub async fn start() {
     let app = Router::new()
         .route("/ws", get(api::websocket::handler))
         .nest("/init", init::router())
+        .nest("/data", data::router())
         .with_state(Arc::new(app_state));
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")

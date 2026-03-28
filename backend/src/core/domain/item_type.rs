@@ -1,12 +1,12 @@
 //! This module defines the `ItemType` enum, which represents various types of items in the game.
 
-use strum::FromRepr;
+use strum::{Display, EnumIter, FromRepr};
 
 /// Represents the different item types available in the game.
 ///
 /// Each variant corresponds to a specific type of item, such as crush, slash, thrust, etc.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash, EnumIter, Display)]
 pub enum ItemType {
     /// Represents the crush melee weapon type from Albion.
     Crush = 2,

@@ -168,8 +168,8 @@ impl Class {
     /// let class = Class::Paladin;
     /// assert_eq!(class.id(), 1);
     /// ```
-    pub fn id(&self) -> i32 {
-        *self as i32
+    pub fn id(&self) -> u16 {
+        *self as u16
     }
 
     /// Returns the associated realm of the class.
@@ -313,11 +313,5 @@ impl Class {
         }
 
         items
-    }
-}
-
-impl From<Class> for u16 {
-    fn from(class: Class) -> Self {
-        class as u16
     }
 }

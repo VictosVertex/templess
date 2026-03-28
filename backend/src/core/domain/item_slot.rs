@@ -77,11 +77,11 @@ pub enum ItemSlot {
 }
 
 impl ItemSlot {
-    /// Returns the ID of the item slot as an `i32`.
+    /// Returns the ID of the item slot as an `u16`.
     ///
     /// This is useful for database operations or when an integer representation is needed.
-    pub fn id(&self) -> i32 {
-        *self as i32
+    pub fn id(&self) -> u16 {
+        *self as u16
     }
 
     /// Returns the name of the item slot as a `String`.
