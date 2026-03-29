@@ -1,6 +1,0 @@
-[application]
-name = "templess"
-
-[web.app]
-title = "templess"
-watch_path = ["src", "assets"]
