@@ -6,7 +6,7 @@
 #![warn(missing_docs)]
 
 use std::{path::Path, sync::Arc, sync::Mutex};
-
+use tower_http::cors::{Any, CorsLayer};
 use axum::{Router, routing::get};
 use rusqlite::Connection;
 use tokio::sync::broadcast;
@@ -34,7 +34,6 @@ pub async fn start() {
     
 
     let connection = Connection::open(&db_path_str).expect("Failed to open database");
-    let db_exists = is_initialized(&connection).expect("Failed to check if database is initialized");
     let db_connection = Arc::new(Mutex::new(connection));
 
     let (sender, _receiver) = broadcast::channel(1024);
@@ -45,14 +44,19 @@ pub async fn start() {
         template: Arc::new(Mutex::new(None)),
         items: Arc::new(Mutex::new(Vec::new())),
         broadcast: sender,
-        is_initialized: db_exists,
     };
+
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
 
     let app = Router::new()
         .route("/ws", get(api::websocket::handler))
         .nest("/init", init::router())
         .nest("/data", data::router())
-        .with_state(Arc::new(app_state));
+        .with_state(Arc::new(app_state))
+        .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await

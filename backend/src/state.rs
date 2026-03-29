@@ -24,8 +24,6 @@ pub struct AppState {
     /// The database connection.
     pub db_connection: Arc<Mutex<Connection>>,
 
-    pub is_initialized: bool,
-
     /// The currently worked on template.
     pub template: Arc<Mutex<Option<Template>>>,
 

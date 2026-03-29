@@ -1,7 +1,7 @@
 use axum::{Json, Router, extract::State, routing::get};
 
 use crate::{
-    core::database::schema::create_tables,
+    core::database::schema::{create_tables, is_initialized},
     error::{Error, Result},
     initialization::item_init::initialize_items,
     state::SharedState,
@@ -11,8 +11,15 @@ pub fn router() -> Router<SharedState> {
     Router::new().route("/", get(get_init_status).post(initialize))
 }
 
-async fn get_init_status(State(state): State<SharedState>) -> Json<bool> {
-    Json(state.is_initialized)
+async fn get_init_status(State(state): State<SharedState>) -> Result<Json<bool>> {
+    let connection = state
+        .db_connection
+        .lock()
+        .map_err(|e| Error::MutexLockFailed {
+            details: e.to_string(),
+        })?;
+
+    Ok(Json(is_initialized(&connection)?))
 }
 
 async fn initialize(State(state): State<SharedState>) -> Result<()> {
