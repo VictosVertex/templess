@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --hue: 265;
+  --primary-hue: 290;
+  --secondary-hue: 285;
+  --error-hue: 25;
+
+  --color-background: oklch(14% 0.02 var(--hue));
+  --color-foreground: oklch(98% 0.01 var(--hue));
+  --color-foreground-secondary: oklch(80% 0.02 var(--hue));
+  
+  --color-surface-lowest: oklch(12% 0.02 var(--hue));
+  --color-surface-low: oklch(16% 0.02 var(--hue));
+  --color-surface-container: oklch(20% 0.03 var(--hue));
+  --color-surface-high: oklch(25% 0.03 var(--hue));
+  --color-surface-highest: oklch(30% 0.04 var(--hue));
+
+  --color-primary: oklch(82% 0.12 var(--primary-hue));
+  --color-primary-container: oklch(50% 0.18 var(--primary-hue));
+  --color-secondary: oklch(80% 0.10 var(--secondary-hue));
+  --color-error: oklch(82% 0.14 var(--error-hue));
+
+  --color-outline: oklch(45% 0.02 var(--hue) / 0.5); 
+  --color-border-active: oklch(82% 0.12 var(--primary-hue));
+  
+  --font-technical: "Space Grotesk", monospace;
+  --font-reading: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground
+  }
+
+  .base-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) rgba(255, 255, 255, 0.0);
+  }
+}
