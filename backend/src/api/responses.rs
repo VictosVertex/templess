@@ -21,6 +21,7 @@ impl From<Realm> for RealmResponse {
 pub struct ClassResponse {
     pub id: u16,
     pub name: String,
+    pub realm_id: u16,
     pub acuity_stat_id: u16,
     pub skill_line_ids: Vec<u16>,
     pub allowed_item_type_ids: Vec<u16>,
@@ -31,6 +32,7 @@ impl From<Class> for ClassResponse {
         ClassResponse {
             id: class.id(),
             name: class.to_string(),
+            realm_id: class.realm().id(),
             acuity_stat_id: class.acuity_stat().map_or(0, |stat| stat.id()),
             skill_line_ids: class.skill_lines().iter().map(|line| line.id()).collect(),
             allowed_item_type_ids: class
