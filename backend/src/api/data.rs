@@ -22,17 +22,10 @@ pub fn router() -> Router<SharedState> {
         .route("/stats", get(list_stats))
 }
 
-#[derive(Deserialize)]
-pub struct ClassFilter {
-    pub realm_id: u16,
-}
-
 async fn list_classes(
     State(_state): State<SharedState>,
-    Query(filter): Query<ClassFilter>,
 ) -> Result<Json<Vec<ClassResponse>>> {
     let classes = Class::iter()
-        .filter(|c| c.realm().id() == filter.realm_id)
         .map(|c| c.into())
         .collect::<Vec<_>>();
 
