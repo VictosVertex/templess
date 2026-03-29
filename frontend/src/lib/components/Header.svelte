@@ -1,15 +1,17 @@
 <header
-    class="relative z-50 flex items-center justify-between bg-surface-container px-8 py-4 outline outline-outline"
+	class="relative z-50 flex items-center justify-between bg-surface-container px-8 py-4 outline outline-outline"
 >
-    <div class="flex gap-4 items-center">
-        <h1 class="font-technical text-2xl font-bold tracking-tighter uppercase text-primary">
-            TempLess
-        </h1>
-        
-        <div class="h-4 w-px bg-outline-variant"></div>
+	<div class="flex items-center gap-4">
+		<h1 class="font-technical text-2xl font-bold tracking-tighter text-primary uppercase">
+			TempLess
+		</h1>
 
-        <h2 class="font-technical text-[10px] font-medium uppercase tracking-[0.2em] text-foreground-secondary">
-            ASP Powered Template Optimization
-        </h2>
-    </div>
+		<div class="bg-outline-variant h-4 w-px"></div>
+
+		<h2
+			class="font-technical text-[10px] font-medium tracking-[0.2em] text-foreground-secondary uppercase"
+		>
+			ASP Powered Template Optimization
+		</h2>
+	</div>
 </header>
