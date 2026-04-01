@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::core::domain::{class::Class, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm, stat::Stat};
+use crate::core::domain::{
+    class::Class, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm, stat::Stat,
+    template::Template,
+};
 
 #[derive(serde::Serialize)]
 pub struct RealmResponse {
@@ -85,7 +88,11 @@ impl From<Item> for ItemResponse {
             weapon_hand: item.weapon_hand,
             utility_single: item.utility_single,
             utility: item.utility,
-            bonus_ids: item.bonuses.iter().map(|bonus| (bonus.stat.id(), bonus.value)).collect(),
+            bonus_ids: item
+                .bonuses
+                .iter()
+                .map(|bonus| (bonus.stat.id(), bonus.value))
+                .collect(),
         }
     }
 }
@@ -131,6 +138,29 @@ impl From<ItemSlot> for ItemSlotResponse {
         ItemSlotResponse {
             id: item_slot.id(),
             name: item_slot.name(),
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct TemplatesResponse {
+    pub id: i32,
+    pub name: String,
+    pub class_id: u16,
+    pub slots: HashMap<u16, i32>,
+}
+
+impl From<Template> for TemplatesResponse {
+    fn from(template: Template) -> Self {
+        TemplatesResponse {
+            id: template.id,
+            name: template.name,
+            class_id: template.class.id(),
+            slots: template
+                .slots
+                .iter()
+                .map(|(slot, item_id)| (slot.id(), *item_id))
+                .collect(),
         }
     }
 }

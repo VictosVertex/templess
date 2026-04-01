@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { realmTheme } from '$lib/constants';
 	import type { Realm, ClassResponse } from '$lib/types';
-	import { Leaf, Shield, Axe } from 'lucide-svelte';
+	import { LoaderCircle } from 'lucide-svelte';
 
 	let { realms, classes }: { realms: Realm[]; classes: ClassResponse[] } = $props();
 
@@ -8,27 +9,26 @@
 	let selectedClassId = $state<number | null>(null);
 	let templateName = $state('');
 
+	let isCreating = $state(false);
+
 	let filteredClasses = $derived(
 		selectedRealmId ? classes.filter((c) => c.realm_id === Number(selectedRealmId)) : []
 	);
 
-	function handleCreate(e: Event) {
+	async function handleCreate(e: Event) {
 		e.preventDefault();
-		console.log('Submitting:', { selectedRealmId, selectedClassId, templateName });
-		// TODO: Call POST /templates endpoint here
-	}
+		isCreating = true;
+		await fetch('http://localhost:3000/templates', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				name: templateName,
+				class_id: selectedClassId
+			})
+		});
 
-	const realmData: Record<
-		string,
-		{
-			icon: typeof Shield;
-			color: string;
-		}
-	> = {
-		1: { icon: Shield, color: 'text-red-400' },
-		2: { icon: Axe, color: 'text-blue-400' },
-		3: { icon: Leaf, color: 'text-green-400' }
-	};
+		window.location.reload();
+	}
 </script>
 
 <div class="mx-auto mt-12 flex w-full max-w-xl flex-col items-center gap-6">
@@ -52,8 +52,8 @@
 
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					{#each realms as realm (realm.id)}
-						{@const Icon = realmData[realm.id].icon}
-						{@const color = realmData[realm.id].color}
+						{@const Icon = realmTheme[realm.id].icon}
+						{@const color = realmTheme[realm.id].color}
 						<label class="group relative cursor-pointer">
 							<input
 								type="radio"
@@ -144,7 +144,12 @@
 				disabled={!selectedClassId || !templateName.trim()}
 				class="group relative mt-2 inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-primary px-8 py-4 font-technical text-sm font-bold tracking-widest text-background uppercase transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
 			>
-				New Template
+				{#if isCreating}
+					<LoaderCircle size={18} class="mr-3 animate-spin" />
+					<span class="animate-pulse">Creating...</span>
+				{:else}
+					<span>New Template</span>
+				{/if}
 			</button>
 		</form>
 	</div>

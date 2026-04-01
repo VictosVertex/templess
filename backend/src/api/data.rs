@@ -1,14 +1,16 @@
-use crate::api::responses::{ClassResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse};
+use crate::api::responses::{
+    ClassResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
+};
 use crate::core::database::item_sql::get_items_by_class;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::item_type::ItemType;
 use crate::core::domain::stat::Stat;
+use crate::core::domain::{class::Class, item::Item, realm::Realm};
 use crate::{error::Result, state::SharedState};
 use axum::extract::Query;
 use axum::{Json, Router, extract::State, routing::get};
 use serde::Deserialize;
 use strum::IntoEnumIterator;
-use crate::core::domain::{class::Class, item::Item, realm::Realm};
 
 use super::responses::RealmResponse;
 
@@ -22,12 +24,8 @@ pub fn router() -> Router<SharedState> {
         .route("/stats", get(list_stats))
 }
 
-async fn list_classes(
-    State(_state): State<SharedState>,
-) -> Result<Json<Vec<ClassResponse>>> {
-    let classes = Class::iter()
-        .map(|c| c.into())
-        .collect::<Vec<_>>();
+async fn list_classes(State(_state): State<SharedState>) -> Result<Json<Vec<ClassResponse>>> {
+    let classes = Class::iter().map(|c| c.into()).collect::<Vec<_>>();
 
     Ok(Json(classes))
 }
@@ -37,20 +35,19 @@ pub struct ItemFilter {
     pub class_id: u16,
 }
 
-
 #[axum::debug_handler]
-async fn search_items(State(state): State<SharedState>,Query(filter): Query<ItemFilter>,) -> Result<Json<Vec<ItemResponse>>> {
+async fn search_items(
+    State(state): State<SharedState>,
+    Query(filter): Query<ItemFilter>,
+) -> Result<Json<Vec<ItemResponse>>> {
     let connection = state
-                .db_connection
-                .lock()
-                .expect("Failed to lock database connection");
+        .db_connection
+        .lock()
+        .expect("Failed to lock database connection");
 
-
-    let class = Class::from_repr(filter.class_id).ok_or(
-        crate::error::Error::DataMissing {
-            path: format!("Class with id {} not found", filter.class_id),
-        }
-    )?;
+    let class = Class::from_repr(filter.class_id).ok_or(crate::error::Error::DataMissing {
+        path: format!("Class with id {} not found", filter.class_id),
+    })?;
     let items: Vec<Item> = get_items_by_class(&connection, class)?;
     let response_items: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
 
@@ -67,17 +64,13 @@ async fn list_realms(State(_state): State<SharedState>) -> Result<Json<Vec<Realm
 }
 
 async fn list_stats(State(_state): State<SharedState>) -> Result<Json<Vec<StatResponse>>> {
-    let stats = Stat::iter()
-        .map(|stat| stat.into())
-        .collect::<Vec<_>>();
+    let stats = Stat::iter().map(|stat| stat.into()).collect::<Vec<_>>();
 
     Ok(Json(stats))
 }
 
 async fn list_item_slots(State(_state): State<SharedState>) -> Result<Json<Vec<ItemSlotResponse>>> {
-    let item_slots = ItemSlot::iter()
-        .map(|slot| slot.into())
-        .collect::<Vec<_>>();
+    let item_slots = ItemSlot::iter().map(|slot| slot.into()).collect::<Vec<_>>();
 
     Ok(Json(item_slots))
 }

@@ -118,7 +118,7 @@ pub fn slot_atoms(template: &Template) -> Result<String> {
         writeln!(asp, "slot({},{}).", slot.id(), slot.name())?;
 
         if let Some(item) = template.slots.get(&slot) {
-            writeln!(asp, "slot_taken({}, {}).", slot.id(), item.id)?;
+            writeln!(asp, "slot_taken({}, {}).", slot.id(), item)?;
         }
     }
 

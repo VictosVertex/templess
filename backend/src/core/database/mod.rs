@@ -2,3 +2,4 @@
 
 pub mod item_sql;
 pub mod schema;
+pub mod template_sql;

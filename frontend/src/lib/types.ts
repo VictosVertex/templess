@@ -21,4 +21,11 @@ export interface AppData {
 	stats: Record<number, string>;
 	classes: ClassResponse[];
 	realms: Realm[];
+	templates: Template[];
+}
+
+export interface Template {
+	id: number;
+	name: string;
+	class_id: number;
 }

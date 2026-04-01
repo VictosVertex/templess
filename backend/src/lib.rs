@@ -5,15 +5,15 @@
 #![allow(non_snake_case)]
 #![warn(missing_docs)]
 
-use std::{path::Path, sync::Arc, sync::Mutex};
-use tower_http::cors::{Any, CorsLayer};
 use axum::{Router, routing::get};
 use rusqlite::Connection;
+use std::{sync::Arc, sync::Mutex};
 use tokio::sync::broadcast;
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
-    api::{data, init},
-    core::{config::load_config, database::schema::is_initialized},
+    api::{data, init, templates},
+    core::config::load_config,
     state::AppState,
 };
 pub use error::{Error, Result};
@@ -31,7 +31,6 @@ pub async fn start() {
     let config = Arc::new(load_config("config.toml").expect("Failed to load configuration"));
 
     let db_path_str = config.database.path.clone();
-    
 
     let connection = Connection::open(&db_path_str).expect("Failed to open database");
     let db_connection = Arc::new(Mutex::new(connection));
@@ -55,6 +54,7 @@ pub async fn start() {
         .route("/ws", get(api::websocket::handler))
         .nest("/init", init::router())
         .nest("/data", data::router())
+        .nest("/templates", templates::router())
         .with_state(Arc::new(app_state))
         .layer(cors);
 

@@ -116,9 +116,7 @@ fn run_optimization_logic(
                     let mut new_template = template.clone();
 
                     for (slot, item_id) in chosen_items {
-                        if let Some(item) = items.iter().find(|i| i.id == item_id) {
-                            new_template.slots.insert(slot, item.clone());
-                        }
+                        new_template.slots.insert(slot, item_id);
                     }
 
                     status_sender.send(OptimizeStatus::NewModel(new_template))?;

@@ -60,15 +60,51 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
         [],
     )?;
 
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS template (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            class_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS template_slot (
+            template_id INTEGER NOT NULL,
+            slot_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            PRIMARY KEY (template_id, slot_id),
+            FOREIGN KEY(template_id) REFERENCES template(id) ON DELETE CASCADE,
+            FOREIGN KEY(item_id) REFERENCES item(id)
+        )",
+        [],
+    )?;
+
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS template_preference (
+            template_id INTEGER NOT NULL,
+            stat_id INTEGER NOT NULL,
+            lower_bound INTEGER NOT NULL,
+            upper_bound INTEGER NOT NULL,
+            priority INTEGER NOT NULL,
+            PRIMARY KEY (template_id, stat_id),
+            FOREIGN KEY(template_id) REFERENCES template(id) ON DELETE CASCADE
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 
 /// Checks if the database has been initialized by verifying the existence of the `item` table.
-/// 
+///
 /// # Parameters
 /// - `connection`: A reference to the database connection.
 pub fn is_initialized(connection: &Connection) -> CoreResult<bool> {
-    let mut stmt = connection.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='item'")?;
+    let mut stmt =
+        connection.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='item'")?;
     let mut rows = stmt.query([])?;
 
     Ok(rows.next()?.is_some())
