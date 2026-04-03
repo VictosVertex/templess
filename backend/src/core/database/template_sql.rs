@@ -58,6 +58,44 @@ pub fn get_templates(connection: &Connection) -> CoreResult<Vec<Template>> {
     Ok(templates)
 }
 
+pub fn get_template(connection: &Connection, template_id: i32) -> CoreResult<Option<Template>> {
+    let mut stmt = connection.prepare("SELECT id, name, class_id FROM template WHERE id = ?")?;
+    let template_row = stmt.query_row(params![template_id], |row| {
+        Ok((
+            row.get::<_, i32>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, u16>(2)?,
+        ))
+    });
+
+    if let Ok((id, name, class_id)) = template_row {
+        let mut slot_stmt = connection
+            .prepare("SELECT slot_id, item_id FROM template_slot WHERE template_id = ?")?;
+        let slot_rows = slot_stmt.query_map(params![id], |row| {
+            Ok((row.get::<_, u16>(0)?, row.get::<_, i32>(1)?))
+        })?;
+
+        let mut slots = HashMap::new();
+        for slot_row in slot_rows {
+            let (slot_id, item_id) = slot_row?;
+            if let Some(slot) = ItemSlot::from_repr(slot_id) {
+                slots.insert(slot, item_id);
+            }
+        }
+
+        if let Some(class) = Class::from_repr(class_id) {
+            return Ok(Some(Template {
+                id,
+                name,
+                class,
+                slots,
+            }));
+        }
+    }
+
+    Ok(None)
+}
+
 pub fn delete_template(connection: &Connection, template_id: i32) -> CoreResult<()> {
     connection.execute("DELETE FROM template WHERE id = ?", params![template_id])?;
     Ok(())

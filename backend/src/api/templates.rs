@@ -1,8 +1,8 @@
-use crate::{error::Result, state::SharedState};
+use crate::{Error, error::Result, state::SharedState};
 use axum::{
     Json, Router,
     extract::{Path, State},
-    routing::get,
+    routing::{get, delete},
 };
 
 use super::requests::CreateTemplateRequest;
@@ -12,7 +12,7 @@ use crate::core::database::template_sql;
 pub fn router() -> Router<SharedState> {
     Router::new()
         .route("/", get(list_templates).post(insert_template))
-        .route("/{id}", axum::routing::delete(delete_template))
+        .route("/{id}", get(get_template).delete(delete_template))
 }
 
 async fn list_templates(State(_state): State<SharedState>) -> Result<Json<Vec<TemplatesResponse>>> {
@@ -53,4 +53,19 @@ async fn delete_template(State(state): State<SharedState>, Path(id): Path<i32>) 
     template_sql::delete_template(&connection, id)?;
 
     Ok(())
+}
+
+async fn get_template(State(state): State<SharedState>, Path(id): Path<i32>) -> Result<Json<TemplatesResponse>> {
+    let connection = state
+        .db_connection
+        .lock()
+        .expect("Failed to acquire database connection lock");
+
+    let template = template_sql::get_template(&connection, id)?;
+
+    if let Some(template) = template {
+        Ok(Json(template.into()))
+    } else {
+        Err(Error::DataMissing { path: "template".to_string() }.into())
+    }
 }

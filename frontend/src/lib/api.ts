@@ -11,5 +11,14 @@ export const api = {
 		}
 
 		return true;
+	},
+	getTemplate: async (id: number, customFetch: typeof window.fetch) => {
+		const response = await customFetch(`${BASE_URL}/templates/${id}`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch template: ${response.statusText}`);
+		}
+
+		return await response.json();
 	}
 };

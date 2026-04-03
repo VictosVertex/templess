@@ -3,6 +3,7 @@
 	import { api } from '$lib/api';
 	import { realmTheme, defaultRealmTheme } from '$lib/constants';
 	import { Trash2, ArrowDownAZ } from 'lucide-svelte';
+	import { resolve } from '$app/paths';
 
 	let { classes, templates }: { classes: ClassResponse[]; templates: Template[] } = $props();
 
@@ -91,7 +92,10 @@
 				{@const theme = realmTheme[template_class?.realm_id || 0] || defaultRealmTheme}
 				{@const Icon = theme.icon}
 
-				<div
+				<a
+					href={resolve('/templates/[id]', {
+						id: template.id.toString()
+					})}
 					class="group flex items-center justify-between rounded-sm bg-surface-lowest p-4
                 outline outline-outline transition-colors hover:outline-primary"
 				>
@@ -125,7 +129,7 @@
 							<Trash2 size={16} strokeWidth={1.5} />
 						</button>
 					</div>
-				</div>
+				</a>
 			{/each}
 		{/if}
 	</div>

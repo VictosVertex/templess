@@ -1,6 +1,6 @@
 <script lang="ts">
-	import TemplateCreation from './components/template_creation.svelte';
-	import TemplateHistory from './components/template_history.svelte';
+	import TemplateCreation from './components/TemplateCreation.svelte';
+	import TemplateHistory from './components/TemplateHistory.svelte';
 	let { data } = $props();
 </script>
 
