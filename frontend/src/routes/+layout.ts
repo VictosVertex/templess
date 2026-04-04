@@ -1,5 +1,5 @@
 import type { LayoutLoad } from './$types';
-import type { AppData, ClassResponse, Realm, Stat, Template } from '$lib/types';
+import type { AppData, ClassResponse, Realm, StatDefinition, Template } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }): Promise<AppData> => {
 	const initRes = await fetch('http://localhost:3000/init');
@@ -22,14 +22,14 @@ export const load: LayoutLoad = async ({ fetch }): Promise<AppData> => {
 		fetch('http://localhost:3000/templates')
 	]);
 
-	const rawStats: Stat[] = await statsRes.json();
+	const rawStats: StatDefinition[] = await statsRes.json();
 
 	const statDict = rawStats.reduce(
 		(acc, stat) => {
-			acc[stat.id] = stat.name;
+			acc[stat.id] = stat;
 			return acc;
 		},
-		{} as Record<number, string>
+		{} as Record<number, StatDefinition>
 	);
 
 	return {

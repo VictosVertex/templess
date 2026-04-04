@@ -2,7 +2,7 @@ use crate::{Error, error::Result, state::SharedState};
 use axum::{
     Json, Router,
     extract::{Path, State},
-    routing::{get, delete},
+    routing::{delete, get},
 };
 
 use super::requests::CreateTemplateRequest;
@@ -55,7 +55,10 @@ async fn delete_template(State(state): State<SharedState>, Path(id): Path<i32>) 
     Ok(())
 }
 
-async fn get_template(State(state): State<SharedState>, Path(id): Path<i32>) -> Result<Json<TemplatesResponse>> {
+async fn get_template(
+    State(state): State<SharedState>,
+    Path(id): Path<i32>,
+) -> Result<Json<TemplatesResponse>> {
     let connection = state
         .db_connection
         .lock()
@@ -66,6 +69,9 @@ async fn get_template(State(state): State<SharedState>, Path(id): Path<i32>) -> 
     if let Some(template) = template {
         Ok(Json(template.into()))
     } else {
-        Err(Error::DataMissing { path: "template".to_string() }.into())
+        Err(Error::DataMissing {
+            path: "template".to_string(),
+        }
+        .into())
     }
 }

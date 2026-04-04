@@ -7,18 +7,64 @@ export interface ClassResponse {
 	id: number;
 	name: string;
 	realm_id: number;
-	acuity_stat_id: number;
+	acuity_stat_id: number | null;
 	skill_line_ids: number[];
 }
 
-export interface Stat {
+export enum StatCategory {
+	/// Represents general stats like strength, dexterity, etc.
+	PhysicalStats = 0,
+
+	/// Represents acuity stats, which are specific to caster classes.
+	AcuityStats = 1,
+
+	/// Represents stat cap increases for regular stats.
+	PhysicalStatCaps = 2,
+
+	/// Represents stat cap increases for acuity stats.
+	AcuityStatCaps = 3,
+
+	/// Represents resistances, such as heat, cold, body, etc.
+	Resists = 4,
+
+	/// Represents magic skills, such as Regrowth.
+	MagicSkills = 5,
+
+	/// Represents melee skills, such as Large Weapons.
+	MeleeSkills = 6,
+
+	/// Represents archery lines, such as Long Bow.
+	ArcherySkills = 7,
+
+	/// Represents dual wielding skills, such as Left Axe.
+	DualWieldingSkills = 8,
+
+	/// Represents other skills, such as Stealth.
+	OtherSkills = 9,
+
+	/// Represents Trials of Atlantis bonuses, such as spell duration.
+	ToaBonuses = 10,
+
+	/// Represents other stats that do not fit into the above categories.
+	OtherStats = 11
+}
+
+export interface StatDefinition {
 	id: number;
 	name: string;
+	cap: number;
+	category_id: StatCategory;
+	base_stat_id: number | null;
+}
+
+export interface Stat extends StatDefinition {
+	value: number;
+	currentCap: number;
 }
 
 export interface AppData {
 	isInitialized: boolean;
-	stats: Record<number, string>;
+	stats: Record<number, StatDefinition>;
 	classes: ClassResponse[];
 	realms: Realm[];
 	templates: Template[];

@@ -7,3 +7,11 @@ export const realmTheme: Record<number, { icon: typeof Shield; color: string; bg
 };
 
 export const defaultRealmTheme = { icon: Shield, color: 'text-primary', bg: 'bg-primary/10' };
+
+export const STAT_CATEGORIES = {
+	PHYSICAL: 1,
+	RESISTS: 2,
+	SKILLS: 3,
+	TOA_BONUSES: 4,
+	PHYSICAL_CAPS: 5
+};
