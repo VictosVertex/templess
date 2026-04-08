@@ -5,12 +5,14 @@
 	let { title, stats }: { title: string; stats: Stat[] } = $props();
 </script>
 
-<div class="rounded-lg border border-white/5 bg-black/20 p-4 backdrop-blur-md">
-	<h3 class="mb-4 text-xs font-bold tracking-wider text-white/40 uppercase">{title}</h3>
+<div class="rounded-sm bg-surface-lowest p-4 outline outline-outline backdrop-blur-md">
+	<h3 class="mb-4 text-xs font-bold tracking-wider text-foreground-secondary/50 uppercase">
+		{title}
+	</h3>
 
 	<div class="flex flex-col gap-3">
 		{#each stats as stat (stat)}
-			<Attribute name={stat.name} value={stat.value} cap={stat.cap} />
+			<Attribute name={stat.name} value={stat.value} cap={stat.currentCap} />
 		{/each}
 	</div>
 </div>

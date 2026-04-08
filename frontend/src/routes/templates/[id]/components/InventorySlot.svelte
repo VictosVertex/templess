@@ -28,7 +28,7 @@
 
 <div class="group flex flex-col items-center justify-center">
 	<span class="mb-1 font-technical text-sm tracking-wider text-foreground-secondary capitalize">
-		{name.replace('_', ' ').replace(' 2', '')}
+		{name}
 	</span>
 
 	<div class="relative">
@@ -43,7 +43,7 @@
 		{#if hasItem}
 			<div class="absolute -top-1 -right-1 z-10 hidden group-hover:flex">
 				<button
-					class="flex cursor-pointer items-center justify-center rounded-full border border-outline bg-background p-1 transition-colors hover:text-red-500"
+					class="flex cursor-pointer items-center justify-center rounded-full border border-outline bg-surface-lowest p-1 transition-colors hover:text-error"
 					onclick={onremove}
 					title="Unequip Item"
 					aria-label="Unequip {name}"

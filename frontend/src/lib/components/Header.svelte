@@ -6,7 +6,7 @@
 			TempLess
 		</h1>
 
-		<div class="bg-outline-variant h-4 w-px"></div>
+		<div class="h-4 w-px bg-outline"></div>
 
 		<h2
 			class="font-technical text-[10px] font-medium tracking-[0.2em] text-foreground-secondary uppercase"

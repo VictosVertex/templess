@@ -55,9 +55,6 @@ pub struct ItemResponse {
     /// The name of the item.
     pub name: String,
 
-    /// The appearance model of the item.
-    pub model: i32,
-
     /// The type of object.
     pub object_type_id: u16,
 
@@ -73,8 +70,8 @@ pub struct ItemResponse {
     /// The total utility of the item.
     pub utility: f32,
 
-    /// The ids of the bonuses applied to the item.
-    pub bonus_ids: HashMap<u16, u16>,
+    /// The ids of the bonuses applied to the item and their corresponding values.
+    pub bonuses: HashMap<u16, u16>,
 }
 
 impl From<Item> for ItemResponse {
@@ -82,13 +79,12 @@ impl From<Item> for ItemResponse {
         ItemResponse {
             id: item.id,
             name: item.name,
-            model: item.model,
             object_type_id: item.object_type.id(),
             item_slot_id: item.item_slot.id(),
             weapon_hand: item.weapon_hand,
             utility_single: item.utility_single,
             utility: item.utility,
-            bonus_ids: item
+            bonuses: item
                 .bonuses
                 .iter()
                 .map(|bonus| (bonus.stat.id(), bonus.value))

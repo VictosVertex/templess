@@ -88,8 +88,8 @@
 			</div>
 		{:else}
 			{#each sortedTemplates as template (template.id)}
-				{@const template_class = classes.find((c) => c.id === template.class_id)}
-				{@const theme = realmTheme[template_class?.realm_id || 0] || defaultRealmTheme}
+				{@const templateClass = classes.find((c) => c.id === template.class_id)}
+				{@const theme = realmTheme[templateClass?.realm_id || 0] || defaultRealmTheme}
 				{@const Icon = theme.icon}
 
 				<a

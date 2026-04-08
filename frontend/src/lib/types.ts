@@ -75,3 +75,35 @@ export interface Template {
 	name: string;
 	class_id: number;
 }
+
+export interface Item {
+	id: number;
+	name: string;
+	object_type_id: number;
+	item_slot_id: number;
+	weapon_hand: number;
+	utility_single: number;
+	utility: number;
+	bonuses: Record<number, number>;
+}
+
+export enum ItemSlot {
+	RightHand = 10,
+	LeftHand = 11,
+	TwoHanded = 12,
+	Ranged = 13,
+	Head = 21,
+	Hands = 22,
+	Feet = 23,
+	Jewel = 24,
+	Chest = 25,
+	Cloak = 26,
+	Legs = 27,
+	Arms = 28,
+	Necklace = 29,
+	Belt = 32,
+	Bracer = 33,
+	Bracer2 = 34,
+	Ring = 35,
+	Ring2 = 36
+}

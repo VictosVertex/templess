@@ -1,5 +1,5 @@
 import { api } from '$lib/api';
-import type { Template } from '$lib/types';
+import type { Item, Template } from '$lib/types';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ params, fetch }) => {
@@ -7,7 +7,10 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 	const template: Template = await api.getTemplate(templateId, fetch);
 
+	const items: Item[] = await api.getItemsByClass(template.class_id, fetch);
+
 	return {
-		template
+		template,
+		items
 	};
 };

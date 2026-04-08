@@ -1,47 +1,38 @@
 <script lang="ts">
+	import type { TemplateBuilder } from '$lib/template-builder.svelte';
+	import { INVENTORY_GROUPS, SLOT_NAMES } from '$lib/constants';
 	import InventorySlot from './InventorySlot.svelte';
+
+	const { builder }: { builder: TemplateBuilder } = $props();
 
 	const center = { x: 350, y: 350 };
 	const innerRadius = 140;
 	const middleRadius = 260;
 
-	const jewelrySlots = [
-		'Ring 2',
-		'Bracer 2',
-		'Bracer',
-		'Ring',
-		'Jewel',
-		'Necklace',
-		'Cloak',
-		'Belt'
-	];
-	const armorSlots = ['Hands', 'Feet', 'Legs', 'Arms', 'Chest', 'Head'];
-	const weaponSlots = ['Right Hand', 'Left Hand', 'Two Handed', 'Ranged'];
-
 	type Point = { x: number; y: number };
 
 	function getRadialPositions<T>(
-		items: T[],
+		slots: T[],
 		radius: number,
 		center: Point,
 		rotationOffset: number = 0
 	) {
-		const total = items.length;
+		const total = slots.length;
 
-		return items.map((item, index) => {
+		return slots.map((slot, index) => {
 			const angleDeg = ((index + rotationOffset) / total) * 360;
 			const angleRad = angleDeg * (Math.PI / 180);
 
 			return {
-				item,
+				slot,
 				x: center.x + radius * Math.cos(angleRad),
 				y: center.y + radius * Math.sin(angleRad)
 			};
 		});
 	}
 
-	const positionedJewelry = getRadialPositions(jewelrySlots, innerRadius, center, 0.5);
-	const positionedArmor = getRadialPositions(armorSlots, middleRadius, center, 0.0);
+	const positionedJewelry = getRadialPositions(INVENTORY_GROUPS.jewelry, innerRadius, center, 0.5);
+	const positionedArmor = getRadialPositions(INVENTORY_GROUPS.armor, middleRadius, center, 0.0);
 
 	// Some fake shit for now to see how the button looks
 	let uiState = $state<'Idle' | 'Preparing' | 'Solving'>('Idle');
@@ -58,8 +49,8 @@
 
 	let buttonColor = $derived.by(() => {
 		if (uiState === 'Idle') return 'border-primary text-primary bg-primary/20 hover:bg-primary/40';
-		if (uiState === 'Preparing') return 'border-yellow-500 text-yellow-500 bg-yellow-500/20';
-		return 'border-emerald-500 text-emerald-500 bg-emerald-500/20 animate-pulse';
+		if (uiState === 'Preparing') return 'border-warning text-warning bg-warning/20';
+		return 'border-success text-success bg-success/20 animate-pulse';
 	});
 
 	let buttonText = $derived.by(() => {
@@ -78,28 +69,52 @@
 		>
 			<span class="text-sm font-bold tracking-widest uppercase">{buttonText}</span>
 		</button>
-		{#each positionedJewelry as { item, x, y } (item)}
+		{#each positionedJewelry as { slot, x, y } (slot)}
 			<div
 				class="absolute z-10 transition-all duration-200"
 				style="left: 0; top: 0; transform: translate(calc({x}px - 50%), calc({y}px - 50%));"
 			>
-				<InventorySlot name={item} shapeClass="rounded-full" width="w-[60px]" height="h-[60px]" />
+				<InventorySlot
+					onclick={() => builder.openSlot(slot)}
+					onremove={() => builder.unequipItem(slot)}
+					name={SLOT_NAMES[slot]}
+					shapeClass="rounded-full"
+					width="w-[60px]"
+					height="h-[60px]"
+					hasItem={!!builder.equippedItems[slot]}
+				/>
 			</div>
 		{/each}
 
-		{#each positionedArmor as { item, x, y } (item)}
+		{#each positionedArmor as { slot, x, y } (slot)}
 			<div
 				class="absolute z-10 transition-all duration-200"
 				style="left: 0; top: 0; transform: translate(calc({x}px - 50%), calc({y}px - 50%));"
 			>
-				<InventorySlot name={item} shapeClass="rounded-b-full" width="w-[80px]" height="h-[80px]" />
+				<InventorySlot
+					onclick={() => builder.openSlot(slot)}
+					onremove={() => builder.unequipItem(slot)}
+					name={SLOT_NAMES[slot]}
+					shapeClass="rounded-b-full"
+					width="w-[80px]"
+					height="h-[80px]"
+					hasItem={!!builder.equippedItems[slot]}
+				/>
 			</div>
 		{/each}
 	</div>
 
 	<div class="flex items-center justify-center gap-8">
-		{#each weaponSlots as slotName (slotName)}
-			<InventorySlot name={slotName} shapeClass="rounded-none" width="w-[80px]" height="h-[80px]" />
+		{#each INVENTORY_GROUPS.weapons as slot (slot)}
+			<InventorySlot
+				onclick={() => builder.openSlot(slot)}
+				onremove={() => builder.unequipItem(slot)}
+				name={SLOT_NAMES[slot]}
+				shapeClass="rounded-none"
+				width="w-[80px]"
+				height="h-[80px]"
+				hasItem={!!builder.equippedItems[slot]}
+			/>
 		{/each}
 	</div>
 </div>

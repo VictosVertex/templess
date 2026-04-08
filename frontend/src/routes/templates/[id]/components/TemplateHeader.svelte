@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { defaultRealmTheme, realmTheme } from '$lib/constants.js';
+	import { defaultRealmTheme, realmTheme } from '$lib/constants';
 	import type { ClassResponse, Template } from '$lib/types';
 
 	let { template, classes }: { template: Template; classes: ClassResponse[] } = $props();
 
-	let template_class = $derived(classes.find((c) => c.id === template.class_id));
+	let templateClass = $derived(classes.find((c) => c.id === template.class_id));
 
-	let theme = $derived(realmTheme[template_class?.realm_id || 0] || defaultRealmTheme);
+	let theme = $derived(realmTheme[templateClass?.realm_id || 0] || defaultRealmTheme);
 	let Icon = $derived(theme.icon);
 </script>
 
 <div
-	class="flex w-full items-center justify-between gap-4 rounded-sm bg-surface-container p-6 shadow-sm outline outline-outline"
+	class="flex w-full items-center justify-between gap-4 rounded-sm bg-surface-container p-6 outline outline-outline"
 >
 	<div
 		class="flex h-10 w-10 items-center justify-center rounded-sm border border-outline {theme.bg}"
@@ -23,7 +23,7 @@
 			{template.name}
 		</h1>
 		<p class="mt-1 font-technical text-[10px] tracking-widest text-foreground-secondary uppercase">
-			{template_class?.name}
+			{templateClass?.name}
 		</p>
 	</div>
 </div>

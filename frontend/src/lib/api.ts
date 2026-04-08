@@ -20,5 +20,14 @@ export const api = {
 		}
 
 		return await response.json();
+	},
+	getItemsByClass: async (classId: number, customFetch: typeof window.fetch) => {
+		const response = await customFetch(`${BASE_URL}/data/items?class_id=${classId}`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch items: ${response.statusText}`);
+		}
+
+		return await response.json();
 	}
 };

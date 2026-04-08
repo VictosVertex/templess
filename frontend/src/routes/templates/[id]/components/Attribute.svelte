@@ -4,20 +4,20 @@
 	let fillPercentage = $derived.by(() => Math.min((value / cap) * 100, 100));
 
 	let colorClass = $derived(
-		value > cap ? 'text-red-400' : value === cap ? 'text-emerald-400' : 'text-gray-400'
+		value > cap ? 'text-error' : value === cap ? 'text-success' : 'text-foreground-secondary'
 	);
 
 	let barColorClass = $derived(
-		value > cap ? 'bg-red-500' : value === cap ? 'bg-emerald-400' : 'bg-indigo-500'
+		value > cap ? 'bg-error' : value === cap ? 'bg-success' : 'bg-primary'
 	);
 </script>
 
 <div class="flex flex-col gap-1">
 	<div class="flex items-baseline justify-between">
-		<span class="text-gray-300">{name}</span>
+		<span class="text-foreground capitalize">{name.replace(/_/g, ' ')}</span>
 		<span class="font-mono text-xs {colorClass}">{value} / {cap}</span>
 	</div>
-	<div class="h-0.5 w-full overflow-hidden rounded-full bg-white/5">
+	<div class="h-0.5 w-full overflow-hidden rounded-full bg-surface-container">
 		<div
 			class="h-full rounded-full transition-all duration-300 {barColorClass}"
 			style="width: {fillPercentage}%;"
