@@ -1,8 +1,9 @@
+import { API_BASE_URL } from '$lib/constants';
 import type { LayoutLoad } from './$types';
 import type { AppData, ClassResponse, Realm, StatDefinition, Template } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }): Promise<AppData> => {
-	const initRes = await fetch('http://localhost:3000/init');
+	const initRes = await fetch(`${API_BASE_URL}/init`);
 	const isInitialized: boolean = await initRes.json();
 
 	if (!isInitialized) {
@@ -16,10 +17,10 @@ export const load: LayoutLoad = async ({ fetch }): Promise<AppData> => {
 	}
 
 	const [statsRes, classesRes, realmsRes, templatesRes] = await Promise.all([
-		fetch('http://localhost:3000/data/stats'),
-		fetch('http://localhost:3000/data/classes'),
-		fetch('http://localhost:3000/data/realms'),
-		fetch('http://localhost:3000/templates')
+		fetch(`${API_BASE_URL}/data/stats`),
+		fetch(`${API_BASE_URL}/data/classes`),
+		fetch(`${API_BASE_URL}/data/realms`),
+		fetch(`${API_BASE_URL}/templates`)
 	]);
 
 	const rawStats: StatDefinition[] = await statsRes.json();

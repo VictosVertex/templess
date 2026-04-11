@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { realmTheme } from '$lib/constants';
+	import { API_BASE_URL, realmTheme } from '$lib/constants';
 	import type { Realm, ClassResponse } from '$lib/types';
 	import { LoaderCircle } from 'lucide-svelte';
 
@@ -18,7 +18,7 @@
 	async function handleCreate(e: Event) {
 		e.preventDefault();
 		isCreating = true;
-		await fetch('http://localhost:3000/templates', {
+		await fetch(`${API_BASE_URL}/templates`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
