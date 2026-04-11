@@ -29,6 +29,23 @@
 
 	const itemDictionary = $derived(Object.fromEntries(data.items.map((item) => [item.id, item])));
 
+	const slotAliases: Partial<Record<ItemSlot, ItemSlot>> = {
+		[ItemSlot.Ring2]: ItemSlot.Ring,
+		[ItemSlot.Bracer2]: ItemSlot.Bracer
+	};
+
+	function matchesActiveSlot(item: Item, activeSlot: ItemSlot | null) {
+		if (activeSlot === null) {
+			return false;
+		}
+
+		return item.item_slot_id === activeSlot || item.item_slot_id === slotAliases[activeSlot];
+	}
+
+	const selectableItems = $derived(
+		data.items.filter((item) => matchesActiveSlot(item, builder.activeSlot))
+	);
+
 	const backend = new Backend((rawItems) => {
 		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
 
@@ -84,7 +101,7 @@
 	title="Select an Item for {SLOT_NAMES[builder.activeSlot || ItemSlot.Chest]}"
 >
 	<ItemSelector
-		items={data.items.filter((item) => item.item_slot_id == builder.activeSlot) || []}
+		items={selectableItems}
 		stats={data.stats}
 		onSelect={(item) => builder.equipItem(item, EquipSource.User)}
 	/>
