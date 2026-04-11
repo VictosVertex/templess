@@ -5,15 +5,10 @@
 
 use std::sync::{Arc, Mutex};
 
-use crate::{
-    core::{
-        config::Config,
-        domain::{item::Item, template::Template},
-    },
-    message::Message,
+use crate::core::{
+    config::Config,
 };
 use rusqlite::Connection;
-use tokio::sync::broadcast;
 
 /// This struct holds the application state, including configuration,
 #[derive(Clone)]
@@ -23,14 +18,6 @@ pub struct AppState {
 
     /// The database connection.
     pub db_connection: Arc<Mutex<Connection>>,
-
-    /// The currently worked on template.
-    pub template: Arc<Mutex<Option<Template>>>,
-
-    /// All items that can be used in the current template.
-    pub items: Arc<Mutex<Vec<Arc<Item>>>>,
-
-    pub broadcast: broadcast::Sender<Message>,
 }
 
 pub type SharedState = Arc<AppState>;

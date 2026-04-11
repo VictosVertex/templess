@@ -2,8 +2,10 @@
 	import type { TemplateBuilder } from '$lib/template-builder.svelte';
 	import { INVENTORY_GROUPS, SLOT_NAMES } from '$lib/constants';
 	import InventorySlot from './InventorySlot.svelte';
+	import type { Backend } from '$lib/backend.svelte';
+	import { ClientMessageType, OptimizationStatus, type ClientMessage } from '$lib/types';
 
-	const { builder }: { builder: TemplateBuilder } = $props();
+	const { builder, backend }: { builder: TemplateBuilder; backend: Backend } = $props();
 
 	const center = { x: 350, y: 350 };
 	const innerRadius = 140;
@@ -34,29 +36,54 @@
 	const positionedJewelry = getRadialPositions(INVENTORY_GROUPS.jewelry, innerRadius, center, 0.5);
 	const positionedArmor = getRadialPositions(INVENTORY_GROUPS.armor, middleRadius, center, 0.0);
 
-	// Some fake shit for now to see how the button looks
-	let uiState = $state<'Idle' | 'Preparing' | 'Solving'>('Idle');
-
 	function handleToggleOptimization() {
-		if (uiState === 'Idle') {
-			uiState = 'Preparing';
-			setTimeout(() => (uiState = 'Solving'), 1000);
-			setTimeout(() => (uiState = 'Idle'), 3000);
+		if (
+			backend.optimizationStatus === OptimizationStatus.Ready ||
+			backend.optimizationStatus === OptimizationStatus.Finished
+		) {
+			const equipped_items: Record<number, number> = {};
+			builder.userEquippedItems().forEach((item) => {
+				equipped_items[item.item_slot_id] = item.id;
+			});
+
+			const request: ClientMessage = {
+				type: ClientMessageType.Start,
+				data: {
+					class_id: builder.getTemplateClass().id,
+					equipped_items
+				}
+			};
+
+			backend.send(request);
 		} else {
-			uiState = 'Idle';
+			backend.send({ type: ClientMessageType.Cancel });
 		}
 	}
 
 	let buttonColor = $derived.by(() => {
-		if (uiState === 'Idle') return 'border-primary text-primary bg-primary/20 hover:bg-primary/40';
-		if (uiState === 'Preparing') return 'border-warning text-warning bg-warning/20';
-		return 'border-success text-success bg-success/20 animate-pulse';
+		if (
+			backend.optimizationStatus === OptimizationStatus.Ready ||
+			backend.optimizationStatus === OptimizationStatus.Finished
+		) {
+			return 'border-primary text-primary bg-primary/20 hover:bg-primary/40';
+		}
+
+		if (
+			backend.optimizationStatus === OptimizationStatus.Setup ||
+			backend.optimizationStatus === OptimizationStatus.Grounding
+		) {
+			return 'border-warning text-warning bg-warning/20 animate-pulse';
+		}
+
+		return 'border-error text-error bg-error/20 hover:bg-error/30';
 	});
 
 	let buttonText = $derived.by(() => {
-		if (uiState === 'Idle') return 'OPTIMIZE';
-		if (uiState === 'Preparing') return 'PREPARING';
-		return 'OPTIMIZING';
+		if (backend.optimizationStatus === OptimizationStatus.Setup) return 'SETUP';
+		if (backend.optimizationStatus === OptimizationStatus.Grounding) return 'GROUNDING';
+		if (backend.optimizationStatus === OptimizationStatus.Solving) return 'CANCEL';
+		if (backend.optimizationStatus === OptimizationStatus.Finished) return 'FINISHED';
+		return 'OPTIMIZE';
 	});
 </script>
 
@@ -65,7 +92,6 @@
 		<button
 			class="absolute top-1/2 left-1/2 z-10 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out {buttonColor}"
 			onclick={handleToggleOptimization}
-			disabled={uiState === 'Preparing'}
 		>
 			<span class="text-sm font-bold tracking-widest uppercase">{buttonText}</span>
 		</button>
@@ -81,7 +107,7 @@
 					shapeClass="rounded-full"
 					width="w-[60px]"
 					height="h-[60px]"
-					hasItem={!!builder.equippedItems[slot]}
+					source={builder.equippedItems[slot]?.source ?? null}
 				/>
 			</div>
 		{/each}
@@ -98,7 +124,7 @@
 					shapeClass="rounded-b-full"
 					width="w-[80px]"
 					height="h-[80px]"
-					hasItem={!!builder.equippedItems[slot]}
+					source={builder.equippedItems[slot]?.source ?? null}
 				/>
 			</div>
 		{/each}
@@ -113,7 +139,7 @@
 				shapeClass="rounded-none"
 				width="w-[80px]"
 				height="h-[80px]"
-				hasItem={!!builder.equippedItems[slot]}
+				source={builder.equippedItems[slot]?.source ?? null}
 			/>
 		{/each}
 	</div>

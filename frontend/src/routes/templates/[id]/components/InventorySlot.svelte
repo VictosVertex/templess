@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { EquipSource } from '$lib/template-builder.svelte';
 	import { Plus, X } from 'lucide-svelte';
 
 	let {
@@ -6,7 +7,7 @@
 		shapeClass = 'rounded-b-full',
 		width = 'w-[70px]',
 		height = 'h-[70px]',
-		hasItem = false,
+		source = null,
 		onclick,
 		onremove
 	}: {
@@ -14,16 +15,20 @@
 		shapeClass?: string;
 		width?: string;
 		height?: string;
-		hasItem?: boolean;
+		source?: EquipSource | null;
 		onclick?: () => void;
 		onremove?: (e: MouseEvent) => void;
 	} = $props();
 
-	let stateClasses = $derived(
-		hasItem
-			? 'bg-primary/50 hover:bg-primary/20 hover:border-primary'
-			: 'bg-surface-lowest hover:bg-surface-container hover:border-primary'
-	);
+	let stateClasses = $derived.by(() => {
+		if (source === EquipSource.User) {
+			return 'bg-primary/30 border-primary hover:bg-primary/40';
+		}
+		if (source === EquipSource.Optimizer) {
+			return 'bg-success/10 border-success hover:bg-success/20 hover:border-solid';
+		}
+		return 'bg-surface-lowest border-outline hover:bg-surface-container hover:border-primary';
+	});
 </script>
 
 <div class="group flex flex-col items-center justify-center">
@@ -40,7 +45,7 @@
 			<Plus size={24} class="text-foreground-secondary/50" />
 		</button>
 
-		{#if hasItem}
+		{#if source !== null}
 			<div class="absolute -top-1 -right-1 z-10 hidden group-hover:flex">
 				<button
 					class="flex cursor-pointer items-center justify-center rounded-full border border-outline bg-surface-lowest p-1 transition-colors hover:text-error"

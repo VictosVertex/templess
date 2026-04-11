@@ -107,3 +107,44 @@ export enum ItemSlot {
 	Ring = 35,
 	Ring2 = 36
 }
+
+export interface OptimizationRequest {
+	class_id: number;
+	equipped_items: Record<number, number>;
+}
+
+export enum ClientMessageType {
+	Start = 'start',
+	Cancel = 'cancel'
+}
+
+export enum ServerMessageType {
+	Setup = 'setup',
+	Grounding = 'grounding',
+	Solving = 'solving',
+	NewModel = 'new_model',
+	Finished = 'finished',
+	Canceled = 'canceled',
+	Error = 'error'
+}
+
+export enum OptimizationStatus {
+	Ready,
+	Setup,
+	Grounding,
+	Solving,
+	Finished
+}
+
+export type ClientMessage =
+	| { type: ClientMessageType.Start; data: OptimizationRequest }
+	| { type: ClientMessageType.Cancel };
+
+export type ServerMessage =
+	| { type: ServerMessageType.Setup }
+	| { type: ServerMessageType.Grounding }
+	| { type: ServerMessageType.Solving }
+	| { type: ServerMessageType.NewModel; data: { optimized_items: Record<number, number> } }
+	| { type: ServerMessageType.Finished }
+	| { type: ServerMessageType.Canceled }
+	| { type: ServerMessageType.Error; data: { message: string } };

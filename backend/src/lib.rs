@@ -8,7 +8,6 @@
 use axum::{Router, routing::get};
 use rusqlite::Connection;
 use std::{sync::Arc, sync::Mutex};
-use tokio::sync::broadcast;
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
@@ -22,7 +21,6 @@ pub mod clingo;
 mod core;
 mod error;
 mod initialization;
-mod message;
 mod optimization;
 mod state;
 
@@ -35,14 +33,9 @@ pub async fn start() {
     let connection = Connection::open(&db_path_str).expect("Failed to open database");
     let db_connection = Arc::new(Mutex::new(connection));
 
-    let (sender, _receiver) = broadcast::channel(1024);
-
     let app_state = AppState {
         config: config.clone(),
         db_connection: db_connection.clone(),
-        template: Arc::new(Mutex::new(None)),
-        items: Arc::new(Mutex::new(Vec::new())),
-        broadcast: sender,
     };
 
     let cors = CorsLayer::new()

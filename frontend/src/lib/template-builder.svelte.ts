@@ -10,12 +10,21 @@ import { SvelteMap } from 'svelte/reactivity';
 
 const ACUITY_ID = 156;
 
+export enum EquipSource {
+	User,
+	Optimizer
+}
+export interface EquippedItem {
+	item: Item;
+	source: EquipSource;
+}
+
 export class TemplateBuilder {
-	equippedItems = $state<Partial<Record<ItemSlot, Item>>>({});
+	equippedItems = $state<Partial<Record<ItemSlot, EquippedItem>>>({});
 	activeSlot = $state<ItemSlot | null>(null);
 
 	private getStatDictionary: () => Record<number, StatDefinition>;
-	private getTemplateClass: () => ClassResponse;
+	getTemplateClass: () => ClassResponse;
 
 	constructor(statDict: () => Record<number, StatDefinition>, templateClass: () => ClassResponse) {
 		this.getStatDictionary = statDict;
@@ -30,16 +39,33 @@ export class TemplateBuilder {
 		this.activeSlot = null;
 	}
 
-	equipItem(item: Item) {
+	equipItem(item: Item, source: EquipSource) {
 		if (this.activeSlot) {
-			this.equippedItems[this.activeSlot] = item;
+			this.equippedItems[this.activeSlot] = { item, source };
 			this.closeModal();
+		}
+	}
+
+	applyOptimizationResult(equipMap: Partial<Record<ItemSlot, Item>>) {
+		for (const [slotStr, item] of Object.entries(equipMap)) {
+			const slot = parseInt(slotStr) as ItemSlot;
+			if (this.equippedItems[slot] && this.equippedItems[slot]!.source === EquipSource.User) {
+				continue;
+			}
+
+			this.equippedItems[slot] = { item: item!, source: EquipSource.Optimizer };
 		}
 	}
 
 	unequipItem(slot: ItemSlot) {
 		delete this.equippedItems[slot];
 	}
+
+	userEquippedItems = $derived(() =>
+		Object.values(this.equippedItems)
+			.filter((equip) => equip.source === EquipSource.User)
+			.map((equip) => equip.item)
+	);
 
 	buckets = $derived.by(() => {
 		const b = {
@@ -99,7 +125,9 @@ export class TemplateBuilder {
 			}
 		}
 
-		for (const item of Object.values(this.equippedItems)) {
+		for (const equip of Object.values(this.equippedItems)) {
+			const item = equip.item;
+
 			if (!item || !item.bonuses) continue;
 
 			for (const [statIdStr, value] of Object.entries(item.bonuses)) {

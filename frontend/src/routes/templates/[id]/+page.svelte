@@ -1,12 +1,14 @@
 <script lang="ts">
 	import Modal from '$lib/components/Modal.svelte';
 	import { SLOT_NAMES } from '$lib/constants';
-	import { TemplateBuilder } from '$lib/template-builder.svelte';
-	import { ItemSlot } from '$lib/types';
+	import { EquipSource, TemplateBuilder } from '$lib/template-builder.svelte';
+	import { ItemSlot, type Item } from '$lib/types';
+	import { onMount } from 'svelte';
 	import Attributes from './components/Attributes.svelte';
 	import Inventory from './components/Inventory.svelte';
 	import ItemSelector from './components/ItemSelector.svelte';
 	import TemplateHeader from './components/TemplateHeader.svelte';
+	import { Backend } from '$lib/backend.svelte.js';
 
 	let { data } = $props();
 
@@ -24,6 +26,28 @@
 		() => data.stats,
 		() => templateClass
 	);
+
+	const itemDictionary = $derived(Object.fromEntries(data.items.map((item) => [item.id, item])));
+
+	const backend = new Backend((rawItems) => {
+		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
+
+		for (const [slotStr, itemId] of Object.entries(rawItems)) {
+			const slot = parseInt(slotStr, 10) as ItemSlot;
+			const fullItem = itemDictionary[itemId];
+
+			if (fullItem) {
+				inflatedItems[slot] = fullItem;
+			}
+		}
+
+		builder.applyOptimizationResult(inflatedItems);
+	});
+
+	onMount(() => {
+		backend.connect();
+		return () => backend.disconnect();
+	});
 </script>
 
 <div class="mx-auto flex w-full max-w-7xl flex-col items-center gap-2 px-4 pb-12">
@@ -41,7 +65,7 @@
             -translate-y-1/2 rounded-full bg-primary/5 blur-[100px]"
 			></div>
 
-			<Inventory {builder} />
+			<Inventory {builder} {backend} />
 		</div>
 
 		<div class="flex w-full flex-col gap-6">
@@ -62,6 +86,6 @@
 	<ItemSelector
 		items={data.items.filter((item) => item.item_slot_id == builder.activeSlot) || []}
 		stats={data.stats}
-		onSelect={(item) => builder.equipItem(item)}
+		onSelect={(item) => builder.equipItem(item, EquipSource.User)}
 	/>
 </Modal>

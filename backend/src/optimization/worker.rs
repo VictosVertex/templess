@@ -16,6 +16,17 @@ use std::{
     },
 };
 use tokio::sync::mpsc::UnboundedSender;
+
+pub struct OptimizationHandle {
+    cancelled: Arc<AtomicBool>,
+}
+
+impl OptimizationHandle {
+    pub fn cancel(self) {
+        self.cancelled.store(true, Ordering::Relaxed);
+    }
+}
+
 /// Represents the current status of the optimization process.
 pub enum OptimizeStatus {
     /// Setup of the problem instance and loading of the encoding.
@@ -37,24 +48,26 @@ pub enum OptimizeStatus {
 /// This function spawns a new thread that performs the optimization process using the provided template and items.
 /// It communicates the status of the optimization process back to the main thread through the provided `UnboundedSender`.
 /// The worker will check the `stop_flag` periodically to determine if it should stop the optimization process and exit gracefully.
-///
-/// # Parameters
-/// - `template`: The initial template for the optimization process.
-/// - `items`: A vector of available items to consider during optimization.
-/// - `sender`: An unbounded sender for sending optimization status updates back to the main thread
-/// - `stop_flag`: An atomic boolean flag that can be set to signal the worker to stop the optimization process.
 pub fn start_optimization_worker(
     template: Template,
     items: Vec<Arc<Item>>,
     status_sender: UnboundedSender<OptimizeStatus>,
-    stop_flag: Arc<AtomicBool>,
-) {
+) -> OptimizationHandle {
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let stop_flag_for_worker = Arc::clone(&stop_flag);
+
     thread::spawn(move || {
         // The main thread simply calls the logic and handles the final result
-        if let Err(e) = run_optimization_logic(&template, &items, &status_sender, &stop_flag) {
+        if let Err(e) =
+            run_optimization_logic(&template, &items, &status_sender, &stop_flag_for_worker)
+        {
             let _ = status_sender.send(OptimizeStatus::Error(e.to_string()));
         }
     });
+
+    OptimizationHandle {
+        cancelled: stop_flag,
+    }
 }
 
 /// The main logic for the optimization process, which is run in a separate thread by `start_optimization_worker`.
@@ -86,7 +99,7 @@ fn run_optimization_logic(
 
     let control = Control::new()?;
     control.load("instance.lp")?;
-    control.load("src/optimization/encoding.lp")?;
+    control.load("backend/src/optimization/encoding.lp")?;
 
     status_sender.send(OptimizeStatus::Grounding)?;
     control.ground()?;

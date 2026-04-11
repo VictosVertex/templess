@@ -2,7 +2,7 @@ use crate::{Error, error::Result, state::SharedState};
 use axum::{
     Json, Router,
     extract::{Path, State},
-    routing::{delete, get},
+    routing::get,
 };
 
 use super::requests::CreateTemplateRequest;

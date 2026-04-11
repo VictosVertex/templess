@@ -3,13 +3,14 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/Header.svelte';
 	import { Database, LoaderCircle } from 'lucide-svelte';
+	import { api } from '$lib/api.js';
 	let { data, children } = $props();
 
 	let isInitializing = $state(false);
 
 	async function handleInitialize() {
 		isInitializing = true;
-		await fetch('http://localhost:3000/init', { method: 'POST' });
+		await api.initialize();
 		window.location.reload();
 	}
 </script>
