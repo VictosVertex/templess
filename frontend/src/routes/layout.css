@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+	--hue: 265;
+	--primary-hue: 290;
+	--secondary-hue: 285;
+
+	--success-hue: 150;
+	--warning-hue: 85;
+	--error-hue: 25;
+
+	--color-background: oklch(14% 0.02 var(--hue));
+	--color-foreground: oklch(98% 0.01 var(--hue));
+	--color-foreground-secondary: oklch(80% 0.02 var(--hue));
+
+	--color-surface-lowest: oklch(12% 0.02 var(--hue));
+	--color-surface-low: oklch(16% 0.02 var(--hue));
+	--color-surface-container: oklch(20% 0.03 var(--hue));
+	--color-surface-high: oklch(25% 0.03 var(--hue));
+	--color-surface-highest: oklch(30% 0.04 var(--hue));
+
+	--color-primary: oklch(82% 0.12 var(--primary-hue));
+	--color-primary-container: oklch(50% 0.18 var(--primary-hue));
+	--color-secondary: oklch(80% 0.1 var(--secondary-hue));
+
+	--color-success: oklch(82% 0.14 var(--success-hue));
+	--color-warning: oklch(82% 0.14 var(--warning-hue));
+	--color-error: oklch(82% 0.14 var(--error-hue));
+
+	--color-outline: oklch(45% 0.02 var(--hue) / 0.5);
+	--color-border-active: oklch(82% 0.12 var(--primary-hue));
+
+	--font-technical: 'Space Grotesk', monospace;
+	--font-reading: 'Inter', sans-serif;
+}
+
+@layer base {
+	body {
+		@apply bg-background font-reading text-foreground;
+	}
+
+	.base-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-surface-highest) transparent;
+	}
+
+	.base-scrollbar::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+
+	.base-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.base-scrollbar::-webkit-scrollbar-thumb {
+		background-color: var(--color-surface-highest);
+		border-radius: 9999px;
+	}
+
+	.base-scrollbar::-webkit-scrollbar-thumb:hover {
+		background-color: var(--color-outline);
+	}
+}

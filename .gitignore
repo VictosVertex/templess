@@ -2,19 +2,19 @@
 /target
 
 # Project data directory
-/data
+/backend/data
 
 # Node.js dependencies
 /node_modules
 
 # Local libraries
-/lib
+/backend/lib
 
 # Header files
 /include
 
 # Vendor dependencies
-/vendor
+/backend/vendor
 
 # FFI bindings for Clingo
 /src/clingo/bindings.rs
