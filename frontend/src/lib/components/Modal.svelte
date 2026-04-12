@@ -5,18 +5,18 @@
 
 	let {
 		isOpen,
-		close,
+		onClose,
 		title,
 		children
 	}: {
 		isOpen: boolean;
-		close: () => void;
+		onClose: () => void;
 		title?: string;
 		children: Snippet;
 	} = $props();
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && isOpen) close();
+		if (event.key === 'Escape' && isOpen) onClose();
 	}
 </script>
 
@@ -29,7 +29,7 @@
 	>
 		<button
 			class="absolute inset-0 block h-full w-full cursor-default border-none bg-surface-lowest/40 backdrop-blur-md outline-none"
-			onclick={close}
+			onclick={onClose}
 			aria-label="Close dialog"
 			tabindex="-1"
 		></button>
@@ -50,7 +50,7 @@
 					</h2>
 					<button
 						class="text-foreground-secondary transition-colors hover:text-foreground"
-						onclick={close}
+						onclick={onClose}
 						aria-label="Close"
 					>
 						<X size={20} />

@@ -1,20 +1,34 @@
 <script lang="ts">
-	import { StatCategory, type Item, type Stat, type StatDefinition } from '$lib/types';
+	import { ItemSlot, StatCategory, type Item, type Stat, type StatDefinition } from '$lib/types';
 	import { fade } from 'svelte/transition';
 
 	let {
 		items,
+		targetSlot,
 		stats,
 		onSelect
 	}: {
 		items: Item[];
+		targetSlot: ItemSlot | null;
 		stats: Record<number, StatDefinition>;
 		onSelect: (item: Item) => void;
 	} = $props();
 
+	const slotAliases: Partial<Record<ItemSlot, ItemSlot>> = {
+		[ItemSlot.Ring2]: ItemSlot.Ring,
+		[ItemSlot.Bracer2]: ItemSlot.Bracer
+	};
+
+	const selectableItems = $derived.by(() => {
+		if (targetSlot === null) return [];
+		return items.filter(
+			(item) => item.item_slot_id === targetSlot || item.item_slot_id === slotAliases[targetSlot]
+		);
+	});
+
 	let previewItem = $state<Item | null>(null);
 	let sortedItems = $derived.by(() => {
-		return items.slice().sort((a, b) => (b.utility || 0) - (a.utility || 0));
+		return selectableItems.slice().sort((a, b) => (b.utility || 0) - (a.utility || 0));
 	});
 
 	let previewStats = $derived.by(() => {

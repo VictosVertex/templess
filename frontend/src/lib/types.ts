@@ -49,6 +49,11 @@ export enum StatCategory {
 	OtherStats = 11
 }
 
+export interface StatPreference {
+	min: number;
+	weight: number;
+}
+
 export interface StatDefinition {
 	id: number;
 	name: string;

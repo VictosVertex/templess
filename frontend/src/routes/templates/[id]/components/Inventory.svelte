@@ -3,9 +3,14 @@
 	import { INVENTORY_GROUPS, SLOT_NAMES } from '$lib/constants';
 	import InventorySlot from './InventorySlot.svelte';
 	import type { Backend } from '$lib/backend.svelte';
-	import { ClientMessageType, OptimizationStatus, type ClientMessage } from '$lib/types';
+	import { ClientMessageType, ItemSlot, OptimizationStatus, type ClientMessage } from '$lib/types';
 
-	const { builder, backend }: { builder: TemplateBuilder; backend: Backend } = $props();
+	const {
+		builder,
+		backend,
+		onOpenSlot
+	}: { builder: TemplateBuilder; backend: Backend; onOpenSlot: (slot: ItemSlot) => void } =
+		$props();
 
 	const center = { x: 350, y: 350 };
 	const innerRadius = 140;
@@ -101,7 +106,7 @@
 				style="left: 0; top: 0; transform: translate(calc({x}px - 50%), calc({y}px - 50%));"
 			>
 				<InventorySlot
-					onclick={() => builder.openSlot(slot)}
+					onclick={() => onOpenSlot(slot)}
 					onremove={() => builder.unequipItem(slot)}
 					name={SLOT_NAMES[slot]}
 					shapeClass="rounded-full"
@@ -118,7 +123,7 @@
 				style="left: 0; top: 0; transform: translate(calc({x}px - 50%), calc({y}px - 50%));"
 			>
 				<InventorySlot
-					onclick={() => builder.openSlot(slot)}
+					onclick={() => onOpenSlot(slot)}
 					onremove={() => builder.unequipItem(slot)}
 					name={SLOT_NAMES[slot]}
 					shapeClass="rounded-b-full"
@@ -133,7 +138,7 @@
 	<div class="flex items-center justify-center gap-8">
 		{#each INVENTORY_GROUPS.weapons as slot (slot)}
 			<InventorySlot
-				onclick={() => builder.openSlot(slot)}
+				onclick={() => onOpenSlot(slot)}
 				onremove={() => builder.unequipItem(slot)}
 				name={SLOT_NAMES[slot]}
 				shapeClass="rounded-none"
