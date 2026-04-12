@@ -42,8 +42,10 @@
 				if (statDef) {
 					preview.push({
 						...statDef,
-						value: value,
-						currentCap: statDef.cap
+						value,
+						currentCap: statDef.cap,
+						min: 0,
+						weight: 0
 					});
 				} else {
 					preview.push({
@@ -52,8 +54,10 @@
 						cap: 0,
 						category_id: StatCategory.OtherStats,
 						base_stat_id: null,
-						value: value,
-						currentCap: 0
+						value,
+						currentCap: 0,
+						min: 0,
+						weight: 0
 					});
 				}
 			}

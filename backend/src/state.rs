@@ -5,9 +5,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use crate::core::{
-    config::Config,
-};
+use crate::core::config::Config;
 use rusqlite::Connection;
 
 /// This struct holds the application state, including configuration,

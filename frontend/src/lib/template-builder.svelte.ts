@@ -4,7 +4,8 @@ import {
 	type ClassResponse,
 	type Item,
 	type Stat,
-	type StatDefinition
+	type StatDefinition,
+	type StatPreference
 } from '$lib/types';
 import { SvelteMap } from 'svelte/reactivity';
 
@@ -21,6 +22,7 @@ export interface EquippedItem {
 
 export class TemplateBuilder {
 	equippedItems = $state<Partial<Record<ItemSlot, EquippedItem>>>({});
+	preferences = $state<Record<number, StatPreference>>({});
 	getTemplateClass: () => ClassResponse;
 
 	private getStatDictionary: () => Record<number, StatDefinition>;
@@ -54,6 +56,10 @@ export class TemplateBuilder {
 			.filter((equip) => equip.source === EquipSource.User)
 			.map((equip) => equip.item)
 	);
+
+	setPreferences(preferences: Record<number, StatPreference>) {
+		this.preferences = preferences;
+	}
 
 	buckets = $derived.by(() => {
 		const b = {
@@ -98,10 +104,13 @@ export class TemplateBuilder {
 			}
 
 			if (targetBucket) {
+				const StatPreference = this.preferences[stat.id] ?? { min: 0, weight: 0 };
 				const activeStat: Stat = {
 					...stat,
 					value: 0,
-					currentCap: stat.cap
+					currentCap: stat.cap,
+					min: StatPreference.min,
+					weight: StatPreference.weight
 				};
 
 				targetBucket.push(activeStat);

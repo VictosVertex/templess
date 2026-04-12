@@ -94,6 +94,9 @@ fn run_optimization_logic(
     asp_data.push_str(&slot_atoms(template)?);
     asp_data.push_str(&stat_atoms()?);
     asp_data.push_str(&item_atoms(items)?);
+
+    println!("{:?}", template.preferences);
+
     let file_path = Path::new("instance.lp");
     let _ = std::fs::write(file_path, &asp_data);
 

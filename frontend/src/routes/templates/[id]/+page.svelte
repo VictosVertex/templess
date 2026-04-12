@@ -77,7 +77,8 @@
 	}
 
 	function handleSavePreferences(preferences: Record<number, StatPreference>) {
-		console.log(preferences);
+		builder.setPreferences(preferences);
+		handleClosePreferences();
 	}
 </script>
 
@@ -135,6 +136,6 @@
 		stats={Object.values(data.stats)}
 		template_class={builder.getTemplateClass()}
 		onSave={handleSavePreferences}
-		initialPreferences={{}}
+		initialPreferences={builder.preferences}
 	/>
 </Modal>

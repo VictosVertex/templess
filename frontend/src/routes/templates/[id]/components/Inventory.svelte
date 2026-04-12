@@ -55,7 +55,8 @@
 				type: ClientMessageType.Start,
 				data: {
 					class_id: builder.getTemplateClass().id,
-					equipped_items
+					equipped_items,
+					preferences: builder.preferences
 				}
 			};
 

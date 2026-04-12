@@ -16,8 +16,8 @@
 	} = $props();
 
 	let combinedMax = $derived(stat.cap + (capStat?.cap ?? 0));
-	
-		let initialMin = (preference?.min ?? 0) + (capPreference?.min ?? 0);
+
+	let initialMin = (preference?.min ?? 0) + (capPreference?.min ?? 0);
 
 	let currentMin = $state(initialMin);
 	let currentPriority = $state(preference?.weight ?? 0);

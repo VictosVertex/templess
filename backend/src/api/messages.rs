@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::core::domain::{class::Class, item_slot::ItemSlot, template::Template};
+use crate::core::domain::{
+    class::Class, item_slot::ItemSlot, preference::Preference, template::Template,
+};
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type", content = "data", rename_all = "snake_case")]
@@ -11,9 +13,16 @@ pub enum ClientMessage {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct PreferenceDTO {
+    pub min: u16,
+    pub weight: u16,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct OptimizationRequest {
     pub class_id: u16,
     pub equipped_items: HashMap<u16, u32>,
+    pub preferences: HashMap<u16, PreferenceDTO>,
 }
 
 #[derive(Serialize, Debug)]
@@ -49,11 +58,26 @@ impl TryFrom<OptimizationRequest> for Template {
             })
             .collect();
 
+        let preferences = req
+            .preferences
+            .iter()
+            .filter_map(|(stat_id, preference)| {
+                Some((
+                    *stat_id,
+                    Preference {
+                        min: preference.min,
+                        weight: preference.weight,
+                    },
+                ))
+            })
+            .collect();
+
         Ok(Template {
             id: 0,
             name: "optimization".to_string(),
             class,
             slots,
+            preferences,
         })
     }
 }
