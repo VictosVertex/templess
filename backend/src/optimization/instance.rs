@@ -1,9 +1,11 @@
 //! This module provides functions for generating ASP atoms for the optimization.
 
+use crate::core::domain::preference::Preference;
 use crate::core::domain::{
     class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
 };
 use anyhow::Result;
+use std::collections::HashMap;
 use std::fmt::Write;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
@@ -119,6 +121,29 @@ pub fn slot_atoms(template: &Template) -> Result<String> {
 
         if let Some(item) = template.slots.get(&slot) {
             writeln!(asp, "slot_taken({}, {}).", slot.id(), item)?;
+        }
+    }
+
+    Ok(asp)
+}
+
+pub fn preference_atoms(preferences: &HashMap<u16, Preference>) -> Result<String> {
+    let mut asp = String::new();
+    writeln!(asp, "% --- PREFERENCES ---")?;
+
+    for (stat_id, preference) in preferences {
+        if preference.min > 0 && preference.weight > 0 {
+            let Some(stat) = Stat::from_repr(*stat_id) else {
+                return Err(anyhow::anyhow!("Invalid stat ID: {}", stat_id));
+            };
+
+            writeln!(
+                asp,
+                "preference({}, {}, {}).",
+                stat.name(),
+                preference.min,
+                preference.weight
+            )?
         }
     }
 
