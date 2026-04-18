@@ -122,7 +122,6 @@
 					{stat}
 					capStat={getCapStatFor(stat.id)}
 					preference={draftPreferences[stat.id]}
-					capPreference={draftPreferences[getCapStatFor(stat.id)?.id ?? -1]}
 					onChange={handleUpdateDraft}
 				/>
 			{:else}

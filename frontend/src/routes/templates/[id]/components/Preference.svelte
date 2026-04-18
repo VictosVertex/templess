@@ -5,26 +5,24 @@
 		stat,
 		capStat,
 		preference,
-		capPreference,
 		onChange
 	}: {
 		stat: StatDefinition;
 		capStat?: StatDefinition;
 		preference?: StatPreference;
-		capPreference?: StatPreference;
 		onChange: (updates: { id: number; min: number; weight: number }[]) => void;
 	} = $props();
 
 	let combinedMax = $derived(stat.cap + (capStat?.cap ?? 0));
 
-	let initialMin = (preference?.min ?? 0) + (capPreference?.min ?? 0);
+	let initialMin = preference?.min ?? 0;
 
 	let currentMin = $state(initialMin);
 	let currentPriority = $state(preference?.weight ?? 0);
 	let isIgnored = $derived(currentPriority === 0);
 
 	function handleChange() {
-		const baseMin = Math.min(currentMin, stat.cap);
+		const baseMin = currentMin;
 		const overcapMin = capStat ? Math.max(0, currentMin - stat.cap) : 0;
 		const updates = [{ id: stat.id, min: baseMin, weight: currentPriority }];
 
