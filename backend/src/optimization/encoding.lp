@@ -1,21 +1,34 @@
 
-% Choose an item for each slot that does not have an item already.
+% Choose an item for each slot.
 % We do not pick weapons yet.
-1{slot_chosen(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13, not slot_taken(SLOT, _).
+1{slot_chosen(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13.
 
 % Symmetry breaking for rings and bracers
 :- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
 :- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
 
-% Taken and chosen slots are assigned slots.
-slot_assigned(SLOT,ITEM) :- slot_taken(SLOT,ITEM).
-slot_assigned(SLOT,ITEM) :- slot_chosen(SLOT,ITEM).
 
-% Calculate the raw total of a stat by summing the bonuses from all assigned items.
+% Translate item bonuses to effective bonuses.
+% This is done for mapping acuity to the respective actuity stat of the class.
+effective_bonus(ITEM, STAT, VALUE) :- 
+    item_bonus(ITEM, STAT, VALUE).
+
+effective_bonus(ITEM, STAT, VALUE) :- 
+    item_bonus(ITEM, acuity, VALUE),
+    class_acuity(STAT).
+
+effective_bonus(ITEM, CAP_STAT, VALUE) :- 
+    item_bonus(ITEM, acuity_cap, VALUE),
+    class_acuity(BASE_STAT),
+    stat_base(CAP_STAT, BASE_STAT).
+
+% Calculate the raw total of a stat by summing the bonuses from all assigned items
+% and adding the baseline stat value.
 % Only consider stats that have preferences, as those are the only ones that contribute to utility.
-stat_raw_total(STAT, TOTAL) :-
+stat_raw_total(STAT, TOTAL + BASELINE) :-
     preference(STAT,_,_),
-    TOTAL = #sum {VALUE, ITEM:slot_assigned(_,ITEM), item_bonus(ITEM, STAT, VALUE)}.
+    stat_baseline(STAT, BASELINE),
+    TOTAL = #sum {VALUE, ITEM:slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE)}.
 
 
 dynamic_cap(STAT, BASE_CAP + OVER_CAP) :-
