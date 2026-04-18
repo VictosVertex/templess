@@ -12,7 +12,7 @@
 
 	<div class="flex flex-col gap-3">
 		{#each stats as stat (stat)}
-			<Attribute name={stat.name} value={stat.value} cap={stat.currentCap} min={stat.min} />
+			<Attribute {stat} />
 		{/each}
 	</div>
 </div>
