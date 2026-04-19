@@ -14,11 +14,36 @@ use strum::IntoEnumIterator;
 ///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
-pub fn item_atoms(items: &[Arc<Item>]) -> Result<String> {
+pub fn item_atoms(items: &[Arc<Item>], template: &Template) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
 
     for item in items {
+        if template.slots.contains_key(&item.item_slot) {
+            continue;
+        }
+
+        let unneeded_bonuses = item
+            .bonuses
+            .iter()
+            .filter(|bonus| {
+                let mut is_preferred = template.preferences.contains_key(&bonus.stat.id());
+
+                if bonus.stat == Stat::Acuity || bonus.stat == Stat::AcuityCap {
+                    is_preferred = match template.class.acuity_stat() {
+                        Some(stat) => template.preferences.contains_key(&stat.id()),
+                        None => false,
+                    };
+                }
+
+                !is_preferred
+            })
+            .count();
+
+        if unneeded_bonuses > 2 {
+            continue;
+        }
+
         writeln!(
             asp,
             "item({}, {}, \"{}\").",

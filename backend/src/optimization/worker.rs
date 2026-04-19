@@ -97,7 +97,7 @@ fn run_optimization_logic(
     asp_data.push_str(&preference_atoms(&template.preferences)?);
     asp_data.push_str(&stat_baseline_atoms(&template, items)?);
     asp_data.push_str(&stat_atoms()?);
-    asp_data.push_str(&item_atoms(items)?);
+    asp_data.push_str(&item_atoms(items, template)?);
 
     println!("{:?}", template.preferences);
 
