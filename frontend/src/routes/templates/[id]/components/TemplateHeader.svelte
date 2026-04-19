@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { defaultRealmTheme, realmTheme } from '$lib/constants';
 	import type { ClassResponse, Template } from '$lib/types';
+	import { SlidersHorizontal } from 'lucide-svelte';
 
-	let { template, classes }: { template: Template; classes: ClassResponse[] } = $props();
+	let {
+		template,
+		classes,
+		onOpenPreferences
+	}: { template: Template; classes: ClassResponse[]; onOpenPreferences: () => void } = $props();
 
 	let templateClass = $derived(classes.find((c) => c.id === template.class_id));
 
@@ -26,4 +31,12 @@
 			{templateClass?.name}
 		</p>
 	</div>
+	<button
+		class="ml-auto flex cursor-pointer items-center gap-2 rounded bg-primary/20 px-4 py-2 text-primary outline outline-primary/50 transition-all hover:bg-primary/50 hover:outline-primary/50"
+		onclick={onOpenPreferences}
+		title="Edit Optimization Goals"
+	>
+		<SlidersHorizontal size={18} />
+		<span class="font-technical text-sm tracking-widest uppercase"> Preferences </span>
+	</button>
 </div>

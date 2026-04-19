@@ -51,6 +51,7 @@ pub fn get_templates(connection: &Connection) -> CoreResult<Vec<Template>> {
                 name,
                 class,
                 slots,
+                preferences: HashMap::new(),
             });
         }
     }
@@ -89,6 +90,7 @@ pub fn get_template(connection: &Connection, template_id: i32) -> CoreResult<Opt
                 name,
                 class,
                 slots,
+                preferences: HashMap::new(),
             }));
         }
     }

@@ -49,6 +49,11 @@ export enum StatCategory {
 	OtherStats = 11
 }
 
+export interface StatPreference {
+	min: number;
+	weight: number;
+}
+
 export interface StatDefinition {
 	id: number;
 	name: string;
@@ -57,7 +62,7 @@ export interface StatDefinition {
 	base_stat_id: number | null;
 }
 
-export interface Stat extends StatDefinition {
+export interface Stat extends StatDefinition, StatPreference {
 	value: number;
 	currentCap: number;
 }
@@ -111,6 +116,7 @@ export enum ItemSlot {
 export interface OptimizationRequest {
 	class_id: number;
 	equipped_items: Record<number, number>;
+	preferences: Record<number, StatPreference>;
 }
 
 export enum ClientMessageType {

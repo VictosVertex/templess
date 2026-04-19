@@ -1,20 +1,16 @@
 //! This module provides functions for generating ASP atoms for the optimization.
 
+use crate::core::domain::preference::Preference;
 use crate::core::domain::{
     class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
 };
 use anyhow::Result;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 
 /// Generates item related ASP atoms.
-///
-/// # Parameters
-/// - `items`: A slice of `Arc<Item>` representing the items to generate atoms for.
-///
-/// # Returns
-/// - `Ok(String)` containing the generated ASP atoms if successful.
 ///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
@@ -45,9 +41,6 @@ pub fn item_atoms(items: &[Arc<Item>]) -> Result<String> {
 
 /// Generates stat related ASP atoms.
 ///
-/// # Returns
-/// - `Ok(String)` containing the generated ASP atoms if successful.
-///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn stat_atoms() -> Result<String> {
@@ -75,12 +68,6 @@ pub fn stat_atoms() -> Result<String> {
 
 /// Generates class related ASP atoms.
 ///
-/// # Parameters
-/// - `class`: A `Class` representing the character class to generate atoms for.
-///
-/// # Returns
-/// - `Ok(String)` containing the generated ASP atoms if successful.
-///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn class_atoms(class: Class) -> Result<String> {
@@ -102,12 +89,6 @@ pub fn class_atoms(class: Class) -> Result<String> {
 
 /// Generates item slot related ASP atoms.
 ///
-/// # Parameters
-/// - `template`: A reference to a `Template` containing the item slots to generate atoms for.
-///
-/// # Returns
-/// - `Ok(String)` containing the generated ASP atoms if successful.
-///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
 pub fn slot_atoms(template: &Template) -> Result<String> {
@@ -115,11 +96,75 @@ pub fn slot_atoms(template: &Template) -> Result<String> {
     writeln!(asp, "% --- TEMPLATE ---")?;
 
     for slot in ItemSlot::iter() {
-        writeln!(asp, "slot({},{}).", slot.id(), slot.name())?;
-
-        if let Some(item) = template.slots.get(&slot) {
-            writeln!(asp, "slot_taken({}, {}).", slot.id(), item)?;
+        match template.slots.get(&slot) {
+            Some(_) => {}
+            None => writeln!(asp, "slot({},{}).", slot.id(), slot.name())?,
         }
+    }
+
+    Ok(asp)
+}
+
+pub fn preference_atoms(preferences: &HashMap<u16, Preference>) -> Result<String> {
+    let mut asp = String::new();
+    writeln!(asp, "% --- PREFERENCES ---")?;
+
+    for (stat_id, preference) in preferences {
+        if preference.weight > 0 {
+            let Some(stat) = Stat::from_repr(*stat_id) else {
+                return Err(anyhow::anyhow!("Invalid stat ID: {}", stat_id));
+            };
+
+            writeln!(
+                asp,
+                "preference({}, {}, {}).",
+                stat.name(),
+                preference.min,
+                preference.weight
+            )?
+        }
+    }
+
+    Ok(asp)
+}
+
+pub fn stat_baseline_atoms(template: &Template, items: &[Arc<Item>]) -> Result<String> {
+    let mut asp = String::new();
+    writeln!(asp, "% --- STAT BASELINE ---")?;
+
+    let mut baselines: HashMap<Stat, u16> = template
+        .preferences
+        .iter()
+        .filter(|(_, pref)| pref.weight > 0)
+        .filter_map(|(stat_id, _)| Stat::from_repr(*stat_id))
+        .map(|stat| (stat, 0))
+        .collect();
+
+    let equipped_item_ids: HashSet<i32> = template.slots.values().copied().collect();
+
+    let class_acuity = template.class.acuity_stat();
+    let class_acuity_cap = class_acuity.and_then(|stat| stat.cap_stat());
+
+    for item in items.iter().filter(|i| equipped_item_ids.contains(&i.id)) {
+        for bonus in &item.bonuses {
+            let actual_stat = match bonus.stat {
+                Stat::Acuity => class_acuity,
+                Stat::AcuityCap => class_acuity_cap,
+                stat => Some(stat),
+            };
+
+            let Some(stat) = actual_stat else {
+                continue;
+            };
+
+            if let Some(baseline) = baselines.get_mut(&stat) {
+                *baseline += bonus.value;
+            }
+        }
+    }
+
+    for (stat, baseline) in baselines {
+        writeln!(asp, "stat_baseline({}, {}).", stat.name(), baseline)?;
     }
 
     Ok(asp)

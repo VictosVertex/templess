@@ -2,17 +2,21 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import { SLOT_NAMES } from '$lib/constants';
 	import { EquipSource, TemplateBuilder } from '$lib/template-builder.svelte';
-	import { ItemSlot, type Item } from '$lib/types';
+	import { ItemSlot, type Item, type StatPreference } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Attributes from './components/Attributes.svelte';
 	import Inventory from './components/Inventory.svelte';
 	import ItemSelector from './components/ItemSelector.svelte';
+	import Preferences from './components/Preferences.svelte';
 	import TemplateHeader from './components/TemplateHeader.svelte';
 	import { Backend } from '$lib/backend.svelte.js';
 
 	let { data } = $props();
 
-	let templateClass = $derived.by(() => {
+	let activeSlot = $state<ItemSlot | null>(null);
+	let isEditingPreferences = $state<boolean>(false);
+
+	const templateClass = $derived.by(() => {
 		const foundClass = data.classes.find((c) => c.id === data.template.class_id);
 
 		if (!foundClass) {
@@ -28,23 +32,6 @@
 	);
 
 	const itemDictionary = $derived(Object.fromEntries(data.items.map((item) => [item.id, item])));
-
-	const slotAliases: Partial<Record<ItemSlot, ItemSlot>> = {
-		[ItemSlot.Ring2]: ItemSlot.Ring,
-		[ItemSlot.Bracer2]: ItemSlot.Bracer
-	};
-
-	function matchesActiveSlot(item: Item, activeSlot: ItemSlot | null) {
-		if (activeSlot === null) {
-			return false;
-		}
-
-		return item.item_slot_id === activeSlot || item.item_slot_id === slotAliases[activeSlot];
-	}
-
-	const selectableItems = $derived(
-		data.items.filter((item) => matchesActiveSlot(item, builder.activeSlot))
-	);
 
 	const backend = new Backend((rawItems) => {
 		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
@@ -65,10 +52,42 @@
 		backend.connect();
 		return () => backend.disconnect();
 	});
+
+	function handleOpenSlot(slot: ItemSlot) {
+		activeSlot = slot;
+	}
+
+	function handleCloseItemSelection() {
+		activeSlot = null;
+	}
+
+	function handleItemSelection(item: Item) {
+		if (activeSlot !== null) {
+			builder.equipItem(activeSlot, item, EquipSource.User);
+			handleCloseItemSelection();
+		}
+	}
+
+	function handleClosePreferences() {
+		isEditingPreferences = false;
+	}
+
+	function handleOpenPreferences() {
+		isEditingPreferences = true;
+	}
+
+	function handleSavePreferences(preferences: Record<number, StatPreference>) {
+		builder.setPreferences(preferences);
+		handleClosePreferences();
+	}
 </script>
 
 <div class="mx-auto flex w-full max-w-7xl flex-col items-center gap-2 px-4 pb-12">
-	<TemplateHeader template={data.template} classes={data.classes} />
+	<TemplateHeader
+		template={data.template}
+		classes={data.classes}
+		onOpenPreferences={handleOpenPreferences}
+	/>
 
 	<div class="mt-8 grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_auto_1fr]">
 		<div class="flex w-full flex-col gap-6">
@@ -82,7 +101,7 @@
             -translate-y-1/2 rounded-full bg-primary/5 blur-[100px]"
 			></div>
 
-			<Inventory {builder} {backend} />
+			<Inventory onOpenSlot={handleOpenSlot} {builder} {backend} />
 		</div>
 
 		<div class="flex w-full flex-col gap-6">
@@ -96,13 +115,27 @@
 </div>
 
 <Modal
-	isOpen={builder.activeSlot !== null}
-	close={() => builder.closeModal()}
-	title="Select an Item for {SLOT_NAMES[builder.activeSlot || ItemSlot.Chest]}"
+	isOpen={activeSlot !== null}
+	onClose={handleCloseItemSelection}
+	title="Select an Item for {SLOT_NAMES[activeSlot || ItemSlot.Chest]}"
 >
 	<ItemSelector
-		items={selectableItems}
+		items={data.items}
+		targetSlot={activeSlot}
 		stats={data.stats}
-		onSelect={(item) => builder.equipItem(item, EquipSource.User)}
+		onSelect={handleItemSelection}
+	/>
+</Modal>
+
+<Modal
+	isOpen={isEditingPreferences}
+	onClose={handleClosePreferences}
+	title="Customize stat preferences"
+>
+	<Preferences
+		stats={Object.values(data.stats)}
+		template_class={builder.getTemplateClass()}
+		onSave={handleSavePreferences}
+		initialPreferences={builder.preferences}
 	/>
 </Modal>

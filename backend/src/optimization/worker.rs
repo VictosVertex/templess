@@ -5,7 +5,9 @@ use crate::clingo::model::Model;
 use crate::clingo::symbol::SymbolType;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::{item::Item, template::Template};
-use crate::optimization::instance::{class_atoms, item_atoms, slot_atoms, stat_atoms};
+use crate::optimization::instance::{
+    class_atoms, item_atoms, preference_atoms, slot_atoms, stat_atoms, stat_baseline_atoms,
+};
 use anyhow::{Context, Result, anyhow};
 use std::thread;
 use std::{
@@ -92,8 +94,13 @@ fn run_optimization_logic(
     let mut asp_data = String::new();
     asp_data.push_str(&class_atoms(template.class)?);
     asp_data.push_str(&slot_atoms(template)?);
+    asp_data.push_str(&preference_atoms(&template.preferences)?);
+    asp_data.push_str(&stat_baseline_atoms(&template, items)?);
     asp_data.push_str(&stat_atoms()?);
     asp_data.push_str(&item_atoms(items)?);
+
+    println!("{:?}", template.preferences);
+
     let file_path = Path::new("instance.lp");
     let _ = std::fs::write(file_path, &asp_data);
 
