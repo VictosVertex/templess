@@ -20,6 +20,11 @@ export interface EquippedItem {
 	source: EquipSource;
 }
 
+export interface TemplateBuilderSnapshot {
+	equipped_items: Record<number, number>;
+	preferences: Record<number, StatPreference>;
+}
+
 export class TemplateBuilder {
 	equippedItems = $state<Partial<Record<ItemSlot, EquippedItem>>>({});
 	preferences = $state<Record<number, StatPreference>>({});
@@ -59,6 +64,32 @@ export class TemplateBuilder {
 
 	setPreferences(preferences: Record<number, StatPreference>) {
 		this.preferences = preferences;
+	}
+
+	toSnapshot(): TemplateBuilderSnapshot {
+		const equipped_items = Object.fromEntries(
+			Object.entries(this.equippedItems)
+				.filter(([, equipped]) => equipped?.source === EquipSource.User)
+				.map(([slot, equipped]) => [slot, equipped!.item.id])
+		);
+
+		return {
+			equipped_items,
+			preferences: { ...this.preferences }
+		};
+	}
+
+	restoreSnapshot(snapshot: TemplateBuilderSnapshot, itemDictionary: Record<number, Item>) {
+		for (const [slotStr, itemId] of Object.entries(snapshot.equipped_items ?? {})) {
+			const slot = parseInt(slotStr, 10) as ItemSlot;
+			const item = itemDictionary[itemId];
+
+			if (item) {
+				this.equipItem(slot, item, EquipSource.User);
+			}
+		}
+
+		this.preferences = { ...(snapshot.preferences ?? {}) };
 	}
 
 	buckets = $derived.by(() => {

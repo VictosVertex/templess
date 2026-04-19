@@ -1,7 +1,12 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import Modal from '$lib/components/Modal.svelte';
 	import { SLOT_NAMES } from '$lib/constants';
-	import { EquipSource, TemplateBuilder } from '$lib/template-builder.svelte';
+	import {
+		EquipSource,
+		TemplateBuilder,
+		type TemplateBuilderSnapshot
+	} from '$lib/template-builder.svelte';
 	import { ItemSlot, type Item, type StatPreference } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Attributes from './components/Attributes.svelte';
@@ -32,6 +37,7 @@
 	);
 
 	const itemDictionary = $derived(Object.fromEntries(data.items.map((item) => [item.id, item])));
+	const storageKey = $derived(`template-draft:${data.template.id}`);
 
 	const backend = new Backend((rawItems) => {
 		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
@@ -49,8 +55,31 @@
 	});
 
 	onMount(() => {
+		if (browser) {
+			const rawSnapshot = window.localStorage.getItem(storageKey);
+
+			if (rawSnapshot) {
+				try {
+					builder.restoreSnapshot(
+						JSON.parse(rawSnapshot) as TemplateBuilderSnapshot,
+						itemDictionary
+					);
+				} catch (error) {
+					console.warn('Failed to restore template draft from localStorage', error);
+				}
+			}
+		}
+
 		backend.connect();
 		return () => backend.disconnect();
+	});
+
+	$effect(() => {
+		if (!browser) {
+			return;
+		}
+
+		window.localStorage.setItem(storageKey, JSON.stringify(builder.toSnapshot()));
 	});
 
 	function handleOpenSlot(slot: ItemSlot) {
