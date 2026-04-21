@@ -16,7 +16,7 @@ use crate::{
     state::SharedState,
 };
 use futures_util::{sink::SinkExt, stream::StreamExt};
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use tokio::sync::mpsc;
 
 pub async fn handler(ws: WebSocketUpgrade, State(state): State<SharedState>) -> impl IntoResponse {
@@ -59,46 +59,41 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                 handle.cancel();
                             }
 
-                            let items = {
-                                let connection = match _state.db_connection.lock() {
-                                    Ok(connection) => connection,
-                                    Err(error) => {
-                                        let _ = message_tx.send(ServerMessage::Error {
-                                            message: format!(
-                                                "Failed to lock database connection: {error}"
-                                            ),
-                                        });
-                                        continue;
-                                    }
-                                };
+                            let connection = match _state.db_connection.lock() {
+                                Ok(connection) => connection,
+                                Err(error) => {
+                                    let _ = message_tx.send(ServerMessage::Error {
+                                        message: format!(
+                                            "Failed to lock database connection: {error}"
+                                        ),
+                                    });
+                                    continue;
+                                }
+                            };
 
-                                match get_items_by_class(&connection, template.class) {
-                                    Ok(mut items) => {
-                                        let craft_bases = match get_craft_bases_by_class(
-                                            &connection,
-                                            template.class,
-                                        ) {
-                                            Ok(craft_bases) => craft_bases,
-                                            Err(error) => {
-                                                let _ = message_tx.send(ServerMessage::Error {
-                                                    message: error.to_string(),
-                                                });
-                                                continue;
-                                            }
-                                        };
+                            let items = match get_items_by_class(&connection, template.class) {
+                                Ok(items) => items,
+                                Err(error) => {
+                                    let _ = message_tx.send(ServerMessage::Error {
+                                        message: error.to_string(),
+                                    });
+                                    continue;
+                                }
+                            };
 
-                                        items.extend(craft_bases.into_iter().map(Into::into));
-
-                                        items.into_iter().map(Arc::new).collect::<Vec<_>>()
-                                    }
+                            let craft_bases =
+                                match get_craft_bases_by_class(&connection, template.class) {
+                                    Ok(craft_bases) => craft_bases,
                                     Err(error) => {
                                         let _ = message_tx.send(ServerMessage::Error {
                                             message: error.to_string(),
                                         });
                                         continue;
                                     }
-                                }
-                            };
+                                };
+
+                            let mut items = items;
+                            items.extend(craft_bases.into_iter().map(Into::into));
 
                             let (status_tx, mut status_rx) =
                                 mpsc::unbounded_channel::<OptimizeStatus>();

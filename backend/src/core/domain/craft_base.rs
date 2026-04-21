@@ -1,6 +1,11 @@
 use crate::core::domain::item_type::ItemType;
 
-use super::{item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm};
+use super::{
+    item::{Item, ItemSource},
+    item_bonus::ItemBonus,
+    item_slot::ItemSlot,
+    realm::Realm,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CraftBase {
@@ -33,6 +38,7 @@ impl From<CraftBase> for Item {
             is_tradable: false,
             utility_single: 0.0,
             utility: 0.0,
+            source: ItemSource::Crafted,
             allowed_classes: Vec::new(),
             bonuses: vec![item.base_bonus],
             proc1_json: None,

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, craft_base::CraftBase, item::Item, item_slot::ItemSlot, item_type::ItemType,
-    realm::Realm, stat::Stat, template::Template,
+    class::Class, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm, stat::Stat,
+    template::Template,
 };
 
 #[derive(serde::Serialize)]
@@ -48,13 +48,6 @@ impl From<Class> for ClassResponse {
 }
 
 #[derive(serde::Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ItemSourceResponse {
-    Dropped,
-    CraftBase,
-}
-
-#[derive(serde::Serialize)]
 pub struct ItemResponse {
     /// The unique identifier for the item.
     pub id: i32,
@@ -81,7 +74,7 @@ pub struct ItemResponse {
     pub bonuses: HashMap<u16, u16>,
 
     /// Whether the item is a dropped item or a craft base.
-    pub source: ItemSourceResponse,
+    pub source: crate::core::domain::item::ItemSource,
 }
 
 impl From<Item> for ItemResponse {
@@ -99,23 +92,7 @@ impl From<Item> for ItemResponse {
                 .iter()
                 .map(|bonus| (bonus.stat.id(), bonus.value))
                 .collect(),
-            source: ItemSourceResponse::Dropped,
-        }
-    }
-}
-
-impl From<CraftBase> for ItemResponse {
-    fn from(item: CraftBase) -> Self {
-        ItemResponse {
-            id: item.id,
-            name: item.name,
-            object_type_id: item.item_type.id(),
-            item_slot_id: item.item_slot.id(),
-            weapon_hand: 0,
-            utility_single: 0.0,
-            utility: 0.0,
-            bonuses: HashMap::from([(item.base_bonus.stat.id(), item.base_bonus.value)]),
-            source: ItemSourceResponse::CraftBase,
+            source: item.source,
         }
     }
 }

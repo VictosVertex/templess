@@ -49,13 +49,13 @@ async fn search_items(
     let class = Class::from_repr(filter.class_id).ok_or(crate::error::Error::DataMissing {
         path: format!("Class with id {} not found", filter.class_id),
     })?;
-    let items: Vec<Item> = get_items_by_class(&connection, class)?;
-    let mut response_items: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
-    response_items.extend(
+    let mut items: Vec<Item> = get_items_by_class(&connection, class)?;
+    items.extend(
         get_craft_bases_by_class(&connection, class)?
             .into_iter()
-            .map(ItemResponse::from),
+            .map(Into::into),
     );
+    let response_items: Vec<ItemResponse> = items.into_iter().map(ItemResponse::from).collect();
 
     Ok(Json(response_items))
 }

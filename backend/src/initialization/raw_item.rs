@@ -3,8 +3,13 @@
 //! `RawItems` are items as they are found in the json data scraped from the game server's website.
 
 use crate::core::domain::{
-    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, item_type::ItemType,
-    realm::Realm, stat::Stat,
+    class::Class,
+    item::{Item, ItemSource},
+    item_bonus::ItemBonus,
+    item_slot::ItemSlot,
+    item_type::ItemType,
+    realm::Realm,
+    stat::Stat,
 };
 
 use serde::Deserialize;
@@ -200,6 +205,7 @@ impl RawItem {
             is_tradable,
             utility_single,
             utility,
+            source: ItemSource::Dropped,
             allowed_classes,
             bonuses,
             proc1_json: self.proc1_json.clone(),

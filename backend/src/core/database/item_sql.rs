@@ -2,8 +2,13 @@
 
 use crate::core::{
     domain::{
-        class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, item_type::ItemType,
-        realm::Realm, stat::Stat,
+        class::Class,
+        item::{Item, ItemSource},
+        item_bonus::ItemBonus,
+        item_slot::ItemSlot,
+        item_type::ItemType,
+        realm::Realm,
+        stat::Stat,
     },
     error::CoreResult,
 };
@@ -198,6 +203,7 @@ pub fn get_items_by_class(connection: &Connection, class: Class) -> CoreResult<V
             is_tradable: row.get::<_, u8>(15)? != 0,
             utility_single: row.get(16)?,
             utility: row.get(17)?,
+            source: ItemSource::Dropped,
             allowed_classes: vec![],
             bonuses,
             proc1_json: None,

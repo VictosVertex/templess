@@ -9,6 +9,13 @@ use crate::core::domain::item_type::ItemType;
 
 use super::{class::Class, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ItemSource {
+    Dropped,
+    Crafted,
+}
+
 /// Represents an item in the game.
 ///
 /// This struct contains all the properties of an item after it has been parsed and validated
@@ -68,6 +75,9 @@ pub struct Item {
 
     /// The total utility of the item.
     pub utility: f32,
+
+    /// Whether the item comes from drops or from a craft base.
+    pub source: ItemSource,
 
     /// The classes allowed to use this item.
     pub allowed_classes: Vec<Class>,

@@ -83,7 +83,7 @@ export interface Template {
 
 export enum ItemSource {
 	Dropped = 'dropped',
-	CraftBase = 'craft_base'
+	Crafted = 'crafted'
 }
 
 export interface Item {

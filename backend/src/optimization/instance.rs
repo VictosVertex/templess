@@ -1,5 +1,6 @@
 //! This module provides functions for generating ASP atoms for the optimization.
 
+use crate::core::domain::item::ItemSource;
 use crate::core::domain::preference::Preference;
 use crate::core::domain::{
     class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
@@ -14,7 +15,7 @@ use strum::IntoEnumIterator;
 ///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during atom generation.
-pub fn item_atoms(items: &[Arc<Item>], template: &Template) -> Result<String> {
+pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
 
@@ -51,6 +52,10 @@ pub fn item_atoms(items: &[Arc<Item>], template: &Template) -> Result<String> {
             item.item_slot.name(),
             item.name
         )?;
+
+        if item.source == ItemSource::Crafted {
+            writeln!(asp, "crafted_item({}).", item.id)?;
+        }
 
         for bonus in &item.bonuses {
             let stat_name = bonus.stat.to_string().to_lowercase();
@@ -153,7 +158,7 @@ pub fn preference_atoms(preferences: &HashMap<u16, Preference>) -> Result<String
     Ok(asp)
 }
 
-pub fn stat_baseline_atoms(template: &Template, items: &[Arc<Item>]) -> Result<String> {
+pub fn stat_baseline_atoms(template: &Template, items: &[Item]) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- STAT BASELINE ---")?;
 

@@ -52,7 +52,7 @@ pub enum OptimizeStatus {
 /// The worker will check the `stop_flag` periodically to determine if it should stop the optimization process and exit gracefully.
 pub fn start_optimization_worker(
     template: Template,
-    items: Vec<Arc<Item>>,
+    items: Vec<Item>,
     status_sender: UnboundedSender<OptimizeStatus>,
 ) -> OptimizationHandle {
     let stop_flag = Arc::new(AtomicBool::new(false));
@@ -85,7 +85,7 @@ pub fn start_optimization_worker(
 /// - `Err(anyhow::Error)` if an error occurred during the optimization process.
 fn run_optimization_logic(
     template: &Template,
-    items: &[Arc<Item>],
+    items: &[Item],
     status_sender: &UnboundedSender<OptimizeStatus>,
     stop_flag: &Arc<AtomicBool>,
 ) -> Result<()> {
