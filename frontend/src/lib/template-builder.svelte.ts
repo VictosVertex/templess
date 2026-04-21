@@ -10,6 +10,10 @@ import {
 import { SvelteMap } from 'svelte/reactivity';
 
 const ACUITY_ID = 156;
+const ALL_MAGIC_SKILLS_ID = 163;
+const ALL_MELEE_SKILLS_ID = 164;
+const ALL_ARCHERY_SKILLS_ID = 168;
+const ALL_DUAL_WIELD_SKILLS_ID = 167;
 
 export enum EquipSource {
 	User,
@@ -179,6 +183,30 @@ export class TemplateBuilder {
 					const statToUpdate = uiMap.get(statId);
 					if (statToUpdate) {
 						statToUpdate.value += value;
+					}
+
+					let targetSkillCategory = null;
+					switch (statId) {
+						case ALL_MAGIC_SKILLS_ID:
+							targetSkillCategory = StatCategory.MagicSkills;
+							break;
+						case ALL_MELEE_SKILLS_ID:
+							targetSkillCategory = StatCategory.MeleeSkills;
+							break;
+						case ALL_ARCHERY_SKILLS_ID:
+							targetSkillCategory = StatCategory.ArcherySkills;
+							break;
+						case ALL_DUAL_WIELD_SKILLS_ID:
+							targetSkillCategory = StatCategory.DualWieldingSkills;
+							break;
+					}
+
+					if (targetSkillCategory !== null) {
+						for (const skill of b.skills) {
+							if (skill.category_id === targetSkillCategory) {
+								skill.value += value;
+							}
+						}
 					}
 				}
 			}
