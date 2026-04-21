@@ -54,7 +54,19 @@ effective_stat(STAT, CAP) :-
     dynamic_cap(STAT, CAP),
     TOTAL > CAP.
 
-:- preference(STAT, MIN, _), MIN > 0, effective_stat(STAT, V), V < MIN.
+stat_hole(STAT, MIN - V):- preference(STAT, MIN, _), MIN > 0, effective_stat(STAT, V), V < MIN.
+
+stat_hole_count(C) :- C = #count { STAT : stat_hole(STAT, _) }.
+crafted_item_count(C) :- C = #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) }.
+
+% It cannot be the case that there is a hole where there is no gem.
+:- stat_hole(STAT,_), not gem(_,STAT,_,_).
+% It cannot be the case that there are more holes than 4 times crafted items.
+:- stat_hole_count(HOLE_COUNT), crafted_item_count(CRAFTED_COUNT), HOLE_COUNT > 4 * CRAFTED_COUNT.
+% It cannot be the case that there are more than 3 crafted items.
+:- crafted_item_count(CRAFTED_COUNT), CRAFTED_COUNT > 3.
+% It cannot be the case that there are no crafted items.
+:- crafted_item_count(CRAFTED_COUNT), CRAFTED_COUNT < 1.
 
 #maximize { V * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT) }.
 
