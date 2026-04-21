@@ -8,7 +8,7 @@ export const api = {
 			throw new Error(`Failed to initialize: ${response.statusText}`);
 		}
 
-		return await response.json();
+		return;
 	},
 	deleteTemplate: async (id: number) => {
 		const response = await fetch(`${API_BASE_URL}/templates/${id}`, {
