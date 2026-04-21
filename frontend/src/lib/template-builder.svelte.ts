@@ -172,10 +172,7 @@ export class TemplateBuilder {
 						const baseStatToCap = uiMap.get(statDef.base_stat_id);
 						if (baseStatToCap) {
 							const maxCurrentCap = baseStatToCap.cap + statDef.cap;
-							baseStatToCap.currentCap = Math.min(
-								baseStatToCap.currentCap + value,
-								maxCurrentCap
-							);
+							baseStatToCap.currentCap = Math.min(baseStatToCap.currentCap + value, maxCurrentCap);
 						}
 					}
 				} else {

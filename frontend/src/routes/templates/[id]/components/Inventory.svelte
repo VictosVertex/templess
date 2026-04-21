@@ -113,7 +113,8 @@
 					shapeClass="rounded-full"
 					width="w-[60px]"
 					height="h-[60px]"
-					source={builder.equippedItems[slot]?.source ?? null}
+					itemSource={builder.equippedItems[slot]?.item.source ?? null}
+					equipSource={builder.equippedItems[slot]?.source ?? null}
 				/>
 			</div>
 		{/each}
@@ -130,7 +131,8 @@
 					shapeClass="rounded-b-full"
 					width="w-[80px]"
 					height="h-[80px]"
-					source={builder.equippedItems[slot]?.source ?? null}
+					itemSource={builder.equippedItems[slot]?.item.source ?? null}
+					equipSource={builder.equippedItems[slot]?.source ?? null}
 				/>
 			</div>
 		{/each}
@@ -145,7 +147,8 @@
 				shapeClass="rounded-none"
 				width="w-[80px]"
 				height="h-[80px]"
-				source={builder.equippedItems[slot]?.source ?? null}
+				itemSource={builder.equippedItems[slot]?.item.source ?? null}
+				equipSource={builder.equippedItems[slot]?.source ?? null}
 			/>
 		{/each}
 	</div>
