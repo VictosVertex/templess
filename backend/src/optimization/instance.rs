@@ -107,7 +107,7 @@ pub fn class_atoms(class: Class) -> Result<String> {
     writeln!(asp, "class({}).", class.to_string().to_lowercase())?;
 
     for line in class.skill_lines() {
-        writeln!(asp, "class_skill_line({}).", line)?;
+        writeln!(asp, "class_skill_line({}, {}).", line.category(), line)?;
     }
 
     if let Some(acuity) = class.acuity_stat() {

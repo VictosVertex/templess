@@ -22,6 +22,10 @@ effective_bonus(ITEM, CAP_STAT, VALUE) :-
     class_acuity(BASE_STAT),
     stat_base(CAP_STAT, BASE_STAT).
 
+effective_bonus(ITEM, STAT, VALUE) :- 
+    item_bonus(ITEM, all_magic_skills, VALUE),
+    class_skill_line(magic_skills,STAT).
+
 % Calculate the raw total of a stat by summing the bonuses from all assigned items
 % and adding the baseline stat value.
 % Only consider stats that have preferences, as those are the only ones that contribute to utility.
