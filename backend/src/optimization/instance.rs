@@ -1,5 +1,6 @@
 //! This module provides functions for generating ASP atoms for the optimization.
 
+use crate::core::domain::gem::Gem;
 use crate::core::domain::item::ItemSource;
 use crate::core::domain::preference::Preference;
 use crate::core::domain::{
@@ -8,7 +9,6 @@ use crate::core::domain::{
 use anyhow::Result;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
-use std::sync::Arc;
 use strum::IntoEnumIterator;
 
 /// Generates item related ASP atoms.
@@ -195,6 +195,31 @@ pub fn stat_baseline_atoms(template: &Template, items: &[Item]) -> Result<String
 
     for (stat, baseline) in baselines {
         writeln!(asp, "stat_baseline({}, {}).", stat.name(), baseline)?;
+    }
+
+    Ok(asp)
+}
+
+pub fn gem_atoms(preferences: &HashMap<u16, Preference>) -> Result<String> {
+    let mut asp = String::new();
+    writeln!(asp, "% --- SC GEMS ---")?;
+
+    let target_stats = preferences
+        .iter()
+        .filter(|(_, pref)| pref.weight > 0)
+        .filter_map(|(stat_id, _)| Stat::from_repr(*stat_id))
+        .collect::<HashSet<_>>();
+    let gems = Gem::generate_for_targets(&target_stats);
+
+    for gem in gems {
+        writeln!(
+            asp,
+            "gem({}, {}, {}, {}).",
+            gem.id,
+            gem.stat.name(),
+            gem.value,
+            (gem.ip_cost * 10.0) as u16
+        )?;
     }
 
     Ok(asp)

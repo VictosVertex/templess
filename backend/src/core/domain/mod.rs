@@ -2,6 +2,7 @@
 
 pub mod class;
 pub mod craft_base;
+pub mod gem;
 pub mod item;
 pub mod item_bonus;
 pub mod item_slot;
