@@ -1,6 +1,7 @@
 use crate::api::responses::{
     ClassResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
 };
+use crate::core::database::craft_base_sql::get_craft_bases_by_class;
 use crate::core::database::item_sql::get_items_by_class;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::item_type::ItemType;
@@ -49,7 +50,12 @@ async fn search_items(
         path: format!("Class with id {} not found", filter.class_id),
     })?;
     let items: Vec<Item> = get_items_by_class(&connection, class)?;
-    let response_items: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
+    let mut response_items: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
+    response_items.extend(
+        get_craft_bases_by_class(&connection, class)?
+            .into_iter()
+            .map(ItemResponse::from),
+    );
 
     Ok(Json(response_items))
 }

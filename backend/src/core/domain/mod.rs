@@ -1,6 +1,7 @@
 //! This module defines the core domain entities and their relationships.
 
 pub mod class;
+pub mod craft_base;
 pub mod item;
 pub mod item_bonus;
 pub mod item_slot;

@@ -5,7 +5,6 @@
 use std::{fs::File, io::BufReader};
 
 use super::raw_item::RawItem;
-use crate::Result;
 use crate::core::error::CoreResult;
 use crate::core::{database::item_sql::insert_items, domain::item::Item};
 

@@ -81,6 +81,11 @@ export interface Template {
 	class_id: number;
 }
 
+export enum ItemSource {
+	Dropped = 'dropped',
+	CraftBase = 'craft_base'
+}
+
 export interface Item {
 	id: number;
 	name: string;
@@ -90,6 +95,7 @@ export interface Item {
 	utility_single: number;
 	utility: number;
 	bonuses: Record<number, number>;
+	source: ItemSource;
 }
 
 export enum ItemSlot {

@@ -95,6 +95,19 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
         [],
     )?;
 
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS craft_base (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            item_type INTEGER NOT NULL,
+            item_slot INTEGER NOT NULL,
+            realm INTEGER NOT NULL,
+            stat_id INTEGER NOT NULL,
+            value INTEGER NOT NULL
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 

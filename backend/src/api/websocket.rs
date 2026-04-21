@@ -8,7 +8,10 @@ use axum::{
 
 use super::messages::{ClientMessage, ServerMessage};
 use crate::{
-    core::{database::item_sql::get_items_by_class, domain::template::Template},
+    core::{
+        database::craft_base_sql::get_craft_bases_by_class, database::item_sql::get_items_by_class,
+        domain::template::Template,
+    },
     optimization::worker::{OptimizationHandle, OptimizeStatus, start_optimization_worker},
     state::SharedState,
 };
@@ -70,7 +73,22 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                 };
 
                                 match get_items_by_class(&connection, template.class) {
-                                    Ok(items) => {
+                                    Ok(mut items) => {
+                                        let craft_bases = match get_craft_bases_by_class(
+                                            &connection,
+                                            template.class,
+                                        ) {
+                                            Ok(craft_bases) => craft_bases,
+                                            Err(error) => {
+                                                let _ = message_tx.send(ServerMessage::Error {
+                                                    message: error.to_string(),
+                                                });
+                                                continue;
+                                            }
+                                        };
+
+                                        items.extend(craft_bases.into_iter().map(Into::into));
+
                                         items.into_iter().map(Arc::new).collect::<Vec<_>>()
                                     }
                                     Err(error) => {
