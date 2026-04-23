@@ -214,4 +214,25 @@ export class TemplateBuilder {
 
 		return b;
 	});
+
+	totalUtility = $derived.by(() => {
+		let total = 0;
+
+		const allTrackedStats = [
+			...this.buckets.baseStats,
+			...this.buckets.capStats,
+			...this.buckets.resists,
+			...this.buckets.skills,
+			...this.buckets.bonuses
+		];
+
+		for (const stat of allTrackedStats) {
+			if (stat.id in this.preferences) {
+				const effectiveValue = Math.max(0, Math.min(stat.value, stat.currentCap));
+				total += effectiveValue * stat.utility;
+			}
+		}
+
+		return total;
+	});
 }

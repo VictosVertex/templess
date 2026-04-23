@@ -95,6 +95,11 @@
 
 <div class="mx-auto flex w-full max-w-4xl flex-col items-center">
 	<div class="relative h-175 w-175">
+		<p
+			class="absolute top-4/5 left-1/2 -translate-x-1/2 text-center font-technical text-xl text-primary"
+		>
+			{builder.totalUtility}
+		</p>
 		<button
 			class="absolute top-1/2 left-1/2 z-10 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out {buttonColor}"
 			onclick={handleToggleOptimization}

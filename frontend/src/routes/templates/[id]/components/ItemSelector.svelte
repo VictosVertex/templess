@@ -52,6 +52,7 @@
 						id: statId,
 						name: `Unknown Stat (${statId})`,
 						cap: 0,
+						utility: 0,
 						category_id: StatCategory.OtherStats,
 						base_stat_id: null,
 						value,

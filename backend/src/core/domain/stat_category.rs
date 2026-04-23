@@ -10,7 +10,7 @@ use strum::{Display, FromRepr};
 /// Each variant corresponds to a specific category of stats, such as general stats,
 /// acuity stats, stat caps, and various skill categories.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr,Display)]
+#[derive(Debug, Clone, Copy, FromRepr, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum StatCategory {
     /// Represents general stats like strength, dexterity, etc.

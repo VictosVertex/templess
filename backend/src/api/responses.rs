@@ -101,6 +101,7 @@ impl From<Item> for ItemResponse {
 pub struct StatResponse {
     pub id: u16,
     pub name: String,
+    pub utility: f32,
     pub cap: u16,
     pub category_id: u16,
     pub base_stat_id: Option<u16>,
@@ -112,6 +113,7 @@ impl From<Stat> for StatResponse {
             id: stat.id(),
             name: stat.to_string(),
             cap: stat.cap(),
+            utility: stat.utility_per_point(),
             category_id: stat.category().id(),
             base_stat_id: stat.base_stat().map(|s| s.id()),
         }

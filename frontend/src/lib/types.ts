@@ -58,6 +58,7 @@ export interface StatDefinition {
 	id: number;
 	name: string;
 	cap: number;
+	utility: number;
 	category_id: StatCategory;
 	base_stat_id: number | null;
 }
