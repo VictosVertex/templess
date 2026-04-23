@@ -8,6 +8,7 @@ use crate::core::domain::stat_category::StatCategory;
 #[derive(Debug, Clone)]
 pub struct Gem {
     pub id: u32,
+    pub tier: u16,
     pub stat: Stat,
     pub value: u16,
     pub ip_cost: f32,
@@ -54,12 +55,13 @@ impl Gem {
                 _ => vec![],
             };
 
-            for (value, ip_cost) in tiers {
+            for (tier, (value, ip_cost)) in tiers.iter().enumerate() {
                 gems.push(Gem {
                     id: current_id,
                     stat,
-                    value,
-                    ip_cost,
+                    tier: tier as u16,
+                    value: value.clone(),
+                    ip_cost: ip_cost.clone(),
                 });
                 current_id += 1;
             }

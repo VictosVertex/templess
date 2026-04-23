@@ -214,9 +214,10 @@ pub fn gem_atoms(preferences: &HashMap<u16, Preference>) -> Result<String> {
     for gem in gems {
         writeln!(
             asp,
-            "gem({}, {}, {}, {}).",
+            "gem({}, {}, {}, {}, {}).",
             gem.id,
             gem.stat.name(),
+            gem.tier,
             gem.value,
             (gem.ip_cost * 10.0) as u16
         )?;

@@ -1,4 +1,3 @@
-
 % Choose an item for each slot.
 % We do not pick weapons yet.
 1{slot_chosen(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13.
@@ -60,7 +59,7 @@ stat_hole_count(C) :- C = #count { STAT : stat_hole(STAT, _) }.
 crafted_item_count(C) :- C = #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) }.
 
 % It cannot be the case that there is a hole where there is no gem.
-:- stat_hole(STAT,_), not gem(_,STAT,_,_).
+:- stat_hole(STAT,_), not gem(_,STAT,_,_,_).
 % It cannot be the case that there are more holes than 4 times crafted items.
 :- stat_hole_count(HOLE_COUNT), crafted_item_count(CRAFTED_COUNT), HOLE_COUNT > 4 * CRAFTED_COUNT.
 % It cannot be the case that there are more than 3 crafted items.
@@ -68,7 +67,11 @@ crafted_item_count(C) :- C = #count { ITEM : slot_chosen(_,ITEM), crafted_item(I
 % It cannot be the case that there are no crafted items.
 :- crafted_item_count(CRAFTED_COUNT), CRAFTED_COUNT < 1.
 
+% It cannot be the case that there is a hole where there is no gem.
+:- stat_hole(STAT,HOLE), gem(_,STAT,9,MAX_GEM_VALUE,_), crafted_item_count(CRAFTED_COUNT), HOLE > CRAFTED_COUNT * MAX_GEM_VALUE.
+
+
 #maximize { V * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT) }.
 
 #show slot_chosen/2.
-#show effective_stat/2.
+#show stat_hole/2.
