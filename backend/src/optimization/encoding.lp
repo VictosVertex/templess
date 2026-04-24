@@ -2,11 +2,6 @@
 % We do not pick weapons yet.
 1{slot_chosen(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13.
 
-% Symmetry breaking for rings and bracers
-:- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
-:- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
-
-
 % Translate item bonuses to effective bonuses.
 % This is done for mapping acuity to the respective actuity stat of the class.
 effective_bonus(ITEM, STAT, VALUE) :- 
@@ -25,6 +20,14 @@ effective_bonus(ITEM, STAT, VALUE) :-
     item_bonus(ITEM, all_magic_skills, VALUE),
     class_skill_line(magic_skills,STAT).
 
+{slotted_gem(ITEM,ID):gem(ID,STAT,_,_,_)} = 4 :- slot_chosen(SLOT,ITEM), crafted_item(ITEM).
+
+% Translate gem bonuses per item to effective bonuses.
+effective_bonus(ITEM, STAT, VALUE) :-
+    slotted_gem(ITEM,ID),
+    gem(ID,STAT,_,VALUE,_).
+
+% Calculate stat caps
 dynamic_cap(STAT, BASE_CAP + OVER_CAP) :-
     stat(STAT, _, BASE_CAP),
     stat_cap(STAT, CAP_STAT),
@@ -34,39 +37,53 @@ dynamic_cap(STAT, BASE_CAP) :-
     stat(STAT, _, BASE_CAP),
     not stat_cap(STAT, _).
 
+% Aggregate effective stats
+chosen_bonus(ITEM, STAT,VALUE) :- slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE).
+
 effective_stat(STAT, CAP) :-
     preference(STAT, _, _),
     stat_baseline(STAT, BASELINE),
     dynamic_cap(STAT, CAP),
-    #sum { VALUE, ITEM : slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE) } >= CAP - BASELINE.
+    #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) } >= CAP - BASELINE.
 
 effective_stat(STAT, TOTAL + BASELINE) :-
     preference(STAT, _, _),
     stat_baseline(STAT, BASELINE),
     dynamic_cap(STAT, CAP),
-    TOTAL = #sum { VALUE, ITEM : slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE) },
+    TOTAL = #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) },
     TOTAL < CAP - BASELINE.
 
-stat_hole(STAT, MIN - V):- preference(STAT, MIN, _), MIN > 0, effective_stat(STAT, V), V < MIN.
+% Symmetry breaking for rings and bracers
+:- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
+:- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
 
-% It cannot be the case that there is a hole where there is no gem.
-:- stat_hole(STAT,_), not gem(_,STAT,_,_,_).
+% It cannot be the case that the total cost of gems in a crafted item exceeds 375.
+:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), 375 < #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)}.
 
-% It cannot be the case that there are more holes than 4 times crafted items.
-:- #sum {
-       1,STAT : stat_hole(STAT, _) ;
-       -4,ITEM : slot_chosen(_,ITEM), crafted_item(ITEM)
-   } > 0.
+% It cannot be the case that the total cost of gems in a crafted item is below 360.
+:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)} < 360.
 
 % It cannot be the case that there are more than 3 or less than 1 crafted items.
 :- not 1 #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) } 3.
 
-% It cannot be the case that there is a hole that would require 
-% more max level gems than there are crafted items
-:- stat_hole(STAT,HOLE), #sum { MAX_GEM_VALUE, ITEM : slot_chosen(_,ITEM), crafted_item(ITEM), gem(_,STAT,9,MAX_GEM_VALUE,_) } < HOLE.
+% It cannot be the case that a preference of 10 is not met.
+:- effective_stat(STAT, VALUE), preference(STAT, MIN, 10), VALUE < MIN.
 
+% It cannot be the case that two gems of the same stat appear on the same crafted item
+:- slotted_gem(ITEM,ID_1), slotted_gem(ITEM,ID_2), gem(ID_1,STAT,_,_,_), gem(ID_2,STAT,_,_,_), ID_1 < ID_2.
 
-#maximize { V * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT) }.
+% Symmetry breaking of the same gems with the same values
+:- slotted_gem(ITEM_1, ID_1), 
+   slotted_gem(ITEM_2, ID_2), 
+   gem(ID_1, STAT_1, _, VALUE, _), 
+   gem(ID_2, STAT_2, _, VALUE, _), 
+   stat_gem_category(STAT_1, CATEGORY),
+   stat_gem_category(STAT_2, CATEGORY),
+   ITEM_1 < ITEM_2,
+   STAT_1 > STAT_2.
+
+#maximize { V * UTILITY * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
 
 #show slot_chosen/2.
-#show stat_hole/2.
+#show effective_stat/2.
+#show slotted_gem/2.
