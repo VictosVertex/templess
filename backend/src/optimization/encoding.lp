@@ -57,11 +57,9 @@ effective_stat(STAT, TOTAL + BASELINE) :-
 :- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
 :- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
 
-% It cannot be the case that the total cost of gems in a crafted item exceeds 375.
-:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), 375 < #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)}.
-
-% It cannot be the case that the total cost of gems in a crafted item is below 360.
-:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)} < 360.
+% It cannot be the case that the total cost of gems in a crafted item 
+% is not in the 360-375 range. This corresponds to 36.0 - 37.5 Imbue Points.
+:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), not 360 < #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)} < 375.
 
 % It cannot be the case that there are more than 3 or less than 1 crafted items.
 :- not 1 #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) } 3.
