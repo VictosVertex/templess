@@ -53,22 +53,42 @@ effective_stat(STAT, TOTAL + BASELINE) :-
     TOTAL = #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) },
     TOTAL < CAP - BASELINE.
 
-% Symmetry breaking for rings and bracers
-:- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
-:- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
+% The highest gem cost in an item.
+% this is used because in DAoC crafting the cost for the most expensive gem is applied twice.
+% highest_gem_cost(ITEM, MAX) :- slot_chosen(_,ITEM), crafted_item(ITEM), MAX = #max { COST, ITEM: slotted_gem(ITEM,ID),gem(ID,_,_,_,COST) }.
+higher_gem_cost_exists(ITEM, COST) :-
+    slotted_gem(ITEM, ID_1),
+    gem(ID_1, _, _, _, COST),
+    slotted_gem(ITEM, ID_2),
+    gem(ID_2, _, _, _, OTHER_COST),
+    OTHER_COST > COST,
+    ID_1 < ID_2.
 
-% It cannot be the case that the total cost of gems in a crafted item 
+highest_gem_cost(ITEM, COST) :-
+    slot_chosen(_, ITEM),
+    crafted_item(ITEM),
+    slotted_gem(ITEM, ID),
+    gem(ID, _, _, _, COST),
+    not higher_gem_cost_exists(ITEM, COST).
+
+% It cannot be the case that the total cost of gems in a crafted item
 % is not in the 360-375 range. This corresponds to 36.0 - 37.5 Imbue Points.
-:- slot_chosen(SLOT,ITEM), crafted_item(ITEM), not 360 < #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)} < 375.
+%
+% Here, we have to consider the highest gem cost twice! We do this by shifting the cost window.
+:- slot_chosen(SLOT,ITEM), 
+    crafted_item(ITEM), 
+    highest_gem_cost(ITEM, IP), 
+    not 360 - IP <= #sum { COST, ID:slotted_gem(ITEM,ID),gem(ID,_,_,_,COST)} <= 375 - IP.
 
 % It cannot be the case that there are more than 3 or less than 1 crafted items.
-:- not 1 #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) } 3.
-
-% It cannot be the case that a preference of 10 is not met.
-:- effective_stat(STAT, VALUE), preference(STAT, MIN, 10), VALUE < MIN.
+:- not 1 #count { ITEM : slot_chosen(_,ITEM), crafted_item(ITEM) } 2.
 
 % It cannot be the case that two gems of the same stat appear on the same crafted item
 :- slotted_gem(ITEM,ID_1), slotted_gem(ITEM,ID_2), gem(ID_1,STAT,_,_,_), gem(ID_2,STAT,_,_,_), ID_1 < ID_2.
+
+% Symmetry breaking for rings and bracers
+:- slot_chosen(33,ITEM_1), slot_chosen(34,ITEM_2), ITEM_1 > ITEM_2.
+:- slot_chosen(35,ITEM_1), slot_chosen(36,ITEM_2), ITEM_1 > ITEM_2.
 
 % Symmetry breaking of the same gems with the same values
 :- slotted_gem(ITEM_1, ID_1), 
@@ -80,7 +100,10 @@ effective_stat(STAT, TOTAL + BASELINE) :-
    ITEM_1 < ITEM_2,
    STAT_1 > STAT_2.
 
-#maximize { V * UTILITY * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
+% It cannot be the case that a preference of 10 is not met.
+:- effective_stat(STAT, VALUE), preference(STAT, MIN, 10), VALUE < MIN.
+
+#maximize { V * UTILITY * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _)}.
 
 #show slot_chosen/2.
 #show effective_stat/2.
