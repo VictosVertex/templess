@@ -4,6 +4,7 @@ use std::collections::HashSet;
 
 use super::stat::Stat;
 use crate::core::domain::stat_category::StatCategory;
+use strum::IntoEnumIterator;
 
 #[derive(Debug, Clone)]
 pub struct Gem {
@@ -15,53 +16,22 @@ pub struct Gem {
 }
 
 impl Gem {
-    /// Generates all valid spellcrafting gems for a given set of target stats.
-    pub fn generate_for_targets(target_stats: &HashSet<Stat>) -> Vec<Gem> {
+    /// Generates the canonical catalog of all supported spellcrafting gems.
+    ///
+    /// Gem IDs are derived from this fixed order and therefore remain stable
+    /// regardless of the current optimization request.
+    pub fn all() -> Vec<Gem> {
         let mut gems = Vec::new();
         let mut current_id = 1;
 
-        for &stat in target_stats {
-            let tiers: Vec<(u16, f32)> = match stat.category() {
-                StatCategory::PhysicalStats | StatCategory::AcuityStats => {
-                    if stat == Stat::Hitpoints {
-                        (0..10).map(|l| (4 + l * 8, 0.5 + l as f32)).collect()
-                    } else {
-                        (0..10).map(|l| (1 + l * 3, 0.5 + l as f32)).collect()
-                    }
-                }
-                StatCategory::Resists => [1, 2, 3, 5, 7, 9, 11, 13, 15, 17]
-                    .into_iter()
-                    .map(|v| (v, if v == 1 { 0.5 } else { (v - 1) as f32 }))
-                    .collect(),
-                StatCategory::MagicSkills
-                | StatCategory::MeleeSkills
-                | StatCategory::OtherSkills
-                | StatCategory::DualWieldingSkills
-                | StatCategory::ArcherySkills => {
-                    if matches!(
-                        stat,
-                        Stat::AllMagicSkills
-                            | Stat::AllMeleeSkills
-                            | Stat::AllArcherySkills
-                            | Stat::AllDualWieldingSkills
-                    ) {
-                        vec![(1, 0.5)]
-                    } else {
-                        (1..=10)
-                            .map(|v| (v, if v == 1 { 0.5 } else { (v - 1) as f32 * 2.5 }))
-                            .collect()
-                    }
-                }
-                _ => vec![],
-            };
-
-            for (tier, (value, ip_cost)) in tiers.iter().enumerate() {
+        for stat in Stat::iter() {
+            for (tier, (value, ip_cost)) in Self::tiers_for_stat(stat).into_iter().enumerate() {
                 gems.push(Gem {
                     id: current_id,
                     stat,
                     tier: tier as u16,
-                    value: value.clone(),
-                    ip_cost: ip_cost.clone(),
+                    value,
+                    ip_cost,
                 });
                 current_id += 1;
             }
@@ -69,15 +39,80 @@ impl Gem {
 
         gems
     }
+
+    /// Generates all valid spellcrafting gems for a given set of target stats.
+    pub fn generate_for_targets(target_stats: &HashSet<Stat>) -> Vec<Gem> {
+        Self::all()
+            .into_iter()
+            .filter(|gem| target_stats.contains(&gem.stat))
+            .collect()
+    }
+
+    fn tiers_for_stat(stat: Stat) -> Vec<(u16, f32)> {
+        match stat.category() {
+            StatCategory::PhysicalStats | StatCategory::AcuityStats => {
+                if stat == Stat::Hitpoints {
+                    (0..10).map(|l| (4 + l * 8, 0.5 + l as f32)).collect()
+                } else {
+                    (0..10).map(|l| (1 + l * 3, 0.5 + l as f32)).collect()
+                }
+            }
+            StatCategory::Resists => [1, 2, 3, 5, 7, 9, 11, 13, 15, 17]
+                .into_iter()
+                .map(|v| (v, if v == 1 { 0.5 } else { (v - 1) as f32 }))
+                .collect(),
+            StatCategory::MagicSkills
+            | StatCategory::MeleeSkills
+            | StatCategory::OtherSkills
+            | StatCategory::DualWieldingSkills
+            | StatCategory::ArcherySkills => {
+                if matches!(
+                    stat,
+                    Stat::AllMagicSkills
+                        | Stat::AllMeleeSkills
+                        | Stat::AllArcherySkills
+                        | Stat::AllDualWieldingSkills
+                ) {
+                    vec![(1, 0.5)]
+                } else {
+                    (1..=10)
+                        .map(|v| (v, if v == 1 { 0.5 } else { (v - 1) as f32 * 2.5 }))
+                        .collect()
+                }
+            }
+            _ => vec![],
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
+    use std::{collections::BTreeMap};
 
     use itertools::Itertools;
 
     use super::*;
+
+    #[test]
+    fn generate_for_targets_preserves_canonical_ids() {
+        let target_stats: HashSet<Stat> = [Stat::Dexterity, Stat::CrushResist, Stat::Sword]
+            .iter()
+            .copied()
+            .collect();
+
+        let expected = Gem::all()
+            .into_iter()
+            .filter(|gem| target_stats.contains(&gem.stat))
+            .map(|gem| (gem.id, gem.stat, gem.tier, gem.value))
+            .collect::<Vec<_>>();
+
+        let actual = Gem::generate_for_targets(&target_stats)
+            .into_iter()
+            .map(|gem| (gem.id, gem.stat, gem.tier, gem.value))
+            .collect::<Vec<_>>();
+
+        assert_eq!(actual, expected);
+    }
 
     #[test]
     fn test_stuff() {

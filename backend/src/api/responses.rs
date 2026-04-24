@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm, stat::Stat,
-    template::Template,
+    class::Class, gem::Gem, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm,
+    stat::Stat, template::Template,
 };
 
 #[derive(serde::Serialize)]
@@ -116,6 +116,27 @@ impl From<Stat> for StatResponse {
             utility: stat.utility_per_point(),
             category_id: stat.category().id(),
             base_stat_id: stat.base_stat().map(|s| s.id()),
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct GemResponse {
+    pub id: u32,
+    pub stat_id: u16,
+    pub tier: u16,
+    pub value: u16,
+    pub ip_cost: f32,
+}
+
+impl From<Gem> for GemResponse {
+    fn from(gem: Gem) -> Self {
+        GemResponse {
+            id: gem.id,
+            stat_id: gem.stat.id(),
+            tier: gem.tier,
+            value: gem.value,
+            ip_cost: gem.ip_cost,
         }
     }
 }

@@ -1,8 +1,9 @@
 use crate::api::responses::{
-    ClassResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
+    ClassResponse, GemResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
 };
 use crate::core::database::craft_base_sql::get_craft_bases_by_class;
 use crate::core::database::item_sql::get_items_by_class;
+use crate::core::domain::gem::Gem;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::item_type::ItemType;
 use crate::core::domain::stat::Stat;
@@ -22,6 +23,7 @@ pub fn router() -> Router<SharedState> {
         .route("/item_slots", get(list_item_slots))
         .route("/item_types", get(list_item_type))
         .route("/realms", get(list_realms))
+        .route("/gems", get(list_gems))
         .route("/stats", get(list_stats))
 }
 
@@ -73,6 +75,12 @@ async fn list_stats(State(_state): State<SharedState>) -> Result<Json<Vec<StatRe
     let stats = Stat::iter().map(|stat| stat.into()).collect::<Vec<_>>();
 
     Ok(Json(stats))
+}
+
+async fn list_gems(State(_state): State<SharedState>) -> Result<Json<Vec<GemResponse>>> {
+    let gems = Gem::all().into_iter().map(Into::into).collect::<Vec<_>>();
+
+    Ok(Json(gems))
 }
 
 async fn list_item_slots(State(_state): State<SharedState>) -> Result<Json<Vec<ItemSlotResponse>>> {
