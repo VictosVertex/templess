@@ -31,12 +31,31 @@ impl Control {
     /// - `Err(ClingoError)` if there was an error during the creation process
     ///   of the control.
     pub fn new() -> Result<Self, ClingoError> {
+        Self::new_with_args(&[])
+    }
+
+    /// Creates a new `Control` instance with command-line style clingo arguments.
+    ///
+    /// # Errors
+    /// - `ClingoError` if there was an error during the creation process
+    ///   of the control.
+    pub fn new_with_args(args: &[&str]) -> Result<Self, ClingoError> {
         let mut control_pointer: *mut clingo_control_t = std::ptr::null_mut();
+
+        let arg_cstrings = args
+            .iter()
+            .map(|arg| CString::new(*arg))
+            .collect::<Result<Vec<_>, _>>()?;
+        let arg_ptrs = arg_cstrings.iter().map(|arg| arg.as_ptr()).collect::<Vec<_>>();
 
         let success = unsafe {
             clingo_control_new(
-                std::ptr::null(),
-                0,
+                if arg_ptrs.is_empty() {
+                    std::ptr::null()
+                } else {
+                    arg_ptrs.as_ptr()
+                },
+                arg_ptrs.len(),
                 None,
                 std::ptr::null_mut(),
                 0,
