@@ -34,7 +34,10 @@ pub enum ServerMessage {
 
     Solving,
 
-    NewModel { optimized_items: HashMap<u16, u32> },
+    NewModel {
+        optimized_items: HashMap<u16, u32>,
+        slotted_gems: HashMap<u32, Vec<u32>>,
+    },
 
     Finished,
 

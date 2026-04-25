@@ -120,7 +120,7 @@ impl From<Stat> for StatResponse {
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 pub struct GemResponse {
     pub id: u32,
     pub stat_id: u16,

@@ -105,14 +105,22 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                         OptimizeStatus::Setup => Some(ServerMessage::Setup),
                                         OptimizeStatus::Grounding => Some(ServerMessage::Grounding),
                                         OptimizeStatus::Solving => Some(ServerMessage::Solving),
-                                        OptimizeStatus::NewModel(template) => {
-                                            let optimized_items: HashMap<u16, u32> = template
+                                        OptimizeStatus::NewModel(result) => {
+                                            let optimized_items: HashMap<u16, u32> = result
+                                                .template
                                                 .slots
                                                 .into_iter()
                                                 .map(|(slot, item_id)| (slot.id(), item_id as u32))
                                                 .collect();
 
-                                            Some(ServerMessage::NewModel { optimized_items })
+                                            Some(ServerMessage::NewModel {
+                                                optimized_items,
+                                                slotted_gems: result
+                                                    .slotted_gem_ids
+                                                    .into_iter()
+                                                    .map(|(item_id, gem_ids)| (item_id as u32, gem_ids))
+                                                    .collect(),
+                                            })
                                         }
                                         OptimizeStatus::Finished => Some(ServerMessage::Finished),
                                         OptimizeStatus::Error(message) => {

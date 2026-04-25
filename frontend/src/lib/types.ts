@@ -72,6 +72,7 @@ export interface AppData {
 	isInitialized: boolean;
 	stats: Record<number, StatDefinition>;
 	classes: ClassResponse[];
+	gems: Gem[];
 	realms: Realm[];
 	templates: Template[];
 }
@@ -97,6 +98,19 @@ export interface Item {
 	utility: number;
 	bonuses: Record<number, number>;
 	source: ItemSource;
+}
+
+export interface Gem {
+	id: number;
+	stat_id: number;
+	tier: number;
+	value: number;
+	ip_cost: number;
+}
+
+export interface OptimizationResult {
+	optimized_items: Record<number, number>;
+	slotted_gems: Record<number, number[]>;
 }
 
 export enum ItemSlot {
@@ -157,7 +171,7 @@ export type ServerMessage =
 	| { type: ServerMessageType.Setup }
 	| { type: ServerMessageType.Grounding }
 	| { type: ServerMessageType.Solving }
-	| { type: ServerMessageType.NewModel; data: { optimized_items: Record<number, number> } }
+	| { type: ServerMessageType.NewModel; data: OptimizationResult }
 	| { type: ServerMessageType.Finished }
 	| { type: ServerMessageType.Canceled }
 	| { type: ServerMessageType.Error; data: { message: string } };

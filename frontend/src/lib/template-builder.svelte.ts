@@ -2,6 +2,7 @@ import {
 	ItemSlot,
 	StatCategory,
 	type ClassResponse,
+	type Gem,
 	type Item,
 	type Stat,
 	type StatDefinition,
@@ -22,6 +23,7 @@ export enum EquipSource {
 export interface EquippedItem {
 	item: Item;
 	source: EquipSource;
+	gems: Gem[];
 }
 
 export interface TemplateBuilderSnapshot {
@@ -41,18 +43,25 @@ export class TemplateBuilder {
 		this.getTemplateClass = templateClass;
 	}
 
-	equipItem(slot: ItemSlot, item: Item, source: EquipSource) {
-		this.equippedItems[slot] = { item, source };
+	equipItem(slot: ItemSlot, item: Item, source: EquipSource, gems: Gem[] = []) {
+		this.equippedItems[slot] = { item, source, gems };
 	}
 
-	applyOptimizationResult(equipMap: Partial<Record<ItemSlot, Item>>) {
+	applyOptimizationResult(
+		equipMap: Partial<Record<ItemSlot, Item>>,
+		slottedGems: Partial<Record<ItemSlot, Gem[]>>
+	) {
 		for (const [slotStr, item] of Object.entries(equipMap)) {
 			const slot = parseInt(slotStr) as ItemSlot;
 			if (this.equippedItems[slot] && this.equippedItems[slot]!.source === EquipSource.User) {
 				continue;
 			}
 
-			this.equippedItems[slot] = { item: item!, source: EquipSource.Optimizer };
+			this.equippedItems[slot] = {
+				item: item!,
+				source: EquipSource.Optimizer,
+				gems: slottedGems[slot] ?? []
+			};
 		}
 	}
 
@@ -157,6 +166,58 @@ export class TemplateBuilder {
 			}
 		}
 
+		function applyStatValue(statId: number, value: number) {
+			const statDef = stats[statId];
+
+			if (!statDef) {
+				return;
+			}
+
+			if (
+				statDef.category_id === StatCategory.PhysicalStatCaps ||
+				statDef.category_id === StatCategory.AcuityStatCaps
+			) {
+				if (statDef.base_stat_id) {
+					const baseStatToCap = uiMap.get(statDef.base_stat_id);
+					if (baseStatToCap) {
+						const maxCurrentCap = baseStatToCap.cap + statDef.cap;
+						baseStatToCap.currentCap = Math.min(baseStatToCap.currentCap + value, maxCurrentCap);
+					}
+				}
+
+				return;
+			}
+
+			const statToUpdate = uiMap.get(statId);
+			if (statToUpdate) {
+				statToUpdate.value += value;
+			}
+
+			let targetSkillCategory = null;
+			switch (statId) {
+				case ALL_MAGIC_SKILLS_ID:
+					targetSkillCategory = StatCategory.MagicSkills;
+					break;
+				case ALL_MELEE_SKILLS_ID:
+					targetSkillCategory = StatCategory.MeleeSkills;
+					break;
+				case ALL_ARCHERY_SKILLS_ID:
+					targetSkillCategory = StatCategory.ArcherySkills;
+					break;
+				case ALL_DUAL_WIELD_SKILLS_ID:
+					targetSkillCategory = StatCategory.DualWieldingSkills;
+					break;
+			}
+
+			if (targetSkillCategory !== null) {
+				for (const skill of b.skills) {
+					if (skill.category_id === targetSkillCategory) {
+						skill.value += value;
+					}
+				}
+			}
+		}
+
 		for (const equip of Object.values(this.equippedItems)) {
 			const item = equip.item;
 
@@ -164,51 +225,11 @@ export class TemplateBuilder {
 
 			for (const [statIdStr, value] of Object.entries(item.bonuses)) {
 				const statId = parseInt(statIdStr, 10);
-				const statDef = stats[statId];
+				applyStatValue(statId, value);
+			}
 
-				if (!statDef) continue;
-
-				if (
-					statDef.category_id === StatCategory.PhysicalStatCaps ||
-					statDef.category_id === StatCategory.AcuityStatCaps
-				) {
-					if (statDef.base_stat_id) {
-						const baseStatToCap = uiMap.get(statDef.base_stat_id);
-						if (baseStatToCap) {
-							const maxCurrentCap = baseStatToCap.cap + statDef.cap;
-							baseStatToCap.currentCap = Math.min(baseStatToCap.currentCap + value, maxCurrentCap);
-						}
-					}
-				} else {
-					const statToUpdate = uiMap.get(statId);
-					if (statToUpdate) {
-						statToUpdate.value += value;
-					}
-
-					let targetSkillCategory = null;
-					switch (statId) {
-						case ALL_MAGIC_SKILLS_ID:
-							targetSkillCategory = StatCategory.MagicSkills;
-							break;
-						case ALL_MELEE_SKILLS_ID:
-							targetSkillCategory = StatCategory.MeleeSkills;
-							break;
-						case ALL_ARCHERY_SKILLS_ID:
-							targetSkillCategory = StatCategory.ArcherySkills;
-							break;
-						case ALL_DUAL_WIELD_SKILLS_ID:
-							targetSkillCategory = StatCategory.DualWieldingSkills;
-							break;
-					}
-
-					if (targetSkillCategory !== null) {
-						for (const skill of b.skills) {
-							if (skill.category_id === targetSkillCategory) {
-								skill.value += value;
-							}
-						}
-					}
-				}
+			for (const gem of equip.gems) {
+				applyStatValue(gem.stat_id, gem.value);
 			}
 		}
 

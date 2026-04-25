@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { EquipSource } from '$lib/template-builder.svelte';
-	import { ItemSource } from '$lib/types';
+	import { ItemSource, type Gem, type StatDefinition } from '$lib/types';
 	import { Plus, X } from 'lucide-svelte';
 
 	let {
@@ -10,6 +10,8 @@
 		height = 'h-[70px]',
 		itemSource = null,
 		equipSource = null,
+		gems = [],
+		stats,
 		onclick,
 		onremove
 	}: {
@@ -19,9 +21,20 @@
 		height?: string;
 		itemSource?: ItemSource | null;
 		equipSource?: EquipSource | null;
+		gems?: Gem[];
+		stats: Record<number, StatDefinition>;
 		onclick?: () => void;
 		onremove?: (e: MouseEvent) => void;
 	} = $props();
+
+	let gemSummaries = $derived.by(() =>
+		gems.map((gem) => ({
+			key: `${gem.id}-${gem.tier}`,
+			label: (stats[gem.stat_id]?.name ?? `stat_${gem.stat_id}`).replace(/_/g, ' '),
+			value: gem.value,
+			tier: gem.tier
+		}))
+	);
 
 	let stateColors = $derived.by(() => {
 		if (equipSource === EquipSource.User) {
@@ -71,4 +84,17 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if gemSummaries.length > 0}
+		<div class="mt-2 flex max-w-28 flex-wrap justify-center gap-1">
+			{#each gemSummaries as gem (gem.key)}
+				<span
+					class="max-w-full truncate rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] font-technical tracking-wide text-success uppercase"
+					title={`+${gem.value} ${gem.label} (tier ${gem.tier + 1})`}
+				>
+					+{gem.value} {gem.label}
+				</span>
+			{/each}
+		</div>
+	{/if}
 </div>

@@ -4,13 +4,25 @@
 	import { INVENTORY_GROUPS, SLOT_NAMES } from '$lib/constants';
 	import InventorySlot from './InventorySlot.svelte';
 	import type { Backend } from '$lib/backend.svelte';
-	import { ClientMessageType, ItemSlot, OptimizationStatus, type ClientMessage } from '$lib/types';
+	import {
+		ClientMessageType,
+		ItemSlot,
+		OptimizationStatus,
+		type ClientMessage,
+		type StatDefinition
+	} from '$lib/types';
 
 	const {
 		builder,
 		backend,
+		stats,
 		onOpenSlot
-	}: { builder: TemplateBuilder; backend: Backend; onOpenSlot: (slot: ItemSlot) => void } =
+	}: {
+		builder: TemplateBuilder;
+		backend: Backend;
+		stats: Record<number, StatDefinition>;
+		onOpenSlot: (slot: ItemSlot) => void;
+	} =
 		$props();
 
 	const center = { x: 350, y: 350 };
@@ -103,7 +115,7 @@
 		<p
 			class="absolute top-4/5 left-1/2 -translate-x-1/2 text-center font-technical text-xl text-primary"
 		>
-			{builder.totalUtility}
+			{builder.totalUtility.toFixed(2)}
 		</p>
 		<button
 			class="absolute top-1/2 left-1/2 z-10 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out {buttonColor}"
@@ -125,6 +137,8 @@
 					height="h-[60px]"
 					itemSource={builder.equippedItems[slot]?.item.source ?? null}
 					equipSource={builder.equippedItems[slot]?.source ?? null}
+					gems={builder.equippedItems[slot]?.gems ?? []}
+					{stats}
 				/>
 			</div>
 		{/each}
@@ -143,6 +157,8 @@
 					height="h-[80px]"
 					itemSource={builder.equippedItems[slot]?.item.source ?? null}
 					equipSource={builder.equippedItems[slot]?.source ?? null}
+					gems={builder.equippedItems[slot]?.gems ?? []}
+					{stats}
 				/>
 			</div>
 		{/each}
@@ -159,6 +175,8 @@
 				height="h-[80px]"
 				itemSource={builder.equippedItems[slot]?.item.source ?? null}
 				equipSource={builder.equippedItems[slot]?.source ?? null}
+				gems={builder.equippedItems[slot]?.gems ?? []}
+				{stats}
 			/>
 		{/each}
 	</div>

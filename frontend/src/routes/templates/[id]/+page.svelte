@@ -7,7 +7,7 @@
 		TemplateBuilder,
 		type TemplateBuilderSnapshot
 	} from '$lib/template-builder.svelte';
-	import { ItemSlot, type Item, type StatPreference } from '$lib/types';
+	import { ItemSlot, type Item, type OptimizationResult, type StatPreference } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Attributes from './components/Attributes.svelte';
 	import Inventory from './components/Inventory.svelte';
@@ -37,21 +37,27 @@
 	);
 
 	const itemDictionary = $derived(Object.fromEntries(data.items.map((item) => [item.id, item])));
+	const gemDictionary = $derived(Object.fromEntries(data.gems.map((gem) => [gem.id, gem])));
 	const storageKey = $derived(`template-draft:${data.template.id}`);
 
-	const backend = new Backend((rawItems) => {
+	const backend = new Backend((result: OptimizationResult) => {
 		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
+		const inflatedGems: Partial<Record<ItemSlot, typeof data.gems>> = {};
 
-		for (const [slotStr, itemId] of Object.entries(rawItems)) {
+		for (const [slotStr, itemId] of Object.entries(result.optimized_items)) {
 			const slot = parseInt(slotStr, 10) as ItemSlot;
 			const fullItem = itemDictionary[itemId];
 
 			if (fullItem) {
 				inflatedItems[slot] = fullItem;
 			}
+
+			inflatedGems[slot] = (result.slotted_gems[itemId] ?? [])
+				.map((gemId) => gemDictionary[gemId])
+				.filter((gem) => gem !== undefined);
 		}
 
-		builder.applyOptimizationResult(inflatedItems);
+		builder.applyOptimizationResult(inflatedItems, inflatedGems);
 	});
 
 	onMount(() => {
@@ -130,7 +136,7 @@
             -translate-y-1/2 rounded-full bg-primary/5 blur-[100px]"
 			></div>
 
-			<Inventory onOpenSlot={handleOpenSlot} {builder} {backend} />
+			<Inventory onOpenSlot={handleOpenSlot} {builder} {backend} stats={data.stats} />
 		</div>
 
 		<div class="flex w-full flex-col gap-6">

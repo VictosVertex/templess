@@ -4,6 +4,7 @@ import {
 	OptimizationStatus,
 	ServerMessageType,
 	type ClientMessage,
+	type OptimizationResult,
 	type ServerMessage
 } from './types';
 
@@ -19,9 +20,9 @@ export class Backend {
 	optimizationStatus = $state(OptimizationStatus.Ready);
 	lastMessage = $state<ServerMessage | null>(null);
 
-	private onNewModelReceived: (rawItems: Record<number, number>) => void;
+	private onNewModelReceived: (result: OptimizationResult) => void;
 
-	constructor(onNewModelReceived: (rawItems: Record<number, number>) => void) {
+	constructor(onNewModelReceived: (result: OptimizationResult) => void) {
 		this.onNewModelReceived = onNewModelReceived;
 	}
 
@@ -58,7 +59,7 @@ export class Backend {
 					this.optimizationStatus = OptimizationStatus.Ready;
 					break;
 				case ServerMessageType.NewModel:
-					this.onNewModelReceived(message.data.optimized_items);
+					this.onNewModelReceived(message.data);
 					break;
 			}
 

@@ -10,6 +10,7 @@ use crate::optimization::instance::{
     stat_baseline_atoms,
 };
 use anyhow::{Context, Result, anyhow};
+use std::collections::HashMap;
 use std::thread;
 use std::{
     path::Path,
@@ -30,6 +31,16 @@ impl OptimizationHandle {
     }
 }
 
+pub struct OptimizationResult {
+    pub template: Template,
+    pub slotted_gem_ids: HashMap<i32, Vec<u32>>,
+}
+
+struct ModelSelection {
+    chosen_items: Vec<(ItemSlot, i32)>,
+    slotted_gem_ids: HashMap<i32, Vec<u32>>,
+}
+
 /// Represents the current status of the optimization process.
 pub enum OptimizeStatus {
     /// Setup of the problem instance and loading of the encoding.
@@ -39,7 +50,7 @@ pub enum OptimizeStatus {
     /// Solving the optimization problem and retrieving models.
     Solving,
     /// A new model has been found during the optimization process.
-    NewModel(Template),
+    NewModel(OptimizationResult),
     /// The optimization process has finished, either because all models have been found or because it was stopped.
     Finished,
     /// An error occurred during the optimization process, with a message describing the error.
@@ -133,15 +144,18 @@ fn run_optimization_logic(
         if ready {
             match handle.model() {
                 Ok(Some(model_ref)) => {
-                    let chosen_items = chosen_items_from_model(model_ref)?;
+                    let selection = model_selection_from_model(model_ref)?;
 
                     let mut new_template = template.clone();
 
-                    for (slot, item_id) in chosen_items {
+                    for (slot, item_id) in selection.chosen_items {
                         new_template.slots.insert(slot, item_id);
                     }
 
-                    status_sender.send(OptimizeStatus::NewModel(new_template))?;
+                    status_sender.send(OptimizeStatus::NewModel(OptimizationResult {
+                        template: new_template,
+                        slotted_gem_ids: selection.slotted_gem_ids,
+                    }))?;
 
                     handle.resume()?;
                 }
@@ -159,22 +173,23 @@ fn run_optimization_logic(
     Ok(())
 }
 
-/// Extracts the chosen items from a given model.
+/// Extracts the chosen items and slotted gems from a given model.
 ///
 /// # Parameters
 /// - `model`: The model from which to extract the chosen items.
 ///
 /// # Returns
-/// - `Ok(Vec<(ItemSlot, i32)>)` containing a vector of tuples
-///   where each tuple consists of an `ItemSlot` and the corresponding item ID if successful.
+/// - `Ok(ModelSelection)` containing the chosen item IDs per slot and any gem IDs assigned
+///   to crafted items if successful.
 ///
 /// # Errors
 /// - `Err(anyhow::Error)` if an error occurs during the extraction process,
 ///   such as parsing errors or unexpected symbol types.
-fn chosen_items_from_model(model: Model) -> Result<Vec<(ItemSlot, i32)>> {
+fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
     let symbols = model.symbols(2)?;
 
-    let mut items = Vec::new();
+    let mut chosen_items = Vec::new();
+    let mut slotted_gem_ids: HashMap<i32, Vec<u32>> = HashMap::new();
 
     for symbol in symbols {
         if symbol.kind() != SymbolType::Function {
@@ -183,27 +198,45 @@ fn chosen_items_from_model(model: Model) -> Result<Vec<(ItemSlot, i32)>> {
 
         let name = symbol.name()?;
 
-        if name != "slot_chosen" {
-            continue;
-        }
-
         let arguments = symbol.arguments()?;
 
-        let slot_symbol = arguments
-            .first()
-            .ok_or_else(|| anyhow!("Expected an argument for `slot` at index 0 in slot_chosen"))?;
+        match name.as_str() {
+            "slot_chosen" => {
+                let slot_symbol = arguments.first().ok_or_else(|| {
+                    anyhow!("Expected an argument for `slot` at index 0 in slot_chosen")
+                })?;
 
-        let item_symbol = arguments
-            .get(1)
-            .ok_or_else(|| anyhow!("Expected an argument for `item` at index 1 in slot_chosen"))?;
+                let item_symbol = arguments.get(1).ok_or_else(|| {
+                    anyhow!("Expected an argument for `item` at index 1 in slot_chosen")
+                })?;
 
-        let slot_number = slot_symbol.number().context("Failed to parse slot ID")?;
+                let slot_number = slot_symbol.number().context("Failed to parse slot ID")?;
 
-        let slot = ItemSlot::from_repr(slot_number as u16)
-            .ok_or_else(|| anyhow!("Invalid slot representation: {}", slot_number))?;
+                let slot = ItemSlot::from_repr(slot_number as u16)
+                    .ok_or_else(|| anyhow!("Invalid slot representation: {}", slot_number))?;
 
-        items.push((slot, item_symbol.number()?));
+                chosen_items.push((slot, item_symbol.number()?));
+            }
+            "slotted_gem" => {
+                let item_symbol = arguments.first().ok_or_else(|| {
+                    anyhow!("Expected an argument for `item` at index 0 in slotted_gem")
+                })?;
+
+                let gem_symbol = arguments.get(1).ok_or_else(|| {
+                    anyhow!("Expected an argument for `gem` at index 1 in slotted_gem")
+                })?;
+
+                let item_id = item_symbol.number().context("Failed to parse item ID")?;
+                let gem_id = gem_symbol.number().context("Failed to parse gem ID")? as u32;
+
+                slotted_gem_ids.entry(item_id).or_default().push(gem_id);
+            }
+            _ => {}
+        }
     }
 
-    Ok(items)
+    Ok(ModelSelection {
+        chosen_items,
+        slotted_gem_ids,
+    })
 }

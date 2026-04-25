@@ -3,6 +3,7 @@
 use crate::core::domain::gem::Gem;
 use crate::core::domain::item::ItemSource;
 use crate::core::domain::preference::Preference;
+use crate::core::domain::stat_category::StatCategory;
 use crate::core::domain::{
     class::Class, item::Item, item_slot::ItemSlot, stat::Stat, template::Template,
 };
@@ -99,12 +100,32 @@ pub fn stat_atoms() -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- STATS ---")?;
     for stat in Stat::iter() {
+        let gem_category = match stat.category() {
+            StatCategory::PhysicalStats | StatCategory::AcuityStats => {
+                if stat == Stat::Hitpoints {
+                    "hitpoints"
+                } else {
+                  "stat"  
+                }
+            },
+            StatCategory::Resists => "resists",
+            _ => "skills",
+        };
+
+
         writeln!(
             asp,
             "stat({}, {}, {}).",
             stat.name(),
             (stat.utility_per_point() * 100.0).round() as i32,
             stat.cap()
+        )?;
+
+        writeln!(
+            asp,
+            "stat_gem_category({}, {}).",
+            stat.name(),
+            gem_category
         )?;
 
         if let Some(cap) = stat.cap_stat() {
