@@ -99,6 +99,16 @@ highest_gem_cost(ITEM, COST) :-
    ITEM_1 < ITEM_2,
    STAT_1 > STAT_2.
 
+% Symmetry breaking of the same gems with the same cost
+:- slotted_gem(ITEM_1, ID_1), 
+   slotted_gem(ITEM_2, ID_2), 
+   gem(ID_1, STAT_1, _, _, COST), 
+   gem(ID_2, STAT_2, _, _, COST), 
+   stat_gem_category(STAT_1, CATEGORY),
+   stat_gem_category(STAT_2, CATEGORY),
+   ITEM_1 < ITEM_2,
+   STAT_1 > STAT_2.
+
 % It cannot be the case that a preference of 10 is not met.
 :- effective_stat(STAT, VALUE), preference(STAT, MIN, 10), VALUE < MIN.
 
