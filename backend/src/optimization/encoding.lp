@@ -112,7 +112,8 @@ highest_gem_cost(ITEM, COST) :-
 % It cannot be the case that a preference of 10 is not met.
 :- effective_stat(STAT, VALUE), preference(STAT, MIN, 10), VALUE < MIN.
 
-#maximize { V * UTILITY * WEIGHT@1, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _)}.
+% It cannot be the case that a preference of 10 is not met.
+:- effective_stat(STAT, VALUE), preference(STAT, MIN, WEIGHT), VALUE < MIN*4/5, WEIGHT > 0.
 
 #show slot_chosen/2.
 #show effective_stat/2.
