@@ -123,3 +123,11 @@ highest_gem_cost(ITEM, COST) :-
 #show slot_chosen/2.
 #show effective_stat/2.
 #show slotted_gem/2.
+
+#heuristic slot_chosen(SLOT, ITEM) :
+    slot(SLOT, TYPE),
+    item(ITEM, TYPE, _),
+    effective_bonus(ITEM, CAP_STAT, VALUE), VALUE > 0,
+    stat_base(CAP_STAT, STAT),
+    preference(STAT, _, _).
+[100@4, true]
