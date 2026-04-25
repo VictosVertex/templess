@@ -43,7 +43,9 @@ pub enum ServerMessage {
 
     Canceled,
 
-    Error { message: String },
+    Error {
+        message: String,
+    },
 }
 
 impl TryFrom<OptimizationRequest> for Template {

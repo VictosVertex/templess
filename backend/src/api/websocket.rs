@@ -118,7 +118,9 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                                 slotted_gems: result
                                                     .slotted_gem_ids
                                                     .into_iter()
-                                                    .map(|(item_id, gem_ids)| (item_id as u32, gem_ids))
+                                                    .map(|(item_id, gem_ids)| {
+                                                        (item_id as u32, gem_ids)
+                                                    })
                                                     .collect(),
                                             })
                                         }

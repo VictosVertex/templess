@@ -46,7 +46,10 @@ impl Control {
             .iter()
             .map(|arg| CString::new(*arg))
             .collect::<Result<Vec<_>, _>>()?;
-        let arg_ptrs = arg_cstrings.iter().map(|arg| arg.as_ptr()).collect::<Vec<_>>();
+        let arg_ptrs = arg_cstrings
+            .iter()
+            .map(|arg| arg.as_ptr())
+            .collect::<Vec<_>>();
 
         let success = unsafe {
             clingo_control_new(

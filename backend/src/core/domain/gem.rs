@@ -87,7 +87,7 @@ impl Gem {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::BTreeMap};
+    use std::collections::BTreeMap;
 
     use itertools::Itertools;
 
