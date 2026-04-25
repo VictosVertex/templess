@@ -11,6 +11,28 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use strum::IntoEnumIterator;
 
+fn item_slot_is_available(template: &Template, item_id: i32, item_slot: ItemSlot) -> bool {
+    if template
+        .slots
+        .values()
+        .any(|&fixed_item_id| fixed_item_id == item_id)
+    {
+        return false;
+    }
+
+    match item_slot {
+        ItemSlot::Ring | ItemSlot::Ring2 => {
+            !template.slots.contains_key(&ItemSlot::Ring)
+                || !template.slots.contains_key(&ItemSlot::Ring2)
+        }
+        ItemSlot::Bracer | ItemSlot::Bracer2 => {
+            !template.slots.contains_key(&ItemSlot::Bracer)
+                || !template.slots.contains_key(&ItemSlot::Bracer2)
+        }
+        _ => !template.slots.contains_key(&item_slot),
+    }
+}
+
 /// Generates item related ASP atoms.
 ///
 /// # Errors
@@ -20,7 +42,7 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
 
     for item in items {
-        if template.slots.contains_key(&item.item_slot) {
+        if !item_slot_is_available(template, item.id, item.item_slot) {
             continue;
         }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { EquipSource } from '$lib/template-builder.svelte';
 	import type { TemplateBuilder } from '$lib/template-builder.svelte';
 	import { INVENTORY_GROUPS, SLOT_NAMES } from '$lib/constants';
 	import InventorySlot from './InventorySlot.svelte';
@@ -47,9 +48,13 @@
 			backend.optimizationStatus === OptimizationStatus.Finished
 		) {
 			const equipped_items: Record<number, number> = {};
-			builder.userEquippedItems().forEach((item) => {
-				equipped_items[item.item_slot_id] = item.id;
-			});
+			for (const [slot, equippedItem] of Object.entries(builder.equippedItems)) {
+				if (equippedItem?.source !== EquipSource.User) {
+					continue;
+				}
+
+				equipped_items[parseInt(slot, 10)] = equippedItem.item.id;
+			}
 
 			const request: ClientMessage = {
 				type: ClientMessageType.Start,
