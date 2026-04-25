@@ -103,15 +103,19 @@ pub fn stat_atoms() -> Result<String> {
         let gem_category = match stat.category() {
             StatCategory::PhysicalStats | StatCategory::AcuityStats => {
                 if stat == Stat::Hitpoints {
-                    "hitpoints"
+                    Some("hitpoints")
                 } else {
-                  "stat"  
+                    Some("stat")
                 }
-            },
-            StatCategory::Resists => "resists",
-            _ => "skills",
+            }
+            StatCategory::Resists => Some("resists"),
+            StatCategory::MagicSkills
+            | StatCategory::MeleeSkills
+            | StatCategory::OtherSkills
+            | StatCategory::DualWieldingSkills
+            | StatCategory::ArcherySkills => Some("skills"),
+            _ => None,
         };
-
 
         writeln!(
             asp,
@@ -121,12 +125,9 @@ pub fn stat_atoms() -> Result<String> {
             stat.cap()
         )?;
 
-        writeln!(
-            asp,
-            "stat_gem_category({}, {}).",
-            stat.name(),
-            gem_category
-        )?;
+        if let Some(gem_category) = gem_category {
+            writeln!(asp, "stat_gem_category({}, {}).", stat.name(), gem_category)?;
+        }
 
         if let Some(cap) = stat.cap_stat() {
             writeln!(asp, "stat_cap({}, {}).", stat.name(), cap.name())?;
