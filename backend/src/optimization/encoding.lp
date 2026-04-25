@@ -61,8 +61,7 @@ higher_gem_cost_exists(ITEM, COST) :-
     gem(ID_1, _, _, _, COST),
     slotted_gem(ITEM, ID_2),
     gem(ID_2, _, _, _, OTHER_COST),
-    OTHER_COST > COST,
-    ID_1 < ID_2.
+    OTHER_COST > COST.
 
 highest_gem_cost(ITEM, COST) :-
     slot_chosen(_, ITEM),
