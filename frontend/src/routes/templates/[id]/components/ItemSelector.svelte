@@ -5,11 +5,13 @@
 	let {
 		items,
 		targetSlot,
+		currentItem,
 		stats,
 		onSelect
 	}: {
 		items: Item[];
 		targetSlot: ItemSlot | null;
+		currentItem: Item | null;
 		stats: Record<number, StatDefinition>;
 		onSelect: (item: Item) => void;
 	} = $props();
@@ -29,6 +31,20 @@
 	let previewItem = $state<Item | null>(null);
 	let sortedItems = $derived.by(() => {
 		return selectableItems.slice().sort((a, b) => (b.utility || 0) - (a.utility || 0));
+	});
+
+	$effect(() => {
+		if (targetSlot === null) {
+			previewItem = null;
+			return;
+		}
+
+		if (currentItem && sortedItems.some((item) => item.id === currentItem.id)) {
+			previewItem = currentItem;
+			return;
+		}
+
+		previewItem = sortedItems[0] ?? null;
 	});
 
 	let previewStats = $derived.by(() => {

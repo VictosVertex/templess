@@ -157,6 +157,7 @@
 	<ItemSelector
 		items={data.items}
 		targetSlot={activeSlot}
+		currentItem={activeSlot !== null ? builder.equippedItems[activeSlot]?.item ?? null : null}
 		stats={data.stats}
 		onSelect={handleItemSelection}
 	/>
