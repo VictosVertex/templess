@@ -120,14 +120,22 @@ highest_gem_cost(ITEM, COST) :-
 % Try to reach the goal with as few chosen stats as possible.
 #minimize { VALUE @1, ITEM, STAT : chosen_bonus(ITEM, STAT, VALUE), preference(STAT, _, _) }.
 
-#show slot_chosen/2.
-#show effective_stat/2.
-#show slotted_gem/2.
+#heuristic slot_chosen(SLOT, ITEM) :
+    slot(SLOT, TYPE),
+    item(ITEM, TYPE, _),
+    effective_bonus(ITEM, STAT, VALUE), VALUE > 0,
+    preference(STAT, MIN, WEIGHT), MIN > 0.
+[50@1, true]
 
 #heuristic slot_chosen(SLOT, ITEM) :
     slot(SLOT, TYPE),
     item(ITEM, TYPE, _),
+    crafted_item(ITEM),
     effective_bonus(ITEM, CAP_STAT, VALUE), VALUE > 0,
     stat_base(CAP_STAT, STAT),
-    preference(STAT, _, _).
-[100@4, true]
+    preference(STAT, MIN, WEIGHT), MIN > 0.
+[500@1, true]
+
+#show slot_chosen/2.
+#show effective_stat/2.
+#show slotted_gem/2.
