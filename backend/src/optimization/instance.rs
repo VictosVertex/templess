@@ -2,7 +2,6 @@
 
 use crate::core::domain::gem::Gem;
 use crate::core::domain::item::ItemSource;
-use crate::core::domain::item_bonus::ItemBonus;
 use crate::core::domain::preference::Preference;
 use crate::core::domain::stat_category::StatCategory;
 use crate::core::domain::{
@@ -35,11 +34,42 @@ fn item_slot_is_available(template: &Template, item_id: i32, item_slot: ItemSlot
     }
 }
 
-fn stat_to_class_stat(stat: Stat, class: Class) -> Option<Stat> {
+fn resolved_bonus_stats(stat: Stat, class: Class) -> Vec<Stat> {
     match stat {
-        Stat::Acuity => class.acuity_stat(),
-        Stat::AcuityCap => class.acuity_stat().and_then(|stat| stat.cap_stat()),
-        stat => Some(stat),
+        Stat::Acuity => class.acuity_stat().into_iter().collect(),
+        Stat::AcuityCap => class
+            .acuity_stat()
+            .and_then(|stat| stat.cap_stat())
+            .into_iter()
+            .collect(),
+        Stat::AllMagicSkills => class
+            .skill_lines()
+            .iter()
+            .filter(|line| matches!(line.category(), StatCategory::MagicSkills))
+            .cloned()
+            .collect(),
+
+        Stat::AllMeleeSkills => class
+            .skill_lines()
+            .iter()
+            .filter(|line| matches!(line.category(), StatCategory::MeleeSkills))
+            .cloned()
+            .collect(),
+
+        Stat::AllArcherySkills => class
+            .skill_lines()
+            .iter()
+            .filter(|line| matches!(line.category(), StatCategory::ArcherySkills))
+            .cloned()
+            .collect(),
+        Stat::AllDualWieldingSkills => class
+            .skill_lines()
+            .iter()
+            .filter(|line| matches!(line.category(), StatCategory::DualWieldingSkills))
+            .cloned()
+            .collect(),
+
+        _ => vec![stat],
     }
 }
 
@@ -56,19 +86,17 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
             continue;
         }
 
-        let preferred_bonuses: Vec<&ItemBonus> = item
+        let preferred_bonus_count = item
             .bonuses
             .iter()
             .filter(|bonus| {
-                let Some(actual_stat) = stat_to_class_stat(bonus.stat, template.class) else {
-                    return false;
-                };
-
-                template.preferences.contains_key(&actual_stat.id())
+                resolved_bonus_stats(bonus.stat, template.class)
+                    .into_iter()
+                    .any(|stat| template.preferences.get(&stat.id()).is_some())
             })
-            .collect();
+            .count();
 
-        let unneeded_bonuses = item.bonuses.len() - preferred_bonuses.len();
+        let unneeded_bonuses = item.bonuses.len() - preferred_bonus_count;
 
         if unneeded_bonuses > 2 {
             continue;
@@ -86,7 +114,7 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
             writeln!(asp, "crafted_item({}).", item.id)?;
         }
 
-        let mut utility = 0;
+        let mut utility = 0u32;
 
         for bonus in &item.bonuses {
             let stat_name = bonus.stat.to_string().to_lowercase();
@@ -96,7 +124,12 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
                 item.id, stat_name, bonus.value
             )?;
 
-            utility += (bonus.stat.utility_per_point() * 100.0) as u16 * bonus.value;
+            let utility_per_point: f32 = resolved_bonus_stats(bonus.stat, template.class)
+                .into_iter()
+                .map(|stat| stat.utility_per_point())
+                .sum();
+
+            utility += (utility_per_point * 100.0).round() as u32 * u32::from(bonus.value);
         }
 
         writeln!(asp, "item_utility({}, {}).", item.id, utility)?;
@@ -231,14 +264,10 @@ pub fn stat_baseline_atoms(template: &Template, items: &[Item]) -> Result<String
 
     for item in items.iter().filter(|i| equipped_item_ids.contains(&i.id)) {
         for bonus in &item.bonuses {
-            let actual_stat = stat_to_class_stat(bonus.stat, template.class);
-
-            let Some(stat) = actual_stat else {
-                continue;
-            };
-
-            if let Some(baseline) = baselines.get_mut(&stat) {
-                *baseline += bonus.value;
+            for stat in resolved_bonus_stats(bonus.stat, template.class) {
+                if let Some(baseline) = baselines.get_mut(&stat) {
+                    *baseline += bonus.value;
+                }
             }
         }
     }
