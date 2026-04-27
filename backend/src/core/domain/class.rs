@@ -259,6 +259,9 @@ impl Class {
             Bard => add(&[Nurture, Regrowth, Music, Blade, Blunt]),
             Cleric => add(&[Rejuvenation, Enhancement, Smiting]),
             Theurgist => add(&[Earth, Cold, Wind]),
+            Paladin => add(&[
+                Slashing, Thrusting, Crushing, TwoHanded, Shield, Parry, Chants,
+            ]),
             _ => {}
         }
 
@@ -315,6 +318,7 @@ impl Class {
             Bard => add(&[Reinforced, Instrument, Blade, Blunt, Shield]),
             Cleric => add(&[Chain, Shield, Crush]),
             Theurgist => add(&[Cloth, Staff]),
+            Paladin => add(&[Plate, Slash, Thrust, Crush, TwoHanded, Shield]),
             _ => {}
         }
 
