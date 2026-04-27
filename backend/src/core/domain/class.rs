@@ -258,6 +258,7 @@ impl Class {
         match self {
             Bard => add(&[Nurture, Regrowth, Music, Blade, Blunt]),
             Cleric => add(&[Rejuvenation, Enhancement, Smiting]),
+            Theurgist => add(&[Earth, Cold, Wind]),
             _ => {}
         }
 
@@ -280,6 +281,7 @@ impl Class {
         match self {
             Bard => Some(Charisma),
             Cleric => Some(Piety),
+            Theurgist => Some(Intelligence),
             _ => None,
         }
     }
@@ -312,6 +314,7 @@ impl Class {
         match self {
             Bard => add(&[Reinforced, Instrument, Blade, Blunt, Shield]),
             Cleric => add(&[Chain, Shield, Crush]),
+            Theurgist => add(&[Cloth, Staff]),
             _ => {}
         }
 
