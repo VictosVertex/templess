@@ -1,6 +1,21 @@
+#include "encoding.d.lp".
+#include "instance.d.lp".
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generation
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Choose an item for each slot.
+% This also selects the bases used for crafting.
 % We do not pick weapons yet.
 1{slot_chosen(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13.
+
+% Choose 4 gems for each chosen crafted item.
+{slotted_gem(ITEM,ID):gem(ID,STAT,_,_,_)} = 4 :- slot_chosen(SLOT,ITEM), crafted_item(ITEM).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Translate item bonuses to effective bonuses.
 % This is done for mapping acuity to the respective actuity stat of the class.
@@ -20,38 +35,10 @@ effective_bonus(ITEM, STAT, VALUE) :-
     item_bonus(ITEM, all_magic_skills, VALUE),
     class_skill_line(magic_skills,STAT).
 
-{slotted_gem(ITEM,ID):gem(ID,STAT,_,_,_)} = 4 :- slot_chosen(SLOT,ITEM), crafted_item(ITEM).
-
-% Translate gem bonuses per item to effective bonuses.
+% Translate gem bonuses for slotted gems to effective bonuses.
 effective_bonus(ITEM, STAT, VALUE) :-
     slotted_gem(ITEM,ID),
     gem(ID,STAT,_,VALUE,_).
-
-% Calculate stat caps
-dynamic_cap(STAT, BASE_CAP + OVER_CAP) :-
-    stat(STAT, _, BASE_CAP),
-    stat_cap(STAT, CAP_STAT),
-    effective_stat(CAP_STAT, OVER_CAP).
-
-dynamic_cap(STAT, BASE_CAP) :-
-    stat(STAT, _, BASE_CAP),
-    not stat_cap(STAT, _).
-
-% Aggregate effective stats
-chosen_bonus(ITEM, STAT,VALUE) :- slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE).
-
-effective_stat(STAT, CAP) :-
-    preference(STAT, _, _),
-    stat_baseline(STAT, BASELINE),
-    dynamic_cap(STAT, CAP),
-    #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) } >= CAP - BASELINE.
-
-effective_stat(STAT, TOTAL + BASELINE) :-
-    preference(STAT, _, _),
-    stat_baseline(STAT, BASELINE),
-    dynamic_cap(STAT, CAP),
-    TOTAL = #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) },
-    TOTAL < CAP - BASELINE.
 
 % The highest gem cost in an item.
 % this is used because in DAoC crafting the cost for the most expensive gem is applied twice.
@@ -69,6 +56,40 @@ highest_gem_cost(ITEM, COST) :-
     slotted_gem(ITEM, ID),
     gem(ID, _, _, _, COST),
     not higher_gem_cost_exists(ITEM, COST).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Aggregation
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Calculate stat caps
+dynamic_cap(STAT, BASE_CAP + OVER_CAP) :-
+    stat(STAT, _, BASE_CAP),
+    stat_cap(STAT, CAP_STAT),
+    effective_stat(CAP_STAT, OVER_CAP).
+
+dynamic_cap(STAT, BASE_CAP) :-
+    stat(STAT, _, BASE_CAP),
+    not stat_cap(STAT, _).
+  
+% Aggregate effective stats
+chosen_bonus(ITEM, STAT,VALUE) :- slot_chosen(_,ITEM), effective_bonus(ITEM, STAT, VALUE).
+
+effective_stat(STAT, CAP) :-
+    preference(STAT, _, _),
+    stat_baseline(STAT, BASELINE),
+    dynamic_cap(STAT, CAP),
+    #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) } >= CAP - BASELINE.
+
+effective_stat(STAT, TOTAL + BASELINE) :-
+    preference(STAT, _, _),
+    stat_baseline(STAT, BASELINE),
+    dynamic_cap(STAT, CAP),
+    TOTAL = #sum { VALUE, ITEM : chosen_bonus(ITEM, STAT,VALUE) },
+    TOTAL < CAP - BASELINE.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Constraints
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % It cannot be the case that the total cost of gems in a crafted item
 % is not in the 360-375 range. This corresponds to 36.0 - 37.5 Imbue Points.
@@ -115,11 +136,17 @@ highest_gem_cost(ITEM, COST) :-
 % It cannot be the case that a preference of 10 is not met.
 :- effective_stat(STAT, VALUE), preference(STAT, MIN, WEIGHT), VALUE < MIN*4/5, WEIGHT > 0.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Optimization
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Maximize the weighted utility of the effective stats.
 #maximize { V * UTILITY * WEIGHT@2, STAT : effective_stat(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _)}.
 
-% Try to reach the goal with as few chosen stats as possible.
+% Minimize the total value of the chosen bonuses to achieve the desired stats.
 #minimize { VALUE @1, ITEM, STAT : chosen_bonus(ITEM, STAT, VALUE), preference(STAT, _, _) }.
 
+% Prioritize items that provide bonuses to stats with preferences.
 #heuristic slot_chosen(SLOT, ITEM) :
     slot(SLOT, TYPE),
     item(ITEM, TYPE, _),
@@ -127,6 +154,7 @@ highest_gem_cost(ITEM, COST) :-
     preference(STAT, MIN, WEIGHT), MIN > 0.
 [50@1, true]
 
+% Prioritize crafted items with cap increases for stats with preferences.
 #heuristic slot_chosen(SLOT, ITEM) :
     slot(SLOT, TYPE),
     item(ITEM, TYPE, _),
