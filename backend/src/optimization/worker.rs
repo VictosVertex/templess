@@ -33,12 +33,12 @@ impl OptimizationHandle {
 
 pub struct OptimizationResult {
     pub template: Template,
-    pub slotted_gem_ids: HashMap<i32, Vec<u32>>,
+    pub equipped_gem_ids: HashMap<i32, Vec<u32>>,
 }
 
 struct ModelSelection {
     chosen_items: Vec<(ItemSlot, i32)>,
-    slotted_gem_ids: HashMap<i32, Vec<u32>>,
+    equipped_gem_ids: HashMap<i32, Vec<u32>>,
 }
 
 /// Represents the current status of the optimization process.
@@ -154,7 +154,7 @@ fn run_optimization_logic(
 
                     status_sender.send(OptimizeStatus::NewModel(OptimizationResult {
                         template: new_template,
-                        slotted_gem_ids: selection.slotted_gem_ids,
+                        equipped_gem_ids: selection.equipped_gem_ids,
                     }))?;
 
                     handle.resume()?;
@@ -189,7 +189,7 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
     let symbols = model.symbols(2)?;
 
     let mut chosen_items = Vec::new();
-    let mut slotted_gem_ids: HashMap<i32, Vec<u32>> = HashMap::new();
+    let mut equipped_gem_ids: HashMap<i32, Vec<u32>> = HashMap::new();
 
     for symbol in symbols {
         if symbol.kind() != SymbolType::Function {
@@ -201,13 +201,13 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
         let arguments = symbol.arguments()?;
 
         match name.as_str() {
-            "slot_chosen" => {
+            "equipped_item" => {
                 let slot_symbol = arguments.first().ok_or_else(|| {
-                    anyhow!("Expected an argument for `slot` at index 0 in slot_chosen")
+                    anyhow!("Expected an argument for `slot` at index 0 in equipped_item")
                 })?;
 
                 let item_symbol = arguments.get(1).ok_or_else(|| {
-                    anyhow!("Expected an argument for `item` at index 1 in slot_chosen")
+                    anyhow!("Expected an argument for `item` at index 1 in equipped_item")
                 })?;
 
                 let slot_number = slot_symbol.number().context("Failed to parse slot ID")?;
@@ -217,19 +217,19 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
 
                 chosen_items.push((slot, item_symbol.number()?));
             }
-            "slotted_gem" => {
+            "equipped_gem" => {
                 let item_symbol = arguments.first().ok_or_else(|| {
-                    anyhow!("Expected an argument for `item` at index 0 in slotted_gem")
+                    anyhow!("Expected an argument for `item` at index 0 in equipped_gem")
                 })?;
 
                 let gem_symbol = arguments.get(1).ok_or_else(|| {
-                    anyhow!("Expected an argument for `gem` at index 1 in slotted_gem")
+                    anyhow!("Expected an argument for `gem` at index 1 in equipped_gem")
                 })?;
 
                 let item_id = item_symbol.number().context("Failed to parse item ID")?;
                 let gem_id = gem_symbol.number().context("Failed to parse gem ID")? as u32;
 
-                slotted_gem_ids.entry(item_id).or_default().push(gem_id);
+                equipped_gem_ids.entry(item_id).or_default().push(gem_id);
             }
             _ => {}
         }
@@ -237,6 +237,6 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
 
     Ok(ModelSelection {
         chosen_items,
-        slotted_gem_ids,
+        equipped_gem_ids,
     })
 }

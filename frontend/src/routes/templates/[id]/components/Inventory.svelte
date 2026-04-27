@@ -22,8 +22,7 @@
 		backend: Backend;
 		stats: Record<number, StatDefinition>;
 		onOpenSlot: (slot: ItemSlot) => void;
-	} =
-		$props();
+	} = $props();
 
 	const center = { x: 350, y: 350 };
 	const innerRadius = 140;

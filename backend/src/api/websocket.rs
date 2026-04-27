@@ -106,7 +106,7 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                         OptimizeStatus::Grounding => Some(ServerMessage::Grounding),
                                         OptimizeStatus::Solving => Some(ServerMessage::Solving),
                                         OptimizeStatus::NewModel(result) => {
-                                            let optimized_items: HashMap<u16, u32> = result
+                                            let equipped_items: HashMap<u16, u32> = result
                                                 .template
                                                 .slots
                                                 .into_iter()
@@ -114,9 +114,9 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                                 .collect();
 
                                             Some(ServerMessage::NewModel {
-                                                optimized_items,
-                                                slotted_gems: result
-                                                    .slotted_gem_ids
+                                                equipped_items,
+                                                equipped_gems: result
+                                                    .equipped_gem_ids
                                                     .into_iter()
                                                     .map(|(item_id, gem_ids)| {
                                                         (item_id as u32, gem_ids)

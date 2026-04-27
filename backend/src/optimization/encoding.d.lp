@@ -1,18 +1,17 @@
-%*! slot_chosen(SlotId, ItemId)
+%*! equipped_item(SlotId, ItemId)
 
-An item that is chosen for a slot.
+An item that is equipped in a specific slot.
 
 This item may be a fixed or a crafted item.
 
 Args:
-- SlotId: The slot for which the item is chosen.
-- ItemId: The unique identifier of the item that is chosen for the slot.
-
+- SlotId: The unique identifier of the slot in which the item is equipped.
+- ItemId: The unique identifier of the item that is equipped in the slot.
 *%
 
-%*! effective_bonus(ItemId, Stat, Value)
+%*! resolved_bonus(ItemId, Stat, Value)
 
-The effective bonus of an item for a specific stat.
+The bonus of an item resolved to a class specific stat.
 
 This is used to combine item bonuses with gem bonuses and to map item
 bonuses to the respective stat of the class. For example, `acuity` is a stat
@@ -20,11 +19,11 @@ that may or may not increase the value of some specific stat of a class.
 
 Args:
 - ItemId: The unique identifier of the item.
-- Stat: The stat for which the effective bonus is calculated.
-- Value: The value of the effective bonus for the stat.
+- Stat: The stat for which the bonus is resolved.
+- Value: The value of the bonus for the stat.
 *%
 
-%*! slotted_gem(ItemId, GemId)
+%*! equipped_gem(ItemId, GemId)
 
 A gem that is slotted into an item.
 
@@ -35,11 +34,11 @@ Args:
 - GemId: The unique identifier of the gem that is slotted into the item.
 *%
 
-%*! effective_stat(Stat, Value)
+%*! equipped_stat_total(Stat, Value)
 
-The aggregated value of a stat.
+The total resolved bonus for a stat from all equipped items.
 
-This is calculated by summing up the effective bonuses of all chosen items for the stat, 
+This is calculated by summing up the bonuses of all equipped items for the stat, 
 and applying any caps that may exist for the stat.
 
 Args:
@@ -47,29 +46,29 @@ Args:
 - Value: The aggregated value of the stat after applying bonuses and caps.
 *%
 
-%*! dynamic_cap(Stat, Cap)
+%*! active_cap(Stat, Cap)
 
-The dynamic cap for a stat.
+The active cap for a stat based on the equipped items.
 
 This is calculated by taking the base cap of the stat and adding any aggregated overcap.
 
 Args:
-- Stat: The stat for which the dynamic cap is calculated.
-- Cap: The value of the dynamic cap for the stat.
+- Stat: The stat for which the cap is calculated.
+- Cap: The value of the cap for the stat.
 *%
 
-%*! chosen_bonus(ItemId, Stat, Value)
+%*! equipped_bonus(ItemId, Stat, Value)
 
-The effective bonus of a chosen item for a specific stat.
+The resolved bonus of an equipped item for a specific stat.
 
-This is used during the aggregation of the bonuses of all chosen items for a stat.
+This is used during the aggregation of the bonuses of all equipped items for a stat.
 
 Args:
-- ItemId: The unique identifier of the item that is chosen for a slot.
+- ItemId: The unique identifier of the item that is equipped for a slot.
 - Stat: The stat for which the effective bonus is calculated.
 *%
 
-%*! higher_gem_cost_exists(ItemId, Cost)
+%*! has_higher_gem_cost(ItemId, Cost)
 
 In the given item, there exists a gem with a higher cost than the one specified.
 
@@ -78,7 +77,7 @@ Args:
 - Cost: The cost of the gem that is being compared against.
 *%
 
-%*! highest_gem_cost(ItemId, Cost)
+%*! max_gem_cost(ItemId, Cost)
 
 The highest gem cost in the given item.
 

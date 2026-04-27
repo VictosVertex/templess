@@ -126,15 +126,16 @@ pub fn stat_atoms() -> Result<String> {
         )?;
 
         if let Some(gem_category) = gem_category {
-            writeln!(asp, "stat_gem_category({}, {}).", stat.name(), gem_category)?;
+            writeln!(
+                asp,
+                "stat_to_gem_category({}, {}).",
+                stat.name(),
+                gem_category
+            )?;
         }
 
         if let Some(cap) = stat.cap_stat() {
-            writeln!(asp, "stat_cap({}, {}).", stat.name(), cap.name())?;
-        }
-
-        if let Some(base) = stat.base_stat() {
-            writeln!(asp, "stat_base({}, {}).", stat.name(), base.name())?;
+            writeln!(asp, "stat_to_cap({}, {}).", stat.name(), cap.name())?;
         }
     }
     Ok(asp)

@@ -109,8 +109,8 @@ export interface Gem {
 }
 
 export interface OptimizationResult {
-	optimized_items: Record<number, number>;
-	slotted_gems: Record<number, number[]>;
+	equipped_items: Record<number, number>;
+	equipped_gems: Record<number, number[]>;
 }
 
 export enum ItemSlot {

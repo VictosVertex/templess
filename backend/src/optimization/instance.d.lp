@@ -66,9 +66,9 @@ Args:
 - BaseCap: The base cap for the stat, which can be increased by cap stats.
 *%
 
-%*! stat_gem_category(Stat, Category)
+%*! stat_to_gem_category(Stat, Category)
 
-The category of gems a stat belongs to. 
+A mapping from stats to gem categories.
 
 This is used for symmetry breaking to ensure that gems of the
 same category are ordered consistently across items.
@@ -78,9 +78,9 @@ Args:
 - Category: The category of gems the stat belongs to. 
 *%
 
-%*! stat_cap(Stat, CapStat)
+%*! stat_to_cap(Stat, CapStat)
 
-A stat that increases the cap of another stat.
+A mapping from stats to their corresponding cap stats.
 
 Args:
 - Stat: The stat for which the cap is increased.

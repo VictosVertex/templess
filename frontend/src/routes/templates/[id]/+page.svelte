@@ -44,7 +44,7 @@
 		const inflatedItems: Partial<Record<ItemSlot, Item>> = {};
 		const inflatedGems: Partial<Record<ItemSlot, typeof data.gems>> = {};
 
-		for (const [slotStr, itemId] of Object.entries(result.optimized_items)) {
+		for (const [slotStr, itemId] of Object.entries(result.equipped_items)) {
 			const slot = parseInt(slotStr, 10) as ItemSlot;
 			const fullItem = itemDictionary[itemId];
 
@@ -52,7 +52,7 @@
 				inflatedItems[slot] = fullItem;
 			}
 
-			inflatedGems[slot] = (result.slotted_gems[itemId] ?? [])
+			inflatedGems[slot] = (result.equipped_gems[itemId] ?? [])
 				.map((gemId) => gemDictionary[gemId])
 				.filter((gem) => gem !== undefined);
 		}
@@ -157,7 +157,7 @@
 	<ItemSelector
 		items={data.items}
 		targetSlot={activeSlot}
-		currentItem={activeSlot !== null ? builder.equippedItems[activeSlot]?.item ?? null : null}
+		currentItem={activeSlot !== null ? (builder.equippedItems[activeSlot]?.item ?? null) : null}
 		stats={data.stats}
 		onSelect={handleItemSelection}
 	/>
