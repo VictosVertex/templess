@@ -2,6 +2,7 @@
 
 use crate::core::domain::gem::Gem;
 use crate::core::domain::item::ItemSource;
+use crate::core::domain::item_bonus::ItemBonus;
 use crate::core::domain::preference::Preference;
 use crate::core::domain::stat_category::StatCategory;
 use crate::core::domain::{
@@ -34,6 +35,14 @@ fn item_slot_is_available(template: &Template, item_id: i32, item_slot: ItemSlot
     }
 }
 
+fn stat_to_class_stat(stat: Stat, class: Class) -> Option<Stat> {
+    match stat {
+        Stat::Acuity => class.acuity_stat(),
+        Stat::AcuityCap => class.acuity_stat().and_then(|stat| stat.cap_stat()),
+        stat => Some(stat),
+    }
+}
+
 /// Generates item related ASP atoms.
 ///
 /// # Errors
@@ -47,22 +56,19 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
             continue;
         }
 
-        let unneeded_bonuses = item
+        let preferred_bonuses: Vec<&ItemBonus> = item
             .bonuses
             .iter()
             .filter(|bonus| {
-                let mut is_preferred = template.preferences.contains_key(&bonus.stat.id());
+                let Some(actual_stat) = stat_to_class_stat(bonus.stat, template.class) else {
+                    return false;
+                };
 
-                if bonus.stat == Stat::Acuity || bonus.stat == Stat::AcuityCap {
-                    is_preferred = match template.class.acuity_stat() {
-                        Some(stat) => template.preferences.contains_key(&stat.id()),
-                        None => false,
-                    };
-                }
-
-                !is_preferred
+                template.preferences.contains_key(&actual_stat.id())
             })
-            .count();
+            .collect();
+
+        let unneeded_bonuses = item.bonuses.len() - preferred_bonuses.len();
 
         if unneeded_bonuses > 2 {
             continue;
@@ -80,6 +86,8 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
             writeln!(asp, "crafted_item({}).", item.id)?;
         }
 
+        let mut utility = 0;
+
         for bonus in &item.bonuses {
             let stat_name = bonus.stat.to_string().to_lowercase();
             writeln!(
@@ -87,7 +95,11 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
                 "item_bonus({}, {}, {}).",
                 item.id, stat_name, bonus.value
             )?;
+
+            utility += (bonus.stat.utility_per_point() * 100.0) as u16 * bonus.value;
         }
+
+        writeln!(asp, "item_utility({}, {}).", item.id, utility)?;
     }
     Ok(asp)
 }
@@ -217,16 +229,9 @@ pub fn stat_baseline_atoms(template: &Template, items: &[Item]) -> Result<String
 
     let equipped_item_ids: HashSet<i32> = template.slots.values().copied().collect();
 
-    let class_acuity = template.class.acuity_stat();
-    let class_acuity_cap = class_acuity.and_then(|stat| stat.cap_stat());
-
     for item in items.iter().filter(|i| equipped_item_ids.contains(&i.id)) {
         for bonus in &item.bonuses {
-            let actual_stat = match bonus.stat {
-                Stat::Acuity => class_acuity,
-                Stat::AcuityCap => class_acuity_cap,
-                stat => Some(stat),
-            };
+            let actual_stat = stat_to_class_stat(bonus.stat, template.class);
 
             let Some(stat) = actual_stat else {
                 continue;
