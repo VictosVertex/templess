@@ -524,7 +524,7 @@ impl Stat {
                 }
             }
             HitpointsCap => StatInfo {
-                utility: 2.0,
+                utility: 0.25,
                 cap: 200,
                 category: StatCategory::PhysicalStatCaps,
             },
