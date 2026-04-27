@@ -81,29 +81,17 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- AVAILABLE ITEMS ---")?;
 
+    let mut item_buffer = String::with_capacity(1024);
+
     for item in items {
         if !item_slot_is_available(template, item.id, item.item_slot) {
             continue;
         }
 
-        let preferred_bonus_count = item
-            .bonuses
-            .iter()
-            .filter(|bonus| {
-                resolved_bonus_stats(bonus.stat, template.class)
-                    .into_iter()
-                    .any(|stat| template.preferences.get(&stat.id()).is_some())
-            })
-            .count();
-
-        let unneeded_bonuses = item.bonuses.len() - preferred_bonus_count;
-
-        if unneeded_bonuses > 2 {
-            continue;
-        }
+        item_buffer.clear();
 
         writeln!(
-            asp,
+            item_buffer,
             "item({}, {}, \"{}\").",
             item.id,
             item.item_slot.name(),
@@ -111,29 +99,46 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
         )?;
 
         if item.source == ItemSource::Crafted {
-            writeln!(asp, "crafted_item({}).", item.id)?;
+            writeln!(item_buffer, "crafted_item({}).", item.id)?;
         }
 
+        let mut has_preferred_bonus = false;
         let mut utility = 0u32;
 
         for bonus in &item.bonuses {
-            let stat_name = bonus.stat.to_string().to_lowercase();
-            writeln!(
-                asp,
-                "item_bonus({}, {}, {}).",
-                item.id, stat_name, bonus.value
-            )?;
+            let expanded_stats = resolved_bonus_stats(bonus.stat, template.class);
 
-            let utility_per_point: f32 = resolved_bonus_stats(bonus.stat, template.class)
-                .into_iter()
-                .map(|stat| stat.utility_per_point())
-                .sum();
+            let is_preferred = expanded_stats
+                .iter()
+                .any(|stat| template.preferences.contains_key(&stat.id()));
 
-            utility += (utility_per_point * 100.0).round() as u32 * u32::from(bonus.value);
+            if is_preferred {
+                has_preferred_bonus = true;
+
+                // We still use the normal stat from the bonus here for now,
+                // as currently our encoding does the mapping anyways.
+                let stat_name = bonus.stat.to_string().to_lowercase();
+                writeln!(
+                    item_buffer,
+                    "item_bonus({}, {}, {}).",
+                    item.id, stat_name, bonus.value
+                )?;
+
+                let utility_per_point: f32 = expanded_stats
+                    .iter()
+                    .map(|stat| stat.utility_per_point())
+                    .sum();
+
+                utility += (utility_per_point * 100.0).round() as u32 * u32::from(bonus.value);
+            }
         }
 
-        writeln!(asp, "item_utility({}, {}).", item.id, utility)?;
+        if has_preferred_bonus {
+            writeln!(item_buffer, "item_utility({}, {}).", item.id, utility)?;
+            asp.push_str(&item_buffer);
+        }
     }
+
     Ok(asp)
 }
 
