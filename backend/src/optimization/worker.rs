@@ -117,7 +117,7 @@ fn run_optimization_logic(
     let file_path = Path::new("instance.lp");
     let _ = std::fs::write(file_path, &asp_data);
 
-    let control = Control::new_with_args(&["--heuristic=domain"])?;
+    let control = Control::new_with_args(&["--heuristic=domain", "--parallel-mode=8"])?;
     control.load("instance.lp")?;
     control.load("backend/src/optimization/encoding.lp")?;
 
