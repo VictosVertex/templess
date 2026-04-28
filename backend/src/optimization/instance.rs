@@ -288,6 +288,11 @@ pub fn gem_atoms(preferences: &HashMap<u16, Preference>) -> Result<String> {
     let mut asp = String::new();
     writeln!(asp, "% --- SC GEMS ---")?;
 
+    writeln!(asp, "gem_overcap_limit(stat, 4).")?;
+    writeln!(asp, "gem_overcap_limit(resists, 1).")?;
+    writeln!(asp, "gem_overcap_limit(skills, 0).")?;
+    writeln!(asp, "gem_overcap_limit(hitpoints, 7).")?;
+
     let target_stats = preferences
         .iter()
         .filter(|(_, pref)| pref.weight > 0)

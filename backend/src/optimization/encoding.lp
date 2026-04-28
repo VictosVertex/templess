@@ -132,6 +132,17 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % It cannot be the case that a preference is below 80% of the minimum.
 :- equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), VALUE < MIN*4/5, WEIGHT > 0.
 
+% It cannot be the case that a gem is equipped that provides an unnecessarily high stat.
+:-  stat_baseline(STAT, BASELINE),
+    stat_to_gem_category(STAT, CATEGORY), 
+    active_cap(STAT, CAP),
+    crafted_item(CRAFTED_ITEM),
+    equipped_gem(CRAFTED_ITEM, ID),
+    gem(ID, STAT, _, _, _),
+    gem_overcap_limit(CATEGORY, LIMIT),
+    TOLERANCE = (CAP-BASELINE+LIMIT),
+    TOLERANCE < #sum { VALUE, SLOT : equipped_bonus(SLOT, STAT, VALUE) }.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,7 +150,7 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Minimize the weighted distance to the minimum preference for stats that are below the minimum.
 %
 % Idea: Prioritize the fillings of minimum preferences.
-#minimize { (MIN - VALUE) * UTILITY * WEIGHT @4, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), stat(STAT, UTILITY, _), VALUE < MIN }.
+#minimize { (MIN - VALUE) * UTILITY * WEIGHT @3, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), stat(STAT, UTILITY, _), VALUE < MIN, MIN > 0 }.
 
 % Minimize the total value of the equipped bonuses to achieve the desired stats.
 %
@@ -155,17 +166,18 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Idea: Still fill up everything after reaching the minimum preferences.
 #maximize { VALUE * UTILITY * WEIGHT @1, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
 
-overflow_penalty_step(20,100,5).
-overflow_penalty_step(15,300,1).
-overflow_penalty_step(10,150,1).
-overflow_penalty_step(5,50,1).
+overflow_penalty_step(20, 1000, 3).
+overflow_penalty_step(15, 500, 3).
+overflow_penalty_step(10, 200, 3).
+overflow_penalty_step(5,  50, 3).
 
-% Penalty for stat, resist or hitpoints that are some percentage bigger than the cap.
+% % Penalty for stat, resist or hitpoints that are some percentage bigger than the cap.
 :~  stat_baseline(STAT, BASELINE),
-    stat_to_gem_category(STAT, _), 
+    stat_to_gem_category(STAT, (stat;resists;hitpoints)), 
     active_cap(STAT, CAP),
     overflow_penalty_step(P,PENALTY, LEVEL),
-    (CAP+BASELINE)*(100+P)/100 - BASELINE < #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) }. [PENALTY@LEVEL, STAT, P]
+    TOLERANCE = (CAP+BASELINE)*(100+P)/100 - BASELINE,
+    TOLERANCE < #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) }. [PENALTY@LEVEL, STAT, P]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Heuristics
