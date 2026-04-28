@@ -68,19 +68,19 @@ active_cap(STAT, BASE_CAP) :-
     not stat_to_cap(STAT, _).
   
 % Aggregate stats
-equipped_bonus(ITEM, STAT,VALUE) :- equipped_item(_,ITEM), resolved_bonus(ITEM, STAT, VALUE).
+equipped_bonus(SLOT,STAT,VALUE) :- equipped_item(SLOT,ITEM), resolved_bonus(ITEM, STAT, VALUE).
 
 equipped_stat_total(STAT, CAP) :-
     preference(STAT, _, _),
     stat_baseline(STAT, BASELINE),
     active_cap(STAT, CAP),
-    #sum { VALUE, ITEM : equipped_bonus(ITEM, STAT,VALUE) } >= CAP - BASELINE.
+    #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) } >= CAP - BASELINE.
 
 equipped_stat_total(STAT, TOTAL + BASELINE) :-
     preference(STAT, _, _),
     stat_baseline(STAT, BASELINE),
     active_cap(STAT, CAP),
-    TOTAL = #sum { VALUE, ITEM : equipped_bonus(ITEM, STAT,VALUE) },
+    TOTAL = #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) },
     TOTAL < CAP - BASELINE.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -136,29 +136,94 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Maximize the weighted utility of the effective stats.
-#maximize { V * UTILITY * WEIGHT@2, STAT : equipped_stat_total(STAT, V), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _)}.
+% Minimize the weighted distance to the minimum preference for stats that are below the minimum.
+%
+% Idea: Prioritize the fillings of minimum preferences.
+#minimize { (MIN - VALUE) * UTILITY * WEIGHT @4, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), stat(STAT, UTILITY, _), VALUE < MIN }.
 
 % Minimize the total value of the equipped bonuses to achieve the desired stats.
-#minimize { VALUE @1, ITEM, STAT : equipped_bonus(ITEM, STAT, VALUE), preference(STAT, _, _) }.
+%
+% Idea: Push down overshoots and provide a goal to "look in other directions"
+%
+% In practice, this seems to add behaviour that leads to smaller periods 
+% where the solver is stuck.
+#minimize { VALUE * UTILITY @2, SLOT, STAT : equipped_bonus(SLOT, STAT, VALUE), preference(STAT, _, _), stat(STAT, UTILITY, _) }.
 
-% Prioritize items that provide bonuses to stats with preferences.
+
+% Maximize the weighted utility of the total stats.
+%
+% Idea: Still fill up everything after reaching the minimum preferences.
+#maximize { VALUE * UTILITY * WEIGHT @1, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
+
+overflow_penalty_step(20,100,5).
+overflow_penalty_step(15,300,1).
+overflow_penalty_step(10,150,1).
+overflow_penalty_step(5,50,1).
+
+% Penalty for stat, resist or hitpoints that are some percentage bigger than the cap.
+:~  stat_baseline(STAT, BASELINE),
+    stat_to_gem_category(STAT, _), 
+    active_cap(STAT, CAP),
+    overflow_penalty_step(P,PENALTY, LEVEL),
+    (CAP+BASELINE)*(100+P)/100 - BASELINE < #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) }. [PENALTY@LEVEL, STAT, P]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Heuristics
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% % Prioritize items with many high utility stats with preferences.
+% %
+% % Idea: The optimal model will consist of some collection of
+% % high utility items.
+% %
+% % This seems to give good models early but then get hardstuck.
+% #heuristic equipped_item(SLOT, ITEM) :
+%     slot(SLOT, TYPE),
+%     item(ITEM, TYPE, _),
+%     resolved_bonus(ITEM, STAT, VALUE), VALUE > 0,
+%     stat(STAT, UTILITY, _),
+%     VALUE * UTILITY > 1200,
+%     preference(STAT, MIN, WEIGHT), MIN > 0.
+% [400@2, true]
+
+% % Prioritize items with many stats with preferences.
+% %
+% % Idea: If an item has low utility stats, we still prefer
+% % the ones we want to reach a certain threshold with.
+% %
+% % Similar to the high utility version this gives good models fast
+% % but then gets hardstuck. Usually the models are stightly worse than
+% % for the high utility variant.
+% %
+% % Combining them still results in being stuck for long periods.
+% #heuristic equipped_item(SLOT, ITEM) :
+%     slot(SLOT, TYPE),
+%     item(ITEM, TYPE, _),
+%     resolved_bonus(ITEM, STAT, VALUE), VALUE > 0,
+%     preference(STAT, MIN, WEIGHT), MIN > 0.
+% [100@1, true]
+
+% Prioritize crafted items.
+%
+% Idea: From experience, most top builds sit around
+% two crafted pieces.
 #heuristic equipped_item(SLOT, ITEM) :
     slot(SLOT, TYPE),
     item(ITEM, TYPE, _),
-    resolved_bonus(ITEM, STAT, VALUE), VALUE > 0,
-    preference(STAT, MIN, WEIGHT), MIN > 0.
-[50@1, true]
+    crafted_item(ITEM).
+[2000@3, true]
 
-% Prioritize crafted items with cap increases for stats with preferences.
-#heuristic equipped_item(SLOT, ITEM) :
-    slot(SLOT, TYPE),
-    item(ITEM, TYPE, _),
+% Prioritize mid tier gems.
+%
+% Idea: Usually crafted items are used to fill missing resists
+% or close medium stat holes. We don't really care about tiny
+% or massive gems most of the time.
+#heuristic equipped_gem(ITEM, ID) :
+    equipped_item(_, ITEM),
     crafted_item(ITEM),
-    resolved_bonus(ITEM, CAP_STAT, VALUE), VALUE > 0,
-    stat_to_cap(STAT, CAP_STAT),
-    preference(STAT, MIN, WEIGHT), MIN > 0.
-[500@1, true]
+    gem(ID, _, TIER, _, _),
+    TIER >= 4, TIER <= 8.
+[150@3, true]
 
 #show equipped_item/2.
 #show equipped_stat_total/2.
