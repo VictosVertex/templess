@@ -10,8 +10,8 @@
 % We do not pick weapons yet.
 {equipped_item(SLOT, ITEM):item(ITEM, TYPE, _)} = 1 :- slot(SLOT,TYPE), SLOT > 13.
 
-% Choose 4 gems for each equipped crafted item.
-{equipped_gem(ITEM,ID):gem(ID,STAT,_,_,_)} = 4 :- equipped_item(SLOT,ITEM), crafted_item(ITEM).
+% Choose 4 gems for each slot that contains a crafted item.
+{equipped_gem(SLOT,ID):gem(ID,STAT,_,_,_)} = 4 :- equipped_item(SLOT,ITEM), crafted_item(ITEM).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Transformation
@@ -33,25 +33,24 @@ resolved_bonus(ITEM, STAT, VALUE) :-
     item_bonus(ITEM, all_magic_skills, VALUE),
     class_skill_line(magic_skills,STAT).
 
-resolved_bonus(ITEM, STAT, VALUE) :-
-    equipped_gem(ITEM,ID),
-    gem(ID,STAT,_,VALUE,_).
+equipped_bonus(SLOT,STAT,VALUE) :- equipped_item(SLOT,ITEM), resolved_bonus(ITEM, STAT, VALUE).
+equipped_bonus(SLOT,STAT,VALUE) :- equipped_gem(SLOT,ID), gem(ID,STAT,_,VALUE,_).
 
-% The highest gem cost in an item.
+% The highest gem cost in a slot.
 % this is used because in DAoC crafting the cost for the most expensive gem is applied twice.
-has_higher_gem_cost(ITEM, COST) :-
-    equipped_gem(ITEM, ID_1),
+has_higher_gem_cost(SLOT, COST) :-
+    equipped_gem(SLOT, ID_1),
     gem(ID_1, _, _, _, COST),
-    equipped_gem(ITEM, ID_2),
+    equipped_gem(SLOT, ID_2),
     gem(ID_2, _, _, _, OTHER_COST),
     OTHER_COST > COST.
 
-max_gem_cost(ITEM, COST) :-
-    equipped_item(_, ITEM),
-    crafted_item(ITEM),
-    equipped_gem(ITEM, ID),
+max_gem_cost(SLOT, COST) :-
+    equipped_item(_, SLOT),
+    crafted_item(SLOT),
+    equipped_gem(SLOT, ID),
     gem(ID, _, _, _, COST),
-    not has_higher_gem_cost(ITEM, COST).
+    not has_higher_gem_cost(SLOT, COST).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Aggregation
@@ -66,9 +65,6 @@ active_cap(STAT, BASE_CAP + OVER_CAP) :-
 active_cap(STAT, BASE_CAP) :-
     stat(STAT, _, BASE_CAP),
     not stat_to_cap(STAT, _).
-  
-% Aggregate stats
-equipped_bonus(SLOT,STAT,VALUE) :- equipped_item(SLOT,ITEM), resolved_bonus(ITEM, STAT, VALUE).
 
 equipped_stat_total(STAT, CAP) :-
     preference(STAT, _, _),
@@ -93,37 +89,37 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Here, we have to consider the highest gem cost twice! We do this by shifting the cost window.
 :- equipped_item(SLOT,ITEM), 
     crafted_item(ITEM), 
-    max_gem_cost(ITEM, IP), 
-    not 360 - IP <= #sum { COST, ID:equipped_gem(ITEM,ID),gem(ID,_,_,_,COST)} <= 375 - IP.
+    max_gem_cost(SLOT, IP), 
+    not 360 - IP <= #sum { COST, ID:equipped_gem(SLOT,ID),gem(ID,_,_,_,COST)} <= 375 - IP.
 
 % It cannot be the case that there are more than 2 or less than 1 crafted items.
 :- not 1 #count { ITEM : equipped_item(_,ITEM), crafted_item(ITEM) } 2.
 
 % It cannot be the case that two gems of the same stat appear on the same crafted item
-:- equipped_gem(ITEM,ID_1), equipped_gem(ITEM,ID_2), gem(ID_1,STAT,_,_,_), gem(ID_2,STAT,_,_,_), ID_1 < ID_2.
+:- equipped_gem(SLOT,ID_1), equipped_gem(SLOT,ID_2), gem(ID_1,STAT,_,_,_), gem(ID_2,STAT,_,_,_), ID_1 < ID_2.
 
 % Symmetry breaking for rings and bracers
 :- equipped_item(33,ITEM_1), equipped_item(34,ITEM_2), ITEM_1 > ITEM_2.
 :- equipped_item(35,ITEM_1), equipped_item(36,ITEM_2), ITEM_1 > ITEM_2.
 
 % Symmetry breaking of the same gems with the same values
-:- equipped_gem(ITEM_1, ID_1), 
-   equipped_gem(ITEM_2, ID_2), 
+:- equipped_gem(SLOT_1, ID_1), 
+   equipped_gem(SLOT_2, ID_2), 
    gem(ID_1, STAT_1, _, VALUE, _), 
    gem(ID_2, STAT_2, _, VALUE, _), 
    stat_to_gem_category(STAT_1, CATEGORY),
    stat_to_gem_category(STAT_2, CATEGORY),
-   ITEM_1 < ITEM_2,
+   SLOT_1 < SLOT_2,
    STAT_1 > STAT_2.
 
 % Symmetry breaking of the same gems with the same cost
-:- equipped_gem(ITEM_1, ID_1), 
-   equipped_gem(ITEM_2, ID_2), 
+:- equipped_gem(SLOT_1, ID_1), 
+   equipped_gem(SLOT_2, ID_2), 
    gem(ID_1, STAT_1, _, _, COST), 
    gem(ID_2, STAT_2, _, _, COST), 
    stat_to_gem_category(STAT_1, CATEGORY),
    stat_to_gem_category(STAT_2, CATEGORY),
-   ITEM_1 < ITEM_2,
+   SLOT_1 < SLOT_2,
    STAT_1 > STAT_2.
 
 % It cannot be the case that a preference of 10 is not met.
@@ -136,8 +132,7 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 :-  stat_baseline(STAT, BASELINE),
     stat_to_gem_category(STAT, CATEGORY), 
     active_cap(STAT, CAP),
-    crafted_item(CRAFTED_ITEM),
-    equipped_gem(CRAFTED_ITEM, ID),
+    equipped_gem(_, ID),
     gem(ID, STAT, _, _, _),
     gem_overcap_limit(CATEGORY, LIMIT),
     TOLERANCE = (CAP-BASELINE+LIMIT),
@@ -230,8 +225,8 @@ overflow_penalty_step(5,  50, 3).
 % Idea: Usually crafted items are used to fill missing resists
 % or close medium stat holes. We don't really care about tiny
 % or massive gems most of the time.
-#heuristic equipped_gem(ITEM, ID) :
-    equipped_item(_, ITEM),
+#heuristic equipped_gem(SLOT, ID) :
+    equipped_item(SLOT,ITEM),
     crafted_item(ITEM),
     gem(ID, _, TIER, _, _),
     TIER >= 4, TIER <= 8.
@@ -239,4 +234,4 @@ overflow_penalty_step(5,  50, 3).
 
 #show equipped_item/2.
 #show equipped_stat_total/2.
-#show equipped_gem/2.
+#show equipped_gem(ITEM,ID): equipped_gem(SLOT, ID), equipped_item(SLOT, ITEM).
