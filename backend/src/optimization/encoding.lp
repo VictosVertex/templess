@@ -8,7 +8,7 @@
 % Choose an item for each slot.
 % This also selects the bases used for crafting.
 % We do not pick weapons yet.
-1{equipped_item(SLOT, ITEM):item(ITEM, TYPE, _)}1 :- slot(SLOT,TYPE), SLOT > 13.
+{equipped_item(SLOT, ITEM):item(ITEM, TYPE, _)} = 1 :- slot(SLOT,TYPE), SLOT > 13.
 
 % Choose 4 gems for each equipped crafted item.
 {equipped_gem(ITEM,ID):gem(ID,STAT,_,_,_)} = 4 :- equipped_item(SLOT,ITEM), crafted_item(ITEM).
