@@ -102,23 +102,13 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 :- equipped_item(33,ITEM_1), equipped_item(34,ITEM_2), ITEM_1 > ITEM_2.
 :- equipped_item(35,ITEM_1), equipped_item(36,ITEM_2), ITEM_1 > ITEM_2.
 
-% Symmetry breaking of the same gems with the same values
-:- equipped_gem(SLOT_1, ID_1), 
-   equipped_gem(SLOT_2, ID_2), 
-   gem(ID_1, STAT_1, _, VALUE, _), 
-   gem(ID_2, STAT_2, _, VALUE, _), 
-   stat_to_gem_category(STAT_1, CATEGORY),
-   stat_to_gem_category(STAT_2, CATEGORY),
-   SLOT_1 < SLOT_2,
-   STAT_1 > STAT_2.
-
 % Symmetry breaking of the same gems with the same cost
 :- equipped_gem(SLOT_1, ID_1), 
    equipped_gem(SLOT_2, ID_2), 
    gem(ID_1, STAT_1, _, _, COST), 
    gem(ID_2, STAT_2, _, _, COST), 
-   stat_to_gem_category(STAT_1, CATEGORY),
-   stat_to_gem_category(STAT_2, CATEGORY),
+   stat_to_gem_category(STAT_1, _),
+   stat_to_gem_category(STAT_2, _),
    SLOT_1 < SLOT_2,
    STAT_1 > STAT_2.
 
