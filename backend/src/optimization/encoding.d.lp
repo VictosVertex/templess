@@ -23,14 +23,14 @@ Args:
 - Value: The value of the bonus for the stat.
 *%
 
-%*! equipped_gem(ItemId, GemId)
+%*! equipped_gem(SlotId, GemId)
 
-A gem that is slotted into an item.
+A gem that is slotted into an item in a specific slot.
 
 The item in question must be a crafted item, as only crafted items can have slotted gems.
 
 Args:
-- ItemId: The unique identifier of the item.
+- SlotId: The unique identifier of the slot.
 - GemId: The unique identifier of the gem that is slotted into the item.
 *%
 
@@ -57,33 +57,33 @@ Args:
 - Cap: The value of the cap for the stat.
 *%
 
-%*! equipped_bonus(ItemId, Stat, Value)
+%*! equipped_bonus(SlotId, Stat, Value)
 
-The resolved bonus of an equipped item for a specific stat.
+The resolved bonus of a specific stat for a specific slot.
 
 This is used during the aggregation of the bonuses of all equipped items for a stat.
 
 Args:
-- ItemId: The unique identifier of the item that is equipped for a slot.
+- SlotId: The unique identifier of the slot.
 - Stat: The stat for which the effective bonus is calculated.
 *%
 
-%*! has_higher_gem_cost(ItemId, Cost)
+%*! has_higher_gem_cost(SlotId, Cost)
 
-In the given item, there exists a gem with a higher cost than the one specified.
+In the given slot, there exists a crafted item with a gem that has a higher cost than the one specified.
 
 Args:
-- ItemId: The unique identifier of the item.
+- SlotId: The unique identifier of the slot.
 - Cost: The cost of the gem that is being compared against.
 *%
 
-%*! max_gem_cost(ItemId, Cost)
+%*! max_gem_cost(SlotId, Cost)
 
-The highest gem cost in the given item.
+The highest gem cost in the given slot.
 
 This is used because in DAoC crafting the cost for the most expensive gem is applied twice.
 
 Args:
-- ItemId: The unique identifier of the item.
-- Cost: The cost of the most expensive gem in the item.
+- SlotId: The unique identifier of the slot for which the highest gem cost is calculated.
+- Cost: The cost of the most expensive gem in the slot.
 *%
