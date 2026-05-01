@@ -135,7 +135,7 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Minimize the weighted distance to the minimum preference for stats that are below the minimum.
 %
 % Idea: Prioritize the fillings of minimum preferences.
-#minimize { (MIN - VALUE) * UTILITY * WEIGHT @3, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), stat(STAT, UTILITY, _), VALUE < MIN, MIN > 0 }.
+#minimize { (MIN - VALUE) * UTILITY * WEIGHT @1, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, MIN, WEIGHT), stat(STAT, UTILITY, _), VALUE < MIN, MIN > 0 }.
 
 % Minimize the total value of the equipped bonuses to achieve the desired stats.
 %
@@ -149,20 +149,23 @@ equipped_stat_total(STAT, TOTAL + BASELINE) :-
 % Maximize the weighted utility of the total stats.
 %
 % Idea: Still fill up everything after reaching the minimum preferences.
-#maximize { VALUE * UTILITY * WEIGHT @1, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
+#maximize { VALUE * UTILITY * WEIGHT@3, STAT : equipped_stat_total(STAT, VALUE), preference(STAT, _, WEIGHT), stat(STAT, UTILITY, _) }.
 
-overflow_penalty_step(20, 1000, 3).
-overflow_penalty_step(15, 500, 3).
-overflow_penalty_step(10, 200, 3).
-overflow_penalty_step(5,  50, 3).
+% overflow_penalty_step(20, 1000, 4).
+% overflow_penalty_step(15, 500, 3).
+% overflow_penalty_step(10, 200, 3).
+% overflow_penalty_step(5,  50, 3).
 
-% % Penalty for stat, resist or hitpoints that are some percentage bigger than the cap.
-:~  stat_baseline(STAT, BASELINE),
-    stat_to_gem_category(STAT, (stat;resists;hitpoints)), 
-    active_cap(STAT, CAP),
-    overflow_penalty_step(P,PENALTY, LEVEL),
-    TOLERANCE = (CAP+BASELINE)*(100+P)/100 - BASELINE,
-    TOLERANCE < #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) }. [PENALTY@LEVEL, STAT, P]
+% % % Penalty for stat, resist or hitpoints that are some percentage bigger than the cap.
+% :~  stat_baseline(STAT, BASELINE),
+%     stat_to_gem_category(STAT, (stat;resists;hitpoints)),
+%     stat(STAT, _, BASE_CAP),
+%     stat_to_cap(STAT, CAP_STAT),
+%     stat(CAP_STAT, _, CAP),
+%     % active_cap(STAT, CAP),
+%     overflow_penalty_step(P,PENALTY, LEVEL),
+%     TOLERANCE = (CAP+BASE_CAP)*(100+P)/100 - BASELINE,
+%     TOLERANCE < #sum { VALUE, SLOT : equipped_bonus(SLOT,STAT,VALUE) }. [PENALTY@LEVEL, STAT, P]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Heuristics
@@ -198,17 +201,29 @@ overflow_penalty_step(5,  50, 3).
 %     item(ITEM, TYPE, _),
 %     resolved_bonus(ITEM, STAT, VALUE), VALUE > 0,
 %     preference(STAT, MIN, WEIGHT), MIN > 0.
-% [100@1, true]
+% [100@2, true]
 
 % Prioritize crafted items.
 %
 % Idea: From experience, most top builds sit around
 % two crafted pieces.
-#heuristic equipped_item(SLOT, ITEM) :
-    slot(SLOT, TYPE),
-    item(ITEM, TYPE, _),
-    crafted_item(ITEM).
-[2000@3, true]
+% #heuristic equipped_item(SLOT, ITEM) :
+%     slot(SLOT, TYPE),
+%     item(ITEM, TYPE, _),
+%     crafted_item(ITEM),
+%     preference(STAT, _, _).
+% [1000@2, true]
+
+% % Prioritize crafted items.
+% %
+% % Idea: From experience, most top builds sit around
+% % two crafted pieces.
+% #heuristic equipped_item(SLOT, ITEM) :
+%     slot(SLOT, TYPE),
+%     item(ITEM, TYPE, _),
+%     crafted_item(ITEM).
+% [500@2, true]
+
 
 % Prioritize mid tier gems.
 %
