@@ -46,8 +46,6 @@ has_higher_gem_cost(SLOT, COST) :-
     OTHER_COST > COST.
 
 max_gem_cost(SLOT, COST) :-
-    equipped_item(_, SLOT),
-    crafted_item(SLOT),
     equipped_gem(SLOT, ID),
     gem(ID, _, _, _, COST),
     not has_higher_gem_cost(SLOT, COST).
