@@ -588,7 +588,7 @@ impl Stat {
 
             SpellRange | MeleeSpeed | MeleeDamage | RangedDamage | ArcherySpeed | CastingSpeed
             | ResistPierce | SpellDamage | StyleDamage | ArcaneSyphon => StatInfo {
-                utility: 2.0,
+                utility: 5.0,
                 cap: 10,
                 category: StatCategory::ToaBonuses,
             },
