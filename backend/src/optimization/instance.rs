@@ -133,7 +133,7 @@ pub fn item_atoms(items: &[Item], template: &Template) -> Result<String> {
             }
         }
 
-        if has_preferred_bonus {
+        if has_preferred_bonus || item.source == ItemSource::Crafted {
             writeln!(item_buffer, "item_utility({}, {}).", item.id, utility)?;
             asp.push_str(&item_buffer);
         }
