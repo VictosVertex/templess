@@ -576,7 +576,7 @@ impl Stat {
             ArmorFactor => StatInfo {
                 utility: 1.0,
                 cap: 50,
-                category: StatCategory::OtherStats,
+                category: StatCategory::ToaBonuses,
             },
 
             BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness | PowerPoolToa
