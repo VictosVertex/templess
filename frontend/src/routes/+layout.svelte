@@ -18,11 +18,11 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <div
-	class="base-scrollbar flex h-screen w-full flex-col overflow-hidden bg-surface-lowest text-foreground selection:bg-primary/30"
+	class="base-scrollbar flex h-screen w-full flex-col overflow-hidden bg-background text-foreground selection:bg-primary/30"
 >
 	<Header />
 
-	<main class="flex w-full flex-1 items-center justify-center p-12">
+	<main class="base-scrollbar flex w-full flex-1 items-center justify-center overflow-auto">
 		{#if !data.isInitialized}
 			<div
 				class="relative flex w-full max-w-xl flex-col items-center justify-center gap-8 rounded-sm

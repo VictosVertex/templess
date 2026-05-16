@@ -16,15 +16,25 @@
 		builder,
 		backend,
 		stats,
-		onOpenSlot
+		onOpenSlot,
+		startTimer,
+		stopTimer,
+		startFullTimer,
+		stopFullTimer
 	}: {
 		builder: TemplateBuilder;
 		backend: Backend;
 		stats: Record<number, StatDefinition>;
 		onOpenSlot: (slot: ItemSlot) => void;
+		startTimer: () => void;
+		stopTimer: () => void;
+		startFullTimer: () => void;
+		stopFullTimer: () => void;
 	} = $props();
 
-	const center = { x: 350, y: 350 };
+	const dimensions = 640;
+
+	const center = { x: dimensions / 2, y: dimensions / 2 };
 	const innerRadius = 140;
 	const middleRadius = 260;
 
@@ -76,8 +86,12 @@
 				}
 			};
 
+			if (startTimer) startTimer();
+			if (startFullTimer) startFullTimer();
 			backend.send(request);
 		} else {
+			if (stopTimer) stopTimer();
+			if (stopFullTimer) stopFullTimer();
 			backend.send({ type: ClientMessageType.Cancel });
 		}
 	}
@@ -87,17 +101,17 @@
 			backend.optimizationStatus === OptimizationStatus.Ready ||
 			backend.optimizationStatus === OptimizationStatus.Finished
 		) {
-			return 'border-primary text-primary bg-primary/20 hover:bg-primary/40';
+			return 'bg-primary border-primary/20 text-surface-lowest hover:brightness-110 hover:shadow-lg';
 		}
 
 		if (
 			backend.optimizationStatus === OptimizationStatus.Setup ||
 			backend.optimizationStatus === OptimizationStatus.Grounding
 		) {
-			return 'border-warning text-warning bg-warning/20 animate-pulse';
+			return 'bg-secondary border-secondary/20 text-foreground animate-pulse shadow-md';
 		}
 
-		return 'border-error text-error bg-error/20 hover:bg-error/30';
+		return 'bg-error border-error/20 text-surface-lowest hover:brightness-110 hover:shadow-lg';
 	});
 
 	let buttonText = $derived.by(() => {
@@ -107,20 +121,43 @@
 		if (backend.optimizationStatus === OptimizationStatus.Finished) return 'FINISHED';
 		return 'OPTIMIZE';
 	});
+
+	let isRunning = $derived.by(() => {
+		return (
+			backend.optimizationStatus === OptimizationStatus.Setup ||
+			backend.optimizationStatus === OptimizationStatus.Grounding ||
+			backend.optimizationStatus === OptimizationStatus.Solving
+		);
+	});
 </script>
 
-<div class="mx-auto flex w-full max-w-4xl flex-col items-center">
-	<div class="relative h-175 w-175">
-		<p
-			class="absolute top-4/5 left-1/2 -translate-x-1/2 text-center font-technical text-xl text-primary"
+<div class="flex w-full flex-col gap-12 pb-12">
+	<div class="relative h-160 w-160">
+		<div
+			class="absolute bottom-8 left-1/2 mt-2 flex -translate-x-1/2 flex-col items-center justify-center"
 		>
-			{builder.totalUtility.toFixed(2)}
-		</p>
+			<span class="mb-1 text-[10px] font-bold tracking-[0.2em] text-foreground-secondary uppercase">
+				Total Utility
+			</span>
+			<span class="font-technical text-lg font-bold text-primary">
+				{builder.totalUtility.toFixed(2)}
+			</span>
+		</div>
 		<button
-			class="absolute top-1/2 left-1/2 z-10 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer items-center justify-center rounded-full border-2 transition-all duration-300 ease-in-out {buttonColor}"
+			class="absolute top-1/2 left-1/2 z-10 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 transform
+			cursor-pointer items-center justify-center rounded-full border-[6px] {buttonColor}"
 			onclick={handleToggleOptimization}
 		>
-			<span class="text-sm font-bold tracking-widest uppercase">{buttonText}</span>
+			<div
+				class="absolute inset-0.5 rounded-full border-2
+				{isRunning
+					? 'animate-spin border-surface-lowest/10 border-t-surface-lowest/80 border-r-transparent'
+					: 'border-surface-lowest/20'}"
+			></div>
+
+			<span class="text-sm font-bold tracking-widest uppercase">
+				{buttonText}
+			</span>
 		</button>
 		{#each positionedJewelry as { slot, x, y } (slot)}
 			<div
@@ -163,7 +200,7 @@
 		{/each}
 	</div>
 
-	<div class="flex items-center justify-center gap-8">
+	<div class="flex items-center justify-center gap-12">
 		{#each INVENTORY_GROUPS.weapons as slot (slot)}
 			<InventorySlot
 				onclick={() => onOpenSlot(slot)}

@@ -250,7 +250,7 @@ export class TemplateBuilder {
 		for (const stat of allTrackedStats) {
 			if (stat.id in this.preferences) {
 				const effectiveValue = Math.max(0, Math.min(stat.value, stat.currentCap));
-				total += effectiveValue * stat.utility;
+				total += effectiveValue * stat.utility * (this.preferences[stat.id]?.weight ?? 0);
 			}
 		}
 

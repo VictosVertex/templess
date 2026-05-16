@@ -1,4 +1,6 @@
 <script lang="ts">
+	import OrnamentHeader from '$lib/components/OrnamentHeader.svelte';
+	import Panel from '$lib/components/Panel.svelte';
 	import { API_BASE_URL, realmTheme } from '$lib/constants';
 	import type { Realm, ClassResponse } from '$lib/types';
 	import { LoaderCircle } from 'lucide-svelte';
@@ -32,16 +34,9 @@
 </script>
 
 <div class="mx-auto mt-12 flex w-full max-w-xl flex-col items-center gap-6">
-	<div class="w-full space-y-2">
-		<h1 class="font-technical text-3xl font-bold tracking-tight text-foreground uppercase">
-			Create A New Template
-		</h1>
-		<p class="text-sm text-foreground-secondary">
-			Select a realm, class, and name for your new template and start optimizing!
-		</p>
-	</div>
+	<OrnamentHeader>Create A New Template</OrnamentHeader>
 
-	<div class="w-full rounded-sm bg-surface-container p-8 outline outline-outline sm:p-10">
+	<Panel>
 		<form onsubmit={handleCreate} class="flex flex-col gap-8">
 			<div class="flex flex-col gap-3">
 				<p
@@ -63,7 +58,8 @@
 								class="peer sr-only"
 							/>
 							<div
-								class="flex flex-col items-center gap-3 rounded-sm border border-outline bg-surface-lowest p-3 transition-all peer-checked:border-primary peer-checked:bg-primary/10 hover:border-primary/50"
+								class="flex flex-col items-center gap-3 rounded-sm bg-surface-low p-3 outline outline-outline transition-all
+								peer-checked:outline-2 peer-checked:outline-primary hover:outline-primary"
 							>
 								<Icon size={24} class={color} strokeWidth={1.5} />
 
@@ -77,9 +73,7 @@
 								</span>
 
 								{#if selectedRealmId === realm.id}
-									<div
-										class="absolute top-3 right-3 h-2 w-2 animate-pulse rounded-full bg-primary"
-									></div>
+									<div class="absolute top-3 right-3 h-1.5 w-1.5 rotate-45 bg-primary"></div>
 								{/if}
 							</div>
 						</label>
@@ -99,7 +93,7 @@
 						id="class-select"
 						bind:value={selectedClassId}
 						disabled={!selectedRealmId}
-						class="w-full appearance-none rounded-sm border border-outline bg-surface-lowest px-4 py-3 text-foreground transition-colors focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+						class="w-full appearance-none rounded-sm border border-outline bg-surface-low px-4 py-3 text-foreground transition-colors focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<option value={null}>
 							{selectedRealmId ? 'Choose a class...' : 'Select a realm first...'}
@@ -134,7 +128,9 @@
 					type="text"
 					id="template-name"
 					bind:value={templateName}
-					class="w-full rounded-sm border border-outline bg-surface-lowest px-4 py-3 text-foreground transition-colors placeholder:text-foreground-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+					class="w-full rounded-sm border border-outline bg-surface-low px-4 py-3 text-foreground transition-colors
+					placeholder:text-foreground-secondary/50 focus:border-primary focus:bg-surface-low focus:ring-1
+					focus:ring-primary focus:outline-none"
 					placeholder="e.g. Solo Bard"
 				/>
 			</div>
@@ -142,7 +138,7 @@
 			<button
 				type="submit"
 				disabled={!selectedClassId || !templateName.trim()}
-				class="group relative mt-2 inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-primary px-8 py-4 font-technical text-sm font-bold tracking-widest text-background uppercase transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+				class="group relative mt-2 inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-primary px-8 py-4 font-technical text-sm font-bold tracking-widest text-background uppercase transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:saturate-50 disabled:hover:brightness-100"
 			>
 				{#if isCreating}
 					<LoaderCircle size={18} class="mr-3 animate-spin" />
@@ -152,5 +148,5 @@
 				{/if}
 			</button>
 		</form>
-	</div>
+	</Panel>
 </div>

@@ -21,8 +21,8 @@
 
 <div class="flex flex-col gap-1">
 	<div class="flex items-baseline justify-between">
-		<span class="text-foreground capitalize">{stat.name.replace(/_/g, ' ')}</span>
-		<span class="font-mono text-xs {colorClass}">{stat.value} / {stat.currentCap}</span>
+		<span class="text-sm text-foreground capitalize">{stat.name.replace(/_/g, ' ')}</span>
+		<span class="font-mono text-sm tracking-wide {colorClass}">{stat.value}/{stat.currentCap}</span>
 	</div>
 	<div class="relative h-0.5 w-full rounded-full bg-surface-container">
 		<div
@@ -31,9 +31,9 @@
 		></div>
 		{#if stat.min > 0}
 			<div
-				class="absolute top-1/2 h-2.5 w-0.5 -translate-x-1/2 -translate-y-1/2
+				class="absolute top-1/2 h-3 w-0.5 -translate-x-1/2 -translate-y-1/2
 				rounded-full transition-all duration-300
-				{stat.value >= stat.min ? 'w-1 bg-success' : 'bg-primary'}"
+				{stat.value >= stat.min ? 'bg-success' : 'bg-primary'}"
 				style="left: {minPercentage}%;"
 			></div>
 		{/if}

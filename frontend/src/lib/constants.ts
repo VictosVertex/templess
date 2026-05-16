@@ -1,8 +1,10 @@
 import { Shield, Axe, Leaf } from 'lucide-svelte';
 import { ItemSlot } from './types';
 
-export const API_BASE_URL = 'http://localhost:3000';
-export const WEBSOCKET_URL = 'ws://localhost:3000/ws';
+const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
+export const API_BASE_URL = `http://${host}:3000`;
+export const WEBSOCKET_URL = `ws://${host}:3000/ws`;
 
 export const realmTheme: Record<number, { icon: typeof Shield; color: string; bg: string }> = {
 	1: { icon: Shield, color: 'text-red-400', bg: 'bg-red-400/10' },

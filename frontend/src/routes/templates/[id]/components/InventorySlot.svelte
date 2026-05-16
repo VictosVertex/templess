@@ -36,24 +36,19 @@
 		}))
 	);
 
-	let stateColors = $derived.by(() => {
+	let slotStyles = $derived.by(() => {
 		if (equipSource === EquipSource.User) {
-			return 'bg-primary/30 border-primary hover:bg-primary/40';
+			return 'bg-primary border-2 border-primary outline outline-1 outline-offset-[-4px] outline-surface-lowest/30 shadow-md shadow-black/20 text-surface-lowest hover:brightness-110';
 		}
-		if (equipSource === EquipSource.Optimizer) {
-			return 'bg-success/10 border-success hover:bg-success/20';
-		}
-		return 'bg-surface-lowest border-outline hover:bg-surface-container hover:border-primary';
-	});
 
-	let stateBorders = $derived.by(() => {
-		if (itemSource === ItemSource.Crafted) {
-			return 'border-dashed border-2';
+		if (equipSource === EquipSource.Optimizer) {
+			if (itemSource === ItemSource.Crafted) {
+				return 'bg-success border-2 border-success outline-dashed outline-2 outline-offset-[-4px] outline-surface-lowest/70 shadow-md shadow-black/20 text-surface-lowest hover:brightness-110';
+			}
+			return 'bg-success border-2 border-success outline outline-1 outline-offset-[-4px] outline-surface-lowest/30 shadow-md shadow-black/20 text-surface-lowest hover:brightness-110';
 		}
-		if (itemSource === ItemSource.Dropped) {
-			return 'border-solid border';
-		}
-		return 'border-solid border';
+
+		return 'bg-surface-container border border-outline/50 shadow-[inset_0_4px_8px_rgba(0,0,0,0.08)] text-foreground-secondary/40 hover:border-primary/50 hover:text-primary';
 	});
 </script>
 
@@ -65,10 +60,10 @@
 	<div class="relative">
 		<button
 			{onclick}
-			class="flex cursor-pointer items-center justify-center border border-outline transition-all duration-200 {shapeClass} {stateColors} {stateBorders} {width} {height}"
+			class="flex cursor-pointer items-center justify-center transition-all duration-200 {shapeClass} {slotStyles} {width} {height}"
 			aria-label="Modify {name} slot"
 		>
-			<Plus size={24} class="text-foreground-secondary/50" />
+			<Plus size={24} />
 		</button>
 
 		{#if equipSource !== null}
