@@ -11,6 +11,7 @@ import {
 import { SvelteMap } from 'svelte/reactivity';
 
 const ACUITY_ID = 156;
+const ESSENCE_RESIST = 116;
 const ALL_MAGIC_SKILLS_ID = 163;
 const ALL_MELEE_SKILLS_ID = 164;
 const ALL_ARCHERY_SKILLS_ID = 168;
@@ -120,6 +121,10 @@ export class TemplateBuilder {
 
 		for (const stat of Object.values(stats)) {
 			let targetBucket = null;
+
+			if (stat.id == ESSENCE_RESIST) {
+				continue;
+			}
 
 			switch (stat.category_id) {
 				case StatCategory.PhysicalStats:
