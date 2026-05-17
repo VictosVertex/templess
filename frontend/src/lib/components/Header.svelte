@@ -1,17 +1,17 @@
-<header
-	class="relative z-10 flex h-16 w-full shrink-0 items-center border-b border-outline bg-surface-lowest px-8 shadow-sm"
->
-	<div class="flex items-center gap-4">
-		<h1 class="font-technical text-2xl font-bold tracking-widest text-primary uppercase">
-			TempLess
-		</h1>
+<header class="relative z-10 w-full border-b border-primary/10 bg-primary">
+	<div class="mx-auto flex h-16 w-full max-w-400 items-center px-4 sm:px-8">
+		<div class="flex items-center gap-5">
+			<h1 class="font-technical text-xl font-bold tracking-[0.25em] text-background uppercase">
+				TempLess
+			</h1>
 
-		<div class="h-4 w-px bg-outline"></div>
+			<div class="h-4 w-px bg-background/60"></div>
 
-		<h2
-			class="font-technical text-[10px] font-medium tracking-[0.2em] text-foreground-secondary uppercase"
-		>
-			ASP Powered Template Optimization
-		</h2>
+			<h2
+				class="mt-0.5 font-technical text-[9px] font-bold tracking-[0.25em] text-background/90 uppercase"
+			>
+				ASP Powered Template Optimization
+			</h2>
+		</div>
 	</div>
 </header>

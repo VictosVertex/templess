@@ -53,44 +53,44 @@
 </script>
 
 <div class="group flex flex-col items-center justify-center">
-	<span class="mb-1 font-technical text-sm tracking-wider text-foreground-secondary capitalize">
-		{name}
-	</span>
+    <span class="mb-1 font-technical text-[clamp(10px,2cqi,14px)] tracking-wider text-foreground-secondary capitalize whitespace-nowrap">
+        {name}
+    </span>
 
-	<div class="relative">
-		<button
-			{onclick}
-			class="flex cursor-pointer items-center justify-center transition-all duration-200 {shapeClass} {slotStyles} {width} {height}"
-			aria-label="Modify {name} slot"
-		>
-			<Plus size={24} />
-		</button>
+    <div class="relative {width} {height}">
+        <button
+            {onclick}
+            class="flex w-full h-full cursor-pointer items-center justify-center transition-all duration-200 {shapeClass} {slotStyles}"
+            aria-label="Modify {name} slot"
+        >
+            <Plus size={24} />
+        </button>
 
-		{#if equipSource !== null}
-			<div class="absolute -top-1 -right-1 z-10 hidden group-hover:flex">
-				<button
-					class="flex cursor-pointer items-center justify-center rounded-full border border-outline bg-surface-lowest p-1 transition-colors hover:text-error"
-					onclick={onremove}
-					title="Unequip Item"
-					aria-label="Unequip {name}"
-				>
-					<X size={12} strokeWidth={3} />
-				</button>
-			</div>
-		{/if}
-	</div>
+        {#if equipSource !== null}
+            <div class="absolute -top-1 -right-1 z-10 hidden group-hover:flex">
+                <button
+                    class="flex cursor-pointer items-center justify-center rounded-full border border-outline bg-surface-lowest p-1 transition-colors hover:text-error"
+                    onclick={onremove}
+                    title="Unequip Item"
+                    aria-label="Unequip {name}"
+                >
+                    <X size={12} strokeWidth={3} />
+                </button>
+            </div>
+        {/if}
+    </div>
 
-	{#if gemSummaries.length > 0}
-		<div class="mt-2 flex max-w-28 flex-wrap justify-center gap-1">
-			{#each gemSummaries as gem (gem.key)}
-				<span
-					class="max-w-full truncate rounded-full border border-success/40 bg-success/10 px-2 py-0.5 font-technical text-[10px] tracking-wide text-success uppercase"
-					title={`+${gem.value} ${gem.label} (tier ${gem.tier + 1})`}
-				>
-					+{gem.value}
-					{gem.label}
-				</span>
-			{/each}
-		</div>
-	{/if}
+    {#if gemSummaries.length > 0}
+        <div class="mt-2 flex w-full flex-wrap justify-center gap-1">
+            {#each gemSummaries as gem (gem.key)}
+                <span
+                    class="max-w-full truncate rounded-full border border-success/40 bg-success/10 px-2 py-0.5 font-technical text-[clamp(8px,1.5cqi,10px)] tracking-wide text-success uppercase"
+                    title={`+${gem.value} ${gem.label} (tier ${gem.tier + 1})`}
+                >
+                    +{gem.value}
+                    {gem.label}
+                </span>
+            {/each}
+        </div>
+    {/if}
 </div>

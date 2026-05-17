@@ -12,8 +12,7 @@
 </script>
 
 <div class="relative w-full border border-outline bg-surface-lowest p-1 shadow-sm {className}">
-	<!-- <div class="relative w-full p-1 {className}"> -->
-	<div class="h-full p-4">
+	<div class="h-full border border-outline/50 p-4">
 		{@render children()}
 	</div>
 
