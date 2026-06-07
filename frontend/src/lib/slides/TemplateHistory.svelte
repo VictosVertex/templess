@@ -114,12 +114,12 @@
 					{@const Icon = theme.icon}
 
 					<div
-						class="group flex items-stretch justify-between border-b border-primary/10 transition-all focus-within:bg-primary/[0.02] hover:bg-primary/[0.02]"
+						class="group flex items-stretch justify-between border-b border-primary/10 transition-all focus-within:bg-primary/2 hover:bg-primary/2"
 					>
 						<button
 							type="button"
 							onclick={() => onSelect(template.id)}
-							class="flex min-w-0 flex-1 items-center gap-6 px-4 py-4 text-left outline-none"
+							class="flex min-w-0 flex-1 cursor-pointer items-center gap-6 px-4 py-4 text-left outline-none"
 						>
 							<div
 								class="flex h-8 w-8 shrink-0 items-center justify-center opacity-80 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
@@ -158,9 +158,9 @@
 									e.stopPropagation();
 									handleDelete(template.id);
 								}}
-								class="rounded-sm text-foreground-secondary/40 opacity-100 transition-all hover:text-error focus:text-error
-                   focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-error focus-visible:outline-none
-                   active:scale-95 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100"
+								class="cursor-pointer rounded-sm text-foreground-secondary/40 opacity-100 transition-all hover:text-error
+                   focus:text-error focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-error
+                   focus-visible:outline-none active:scale-95 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100"
 								title="Delete Template"
 							>
 								<Trash2 size={14} strokeWidth={1.5} />

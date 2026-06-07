@@ -48,18 +48,18 @@
 			const rawSave = window.localStorage.getItem(data.activeContext.storageKey);
 			if (rawSave) {
 				try {
-                    const parsedSave = JSON.parse(rawSave);
-                    
-                    if (parsedSave.class_id === data.activeContext.template.class_id) {
-                        initialTemplate = parsedSave;
-                    } else {
-                        console.warn('Local storage class mismatch (stale data). Discarding save.');
-                        window.localStorage.removeItem(data.activeContext.storageKey);
-                    }
-                } catch (e) {
-                    console.error('Save file corrupted, starting fresh.', e);
-                    window.localStorage.removeItem(data.activeContext.storageKey);
-                }
+					const parsedSave = JSON.parse(rawSave);
+
+					if (parsedSave.class_id === data.activeContext.template.class_id) {
+						initialTemplate = parsedSave;
+					} else {
+						console.warn('Local storage class mismatch (stale data). Discarding save.');
+						window.localStorage.removeItem(data.activeContext.storageKey);
+					}
+				} catch (e) {
+					console.error('Save file corrupted, starting fresh.', e);
+					window.localStorage.removeItem(data.activeContext.storageKey);
+				}
 			}
 		}
 
@@ -94,14 +94,14 @@
 	});
 
 	$effect(() => {
-        if (!backend) return;
+		if (!backend) return;
 
-        backend.connect();
+		backend.connect();
 
-        return () => {
-            backend.disconnect();
-        };
-    });
+		return () => {
+			backend.disconnect();
+		};
+	});
 </script>
 
 <div
