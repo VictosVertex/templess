@@ -34,7 +34,9 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
             instrument_type INTEGER NOT NULL,
             is_tradable INTEGER NOT NULL,
             utility_single REAL NOT NULL,
-            utility REAL NOT NULL
+            utility REAL NOT NULL,
+            price INTEGER NOT NULL,
+            currency INTEGER NOT NULL
         )",
         [],
     )?;
@@ -75,6 +77,7 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
             template_id INTEGER NOT NULL,
             slot_id INTEGER NOT NULL,
             item_id INTEGER NOT NULL,
+            source INTEGER NOT NULL,
             PRIMARY KEY (template_id, slot_id),
             FOREIGN KEY(template_id) REFERENCES template(id) ON DELETE CASCADE,
             FOREIGN KEY(item_id) REFERENCES item(id)
@@ -86,9 +89,8 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
         "CREATE TABLE IF NOT EXISTS template_preference (
             template_id INTEGER NOT NULL,
             stat_id INTEGER NOT NULL,
-            lower_bound INTEGER NOT NULL,
-            upper_bound INTEGER NOT NULL,
-            priority INTEGER NOT NULL,
+            min INTEGER NOT NULL,
+            weight INTEGER NOT NULL,
             PRIMARY KEY (template_id, stat_id),
             FOREIGN KEY(template_id) REFERENCES template(id) ON DELETE CASCADE
         )",

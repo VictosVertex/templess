@@ -6,7 +6,7 @@ use super::raw_craft_base::RawCraftBase;
 use crate::core::error::CoreResult;
 use crate::core::{database::craft_base_sql::insert_craft_bases, domain::craft_base::CraftBase};
 
-const CRAFT_BASE_ID_START: i32 = 900_000;
+const CRAFT_BASE_ID_START: u32 = 900_000;
 
 /// Initializes craft bases in the database from a JSON file.
 pub fn initialize_craft_bases(
@@ -22,7 +22,7 @@ pub fn initialize_craft_bases(
         .into_iter()
         .enumerate()
         .filter_map(|(index, raw_item)| {
-            raw_item.into_craft_base(CRAFT_BASE_ID_START + index as i32)
+            raw_item.into_craft_base(CRAFT_BASE_ID_START + index as u32)
         })
         .collect::<Vec<CraftBase>>();
 

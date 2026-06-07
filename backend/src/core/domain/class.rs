@@ -74,6 +74,9 @@ pub enum Class {
     /// Heretic class from Albion.
     Heretic = 33,
 
+    /// Occultist class from Albion.
+    Occultist = 63,
+
     /// Thane class from Midgard.
     Thane = 21,
 
@@ -197,6 +200,7 @@ impl Class {
             | Class::Necromancer
             | Class::Cabalist
             | Class::Reaver
+            | Class::Occultist
             | Class::Heretic => &Realm::Albion,
 
             Class::Thane

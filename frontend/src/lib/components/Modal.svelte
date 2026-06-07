@@ -48,7 +48,7 @@
 					>
 						<h2
 							id="modal-title"
-							class="font-technical text-sm font-bold tracking-widest text-foreground uppercase"
+							class="font-display text-sm font-bold tracking-widest text-foreground uppercase"
 						>
 							{title}
 						</h2>

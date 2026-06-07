@@ -71,16 +71,37 @@ export interface Stat extends StatDefinition, StatPreference {
 export interface AppData {
 	isInitialized: boolean;
 	stats: Record<number, StatDefinition>;
+	gems: Record<number, Gem>;
 	classes: ClassResponse[];
-	gems: Gem[];
 	realms: Realm[];
 	templates: Template[];
+	activeContext: OptimizationContext | null;
+}
+
+export interface OptimizationContext {
+	template: Template;
+	templateClass: ClassResponse;
+	items: Record<number, Item>;
+	storageKey: string;
+}
+
+export enum EquipSource {
+	User = 'user',
+	Optimizer = 'optimizer'
+}
+
+export interface EquippedItemState {
+	item_id: number;
+	source: EquipSource;
+	gem_ids: number[];
 }
 
 export interface Template {
 	id: number;
 	name: string;
 	class_id: number;
+	preferences: Record<number, StatPreference>;
+	equipped_items: Record<number, EquippedItemState>;
 }
 
 export enum ItemSource {

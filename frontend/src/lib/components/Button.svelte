@@ -18,7 +18,7 @@
 	} = $props();
 
 	const baseStyles =
-		'group relative inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden font-technical text-xs font-bold tracking-widest uppercase transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40';
+		'group relative inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden font-display text-xs font-bold tracking-widest uppercase transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40';
 
 	let variantStyles = $derived.by(() => {
 		switch (variant) {

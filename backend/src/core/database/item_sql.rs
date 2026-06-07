@@ -56,10 +56,10 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> CoreResult
                 item_type,      level,          quality,            weapon_hand,
                 weapon_speed,   damage_type,    realm,              required_level,
                 bonus_level,    shield_size,    instrument_type,    is_tradable,
-                utility_single, utility
+                utility_single, utility,        price,              currency
             ) VALUES (
-                ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?,
-                ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?
+                ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?, ?,
+                ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?, ?
             )",
         )?;
 
@@ -88,6 +88,8 @@ pub fn insert_items(connection: &mut Connection, items: Vec<Item>) -> CoreResult
                 if item.is_tradable { 1 } else { 0 },
                 item.utility_single,
                 item.utility,
+                item.price,
+                item.currency as u8,
             ])?;
 
             // Insert allowed classes
@@ -140,6 +142,8 @@ pub fn get_items_by_class(connection: &Connection, class: Class) -> CoreResult<V
             i.is_tradable,
             i.utility_single, 
             i.utility,
+            i.price,
+            i.currency,
             json_group_array(
             json_object('stat_id', istat.stat_id, 'value', istat.value)
             ) FILTER (WHERE istat.stat_id IS NOT NULL) as bonuses_json
@@ -169,12 +173,12 @@ pub fn get_items_by_class(connection: &Connection, class: Class) -> CoreResult<V
         ));
         let item_slot = ItemSlot::from_repr(row.get::<_, u16>(4)?).expect("Invalid item_slot repr");
         let realm = Realm::from_repr(row.get::<_, u16>(10)?).expect("Invalid realm repr");
-        let bonuses_json: Option<String> = row.get(18)?;
+        let bonuses_json: Option<String> = row.get(20)?;
         let bonuses: Vec<ItemBonus> = match bonuses_json {
             Some(json) => {
                 let bonus_data: Vec<BonusData> = serde_json::from_str(&json).map_err(|e| {
                     rusqlite::Error::FromSqlConversionFailure(
-                        18,
+                        20,
                         rusqlite::types::Type::Text,
                         Box::new(e),
                     )
@@ -213,6 +217,8 @@ pub fn get_items_by_class(connection: &Connection, class: Class) -> CoreResult<V
             passive_json: None,
             react1_json: None,
             react2_json: None,
+            price: row.get(18)?,
+            currency: row.get::<_, u8>(19)?.into(),
         })
     })?;
 

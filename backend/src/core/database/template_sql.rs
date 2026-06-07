@@ -3,7 +3,12 @@ use std::collections::HashMap;
 use rusqlite::{Connection, params};
 
 use crate::core::{
-    domain::{class::Class, item_slot::ItemSlot, template::Template},
+    domain::{
+        class::Class,
+        equip::{EquipSource, EquippedItemState},
+        item_slot::ItemSlot,
+        template::Template,
+    },
     error::CoreResult,
 };
 
@@ -31,26 +36,12 @@ pub fn get_templates(connection: &Connection) -> CoreResult<Vec<Template>> {
     for template_row in template_rows {
         let (id, name, class_id) = template_row?;
 
-        let mut slot_stmt = connection
-            .prepare("SELECT slot_id, item_id FROM template_slot WHERE template_id = ?")?;
-        let slot_rows = slot_stmt.query_map(params![id], |row| {
-            Ok((row.get::<_, u16>(0)?, row.get::<_, i32>(1)?))
-        })?;
-
-        let mut slots = HashMap::new();
-        for slot_row in slot_rows {
-            let (slot_id, item_id) = slot_row?;
-            if let Some(slot) = ItemSlot::from_repr(slot_id) {
-                slots.insert(slot, item_id);
-            }
-        }
-
         if let Some(class) = Class::from_repr(class_id) {
             templates.push(Template {
                 id,
                 name,
                 class,
-                slots,
+                equipped_items: HashMap::new(),
                 preferences: HashMap::new(),
             });
         }
@@ -71,16 +62,31 @@ pub fn get_template(connection: &Connection, template_id: i32) -> CoreResult<Opt
 
     if let Ok((id, name, class_id)) = template_row {
         let mut slot_stmt = connection
-            .prepare("SELECT slot_id, item_id FROM template_slot WHERE template_id = ?")?;
+            .prepare("SELECT slot_id, item_id, source FROM template_slot WHERE template_id = ?")?;
         let slot_rows = slot_stmt.query_map(params![id], |row| {
-            Ok((row.get::<_, u16>(0)?, row.get::<_, i32>(1)?))
+            Ok((
+                row.get::<_, u16>(0)?,
+                row.get::<_, i32>(1)?,
+                row.get::<_, u8>(2)?,
+            ))
         })?;
 
-        let mut slots = HashMap::new();
+        let mut equipped_items = HashMap::new();
         for slot_row in slot_rows {
-            let (slot_id, item_id) = slot_row?;
+            let (slot_id, item_id, source) = slot_row?;
             if let Some(slot) = ItemSlot::from_repr(slot_id) {
-                slots.insert(slot, item_id);
+                equipped_items.insert(
+                    slot,
+                    EquippedItemState {
+                        item_id: item_id as u32,
+                        source: match source {
+                            0 => EquipSource::User,
+                            1 => EquipSource::Optimizer,
+                            _ => EquipSource::User,
+                        },
+                        gem_ids: Vec::new(), // TODO: actually load gems
+                    },
+                );
             }
         }
 
@@ -89,7 +95,7 @@ pub fn get_template(connection: &Connection, template_id: i32) -> CoreResult<Opt
                 id,
                 name,
                 class,
-                slots,
+                equipped_items,
                 preferences: HashMap::new(),
             }));
         }

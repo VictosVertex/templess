@@ -15,10 +15,8 @@
 
 	let combinedMax = $derived(stat.cap + (capStat?.cap ?? 0));
 
-	let initialMin = preference?.min ?? 0;
-
-	let currentMin = $state(initialMin);
-	let currentPriority = $state(preference?.weight ?? 0);
+	let currentMin = $derived(preference?.min ?? 0);
+	let currentPriority = $derived(preference?.weight ?? 0);
 	let isIgnored = $derived(currentPriority === 0);
 
 	function handleChange() {
@@ -39,7 +37,7 @@
 >
 	<div class="w-1/3">
 		<span
-			class="font-technical text-sm font-bold tracking-wider text-foreground capitalize {isIgnored
+			class="font-display text-sm font-bold tracking-wider text-foreground capitalize {isIgnored
 				? 'opacity-40'
 				: ''}"
 		>
@@ -49,7 +47,7 @@
 
 	<div class="flex w-1/3 flex-col gap-2">
 		<div
-			class="flex justify-between font-technical text-xs font-bold tracking-wider text-foreground-secondary uppercase"
+			class="flex justify-between font-display text-xs font-bold tracking-wider text-foreground-secondary uppercase"
 		>
 			<span>Min Target</span>
 			<span class="text-foreground {isIgnored ? 'opacity-40' : ''}">
@@ -79,7 +77,7 @@
 
 	<div class="flex w-1/3 flex-col gap-2">
 		<div
-			class="flex justify-between font-technical text-xs font-bold tracking-wider text-foreground-secondary uppercase"
+			class="flex justify-between font-display text-xs font-bold tracking-wider text-foreground-secondary uppercase"
 		>
 			<span>Priority <span class="hidden xl:inline">(Weight)</span></span>
 			<span class="text-foreground">{currentPriority}</span>

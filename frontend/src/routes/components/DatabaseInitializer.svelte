@@ -23,11 +23,11 @@
 
 		<div class="mt-2 flex flex-col gap-3">
 			<p
-				class="font-technical text-sm font-bold tracking-[0.2em] text-foreground-secondary uppercase"
+				class="font-display text-sm font-bold tracking-[0.2em] text-foreground-secondary uppercase"
 			>
 				The database is currently uninitialized.
 			</p>
-			<p class="font-technical text-sm tracking-wider text-foreground-secondary/70">
+			<p class="font-display text-sm tracking-wider text-foreground-secondary/70">
 				Make sure you have the necessary raw data in the
 				<code class="border-b border-primary/20 px-1 pb-0.5 font-mono text-primary/80"
 					>data/raw/</code

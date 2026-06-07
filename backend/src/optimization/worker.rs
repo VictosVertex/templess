@@ -3,7 +3,6 @@
 use crate::clingo::control::Control;
 use crate::clingo::model::Model;
 use crate::clingo::symbol::SymbolType;
-use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::{item::Item, template::Template};
 use crate::optimization::instance::{
     class_atoms, gem_atoms, item_atoms, preference_atoms, slot_atoms, stat_atoms,
@@ -31,14 +30,9 @@ impl OptimizationHandle {
     }
 }
 
-pub struct OptimizationResult {
-    pub template: Template,
-    pub equipped_gem_ids: HashMap<i32, Vec<u32>>,
-}
-
-struct ModelSelection {
-    chosen_items: Vec<(ItemSlot, i32)>,
-    equipped_gem_ids: HashMap<i32, Vec<u32>>,
+pub struct ModelSelection {
+    pub equipped_items: HashMap<u16, u32>,
+    pub equipped_gem_ids: HashMap<u32, Vec<u32>>,
 }
 
 /// Represents the current status of the optimization process.
@@ -50,7 +44,7 @@ pub enum OptimizeStatus {
     /// Solving the optimization problem and retrieving models.
     Solving,
     /// A new model has been found during the optimization process.
-    NewModel(OptimizationResult),
+    NewModel(ModelSelection),
     /// The optimization process has finished, either because all models have been found or because it was stopped.
     Finished,
     /// An error occurred during the optimization process, with a message describing the error.
@@ -67,6 +61,7 @@ pub fn start_optimization_worker(
     items: Vec<Item>,
     status_sender: UnboundedSender<OptimizeStatus>,
 ) -> OptimizationHandle {
+    print!("Starting optimization worker...");
     let stop_flag = Arc::new(AtomicBool::new(false));
     let stop_flag_for_worker = Arc::clone(&stop_flag);
 
@@ -146,16 +141,7 @@ fn run_optimization_logic(
                 Ok(Some(model_ref)) => {
                     let selection = model_selection_from_model(model_ref)?;
 
-                    let mut new_template = template.clone();
-
-                    for (slot, item_id) in selection.chosen_items {
-                        new_template.slots.insert(slot, item_id);
-                    }
-
-                    status_sender.send(OptimizeStatus::NewModel(OptimizationResult {
-                        template: new_template,
-                        equipped_gem_ids: selection.equipped_gem_ids,
-                    }))?;
+                    status_sender.send(OptimizeStatus::NewModel(selection))?;
 
                     handle.resume()?;
                 }
@@ -188,8 +174,8 @@ fn run_optimization_logic(
 fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
     let symbols = model.symbols(2)?;
 
-    let mut chosen_items = Vec::new();
-    let mut equipped_gem_ids: HashMap<i32, Vec<u32>> = HashMap::new();
+    let mut equipped_items: HashMap<u16, u32> = HashMap::new();
+    let mut equipped_gem_ids: HashMap<u32, Vec<u32>> = HashMap::new();
 
     for symbol in symbols {
         if symbol.kind() != SymbolType::Function {
@@ -210,12 +196,9 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
                     anyhow!("Expected an argument for `item` at index 1 in equipped_item")
                 })?;
 
-                let slot_number = slot_symbol.number().context("Failed to parse slot ID")?;
+                let slot_number = slot_symbol.number().context("Failed to parse slot ID")? as u16;
 
-                let slot = ItemSlot::from_repr(slot_number as u16)
-                    .ok_or_else(|| anyhow!("Invalid slot representation: {}", slot_number))?;
-
-                chosen_items.push((slot, item_symbol.number()?));
+                equipped_items.insert(slot_number, item_symbol.number()? as u32);
             }
             "equipped_gem" => {
                 let item_symbol = arguments.first().ok_or_else(|| {
@@ -226,7 +209,7 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
                     anyhow!("Expected an argument for `gem` at index 1 in equipped_gem")
                 })?;
 
-                let item_id = item_symbol.number().context("Failed to parse item ID")?;
+                let item_id = item_symbol.number().context("Failed to parse item ID")? as u32;
                 let gem_id = gem_symbol.number().context("Failed to parse gem ID")? as u32;
 
                 equipped_gem_ids.entry(item_id).or_default().push(gem_id);
@@ -236,7 +219,7 @@ fn model_selection_from_model(model: Model) -> Result<ModelSelection> {
     }
 
     Ok(ModelSelection {
-        chosen_items,
+        equipped_items,
         equipped_gem_ids,
     })
 }

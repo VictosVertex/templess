@@ -1,15 +1,15 @@
-use crate::core::domain::item_type::ItemType;
-
 use super::{
+    currency::Currency,
     item::{Item, ItemSource},
     item_bonus::ItemBonus,
     item_slot::ItemSlot,
+    item_type::ItemType,
     realm::Realm,
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CraftBase {
-    pub id: i32,
+    pub id: u32,
     pub name: String,
     pub item_type: ItemType,
     pub item_slot: ItemSlot,
@@ -48,6 +48,8 @@ impl From<CraftBase> for Item {
             passive_json: None,
             react1_json: None,
             react2_json: None,
+            price: 0,
+            currency: Currency::None,
         }
     }
 }

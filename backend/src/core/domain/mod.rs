@@ -2,6 +2,8 @@
 
 pub mod class;
 pub mod craft_base;
+pub mod currency;
+pub mod equip;
 pub mod gem;
 pub mod item;
 pub mod item_bonus;

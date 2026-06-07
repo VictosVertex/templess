@@ -21,7 +21,7 @@ pub struct RawCraftBonus {
 }
 
 impl RawCraftBase {
-    pub fn into_craft_base(self, id: i32) -> Option<CraftBase> {
+    pub fn into_craft_base(self, id: u32) -> Option<CraftBase> {
         let base_bonus = self.bonuses.into_iter().next().and_then(|bonus| {
             let stat = bonus.stat.parse::<Stat>().ok()?;
             let value = u16::try_from(bonus.value).ok()?;

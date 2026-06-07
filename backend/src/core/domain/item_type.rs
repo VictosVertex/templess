@@ -8,6 +8,7 @@ use strum::{Display, EnumIter, FromRepr};
 #[repr(u16)]
 #[derive(Debug, Clone, Copy, FromRepr, PartialEq, Eq, Hash, EnumIter, Display)]
 pub enum ItemType {
+    GenericWeapon = 1,
     /// Represents the crush melee weapon type from Albion.
     Crush = 2,
 

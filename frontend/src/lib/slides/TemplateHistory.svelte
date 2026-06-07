@@ -3,10 +3,12 @@
 	import { api } from '$lib/api';
 	import { realmTheme, defaultRealmTheme } from '$lib/constants';
 	import { Trash2, ArrowDownAZ } from 'lucide-svelte';
-	import { resolve } from '$app/paths';
-	import OrnamentHeader from '$lib/components/OrnamentHeader.svelte';
 
-	let { classes, templates }: { classes: ClassResponse[]; templates: Template[] } = $props();
+	let {
+		classes,
+		templates,
+		onSelect
+	}: { classes: ClassResponse[]; templates: Template[]; onSelect: (id: number) => void } = $props();
 	let sortBy = $state<'name' | 'realm' | 'class'>('name');
 
 	function getClassName(classId: number) {
@@ -39,9 +41,7 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-10">
-	<OrnamentHeader>Template History</OrnamentHeader>
-
+<div class="flex w-full flex-col">
 	<div class="mx-auto w-full max-w-4xl px-4">
 		<div class="flex items-center justify-end pb-2">
 			{#if templates.length > 0}
@@ -52,7 +52,7 @@
 					<select
 						id="sort"
 						bind:value={sortBy}
-						class="cursor-pointer appearance-none bg-transparent font-technical text-[10px] font-bold tracking-[0.2em] uppercase transition-colors outline-none"
+						class="cursor-pointer appearance-none bg-transparent font-display text-[10px] font-bold tracking-[0.2em] uppercase transition-colors outline-none"
 					>
 						<option value="name">Sort by Name</option>
 						<option value="realm">Group by Realm</option>
@@ -70,14 +70,14 @@
 			{#if templates.length === 0}
 				<div class="flex flex-col items-center justify-center py-20 text-center opacity-60">
 					<p
-						class="font-technical text-sm font-bold tracking-[0.2em] text-foreground-secondary uppercase"
+						class="font-display text-sm font-bold tracking-[0.2em] text-foreground-secondary uppercase"
 					>
-						The ledger is empty
+						No tempaltes exist yet
 					</p>
 					<p
-						class="mt-3 font-technical text-[10px] tracking-widest text-foreground-secondary/70 uppercase"
+						class="mt-3 font-display text-[10px] tracking-widest text-foreground-secondary/70 uppercase"
 					>
-						Scribe a new template above to begin.
+						Create a new template above to begin.
 					</p>
 				</div>
 			{:else}
@@ -88,19 +88,19 @@
 						<div class="w-8"></div>
 						<div class="grid flex-1 grid-cols-[2fr_1fr_1fr_1fr] gap-4">
 							<span
-								class="font-technical text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
+								class="font-display text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
 								>Name</span
 							>
 							<span
-								class="font-technical text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
+								class="font-display text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
 								>Class</span
 							>
 							<span
-								class="font-technical text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
+								class="font-display text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
 								>Utility</span
 							>
 							<span
-								class="text-right font-technical text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
+								class="text-right font-display text-[9px] font-bold tracking-[0.2em] text-foreground-secondary/50 uppercase"
 								>Modified</span
 							>
 						</div>
@@ -113,13 +113,16 @@
 					{@const theme = realmTheme[templateClass?.realm_id || 0] || defaultRealmTheme}
 					{@const Icon = theme.icon}
 
-					<a
-						href={resolve('/templates/[id]', { id: template.id.toString() })}
-						class="group flex items-center justify-between border-b border-primary/10 px-4 py-4 transition-all hover:bg-primary/[0.02]"
+					<div
+						class="group flex items-stretch justify-between border-b border-primary/10 transition-all focus-within:bg-primary/[0.02] hover:bg-primary/[0.02]"
 					>
-						<div class="flex min-w-0 flex-1 items-center gap-6">
+						<button
+							type="button"
+							onclick={() => onSelect(template.id)}
+							class="flex min-w-0 flex-1 items-center gap-6 px-4 py-4 text-left outline-none"
+						>
 							<div
-								class="flex h-8 w-8 shrink-0 items-center justify-center opacity-80 transition-opacity group-hover:opacity-100"
+								class="flex h-8 w-8 shrink-0 items-center justify-center opacity-80 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
 							>
 								<Icon size={20} class={theme.color} strokeWidth={1.5} />
 							</div>
@@ -128,39 +131,42 @@
 								class="grid min-w-0 flex-1 grid-cols-1 items-baseline gap-1 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:gap-4"
 							>
 								<span
-									class="truncate font-technical text-sm font-bold tracking-widest text-foreground transition-colors group-hover:text-primary"
+									class="truncate font-display text-sm font-bold tracking-widest text-foreground transition-colors group-focus-within:text-primary group-hover:text-primary"
 								>
 									{template.name}
 								</span>
 								<span
-									class="truncate font-technical text-[10px] tracking-[0.2em] text-foreground uppercase"
+									class="truncate font-display text-[10px] tracking-[0.2em] text-foreground uppercase"
 								>
 									{getClassName(template.class_id)}
 								</span>
-								<span class="hidden font-technical text-xs tracking-wider text-foreground sm:block">
+								<span class="hidden font-display text-xs tracking-wider text-foreground sm:block">
 									---
 								</span>
 								<span
-									class="hidden text-right font-technical text-[10px] tracking-widest text-foreground uppercase sm:block"
+									class="hidden text-right font-display text-[10px] tracking-widest text-foreground uppercase sm:block"
 								>
 									Today
 								</span>
 							</div>
-						</div>
+						</button>
 
-						<div class="flex items-center pl-6">
+						<div class="flex items-center justify-center px-4">
 							<button
+								type="button"
 								onclick={(e) => {
-									e.preventDefault();
+									e.stopPropagation();
 									handleDelete(template.id);
 								}}
-								class="text-foreground-secondary/40 opacity-100 transition-all hover:text-error active:scale-95 lg:opacity-0 lg:group-hover:opacity-100"
+								class="rounded-sm text-foreground-secondary/40 opacity-100 transition-all hover:text-error focus:text-error
+                   focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-error focus-visible:outline-none
+                   active:scale-95 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100"
 								title="Delete Template"
 							>
 								<Trash2 size={14} strokeWidth={1.5} />
 							</button>
 						</div>
-					</a>
+					</div>
 				{/each}
 			{/if}
 		</div>

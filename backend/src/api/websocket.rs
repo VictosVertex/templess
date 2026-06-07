@@ -16,7 +16,6 @@ use crate::{
     state::SharedState,
 };
 use futures_util::{sink::SinkExt, stream::StreamExt};
-use std::collections::HashMap;
 use tokio::sync::mpsc;
 
 pub async fn handler(ws: WebSocketUpgrade, State(state): State<SharedState>) -> impl IntoResponse {
@@ -106,22 +105,9 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                         OptimizeStatus::Grounding => Some(ServerMessage::Grounding),
                                         OptimizeStatus::Solving => Some(ServerMessage::Solving),
                                         OptimizeStatus::NewModel(result) => {
-                                            let equipped_items: HashMap<u16, u32> = result
-                                                .template
-                                                .slots
-                                                .into_iter()
-                                                .map(|(slot, item_id)| (slot.id(), item_id as u32))
-                                                .collect();
-
                                             Some(ServerMessage::NewModel {
-                                                equipped_items,
-                                                equipped_gems: result
-                                                    .equipped_gem_ids
-                                                    .into_iter()
-                                                    .map(|(item_id, gem_ids)| {
-                                                        (item_id as u32, gem_ids)
-                                                    })
-                                                    .collect(),
+                                                equipped_items: result.equipped_items,
+                                                equipped_gems: result.equipped_gem_ids,
                                             })
                                         }
                                         OptimizeStatus::Finished => Some(ServerMessage::Finished),

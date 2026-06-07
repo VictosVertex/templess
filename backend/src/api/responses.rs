@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, gem::Gem, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm,
-    stat::Stat, template::Template,
+    class::Class, equip::EquippedItemState, gem::Gem, item::Item, item_slot::ItemSlot,
+    item_type::ItemType, preference::Preference, realm::Realm, stat::Stat, template::Template,
 };
 
 #[derive(serde::Serialize)]
@@ -50,7 +50,7 @@ impl From<Class> for ClassResponse {
 #[derive(serde::Serialize)]
 pub struct ItemResponse {
     /// The unique identifier for the item.
-    pub id: i32,
+    pub id: u32,
 
     /// The name of the item.
     pub name: String,
@@ -75,6 +75,12 @@ pub struct ItemResponse {
 
     /// Whether the item is a dropped item or a craft base.
     pub source: crate::core::domain::item::ItemSource,
+
+    /// The price of the item in the specified currency.
+    pub price: u32,
+
+    /// The currency of the price
+    pub currency: u8,
 }
 
 impl From<Item> for ItemResponse {
@@ -93,6 +99,8 @@ impl From<Item> for ItemResponse {
                 .map(|bonus| (bonus.stat.id(), bonus.value))
                 .collect(),
             source: item.source,
+            price: item.price,
+            currency: item.currency as u8,
         }
     }
 }
@@ -172,11 +180,58 @@ impl From<ItemSlot> for ItemSlotResponse {
 }
 
 #[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EquipSourceResponse {
+    #[serde(rename = "user")]
+    User,
+    #[serde(rename = "optimizer")]
+    Optimizer,
+}
+
+#[derive(serde::Serialize)]
+pub struct EquippedItemStateResponse {
+    pub item_id: u32,
+    pub source: EquipSourceResponse,
+    pub gem_ids: Vec<u32>,
+}
+
+impl From<EquippedItemState> for EquippedItemStateResponse {
+    fn from(equip: EquippedItemState) -> Self {
+        EquippedItemStateResponse {
+            item_id: equip.item_id,
+            source: match equip.source {
+                crate::core::domain::equip::EquipSource::User => EquipSourceResponse::User,
+                crate::core::domain::equip::EquipSource::Optimizer => {
+                    EquipSourceResponse::Optimizer
+                }
+            },
+            gem_ids: equip.gem_ids,
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct PreferenceResponse {
+    pub min: u16,
+    pub weight: u16,
+}
+
+impl From<Preference> for PreferenceResponse {
+    fn from(pref: Preference) -> Self {
+        PreferenceResponse {
+            min: pref.min as u16,
+            weight: pref.weight as u16,
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
 pub struct TemplatesResponse {
     pub id: i32,
     pub name: String,
     pub class_id: u16,
-    pub slots: HashMap<u16, i32>,
+    pub equipped_items: HashMap<u16, EquippedItemStateResponse>,
+    pub preferences: HashMap<u16, PreferenceResponse>,
 }
 
 impl From<Template> for TemplatesResponse {
@@ -185,10 +240,15 @@ impl From<Template> for TemplatesResponse {
             id: template.id,
             name: template.name,
             class_id: template.class.id(),
-            slots: template
-                .slots
-                .iter()
-                .map(|(slot, item_id)| (slot.id(), *item_id))
+            equipped_items: template
+                .equipped_items
+                .into_iter()
+                .map(|(slot, equip)| (slot.id(), equip.into()))
+                .collect(),
+            preferences: template
+                .preferences
+                .into_iter()
+                .map(|(stat_id, pref)| (stat_id, pref.into()))
                 .collect(),
         }
     }

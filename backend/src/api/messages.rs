@@ -2,7 +2,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, item_slot::ItemSlot, preference::Preference, template::Template,
+    class::Class,
+    equip::{EquipSource, EquippedItemState},
+    item_slot::ItemSlot,
+    preference::Preference,
+    template::Template,
 };
 
 #[derive(Deserialize, Debug)]
@@ -55,11 +59,20 @@ impl TryFrom<OptimizationRequest> for Template {
         let class = Class::from_repr(req.class_id)
             .ok_or_else(|| format!("Invalid class ID: {}", req.class_id))?;
 
-        let slots = req
+        let equipped_items = req
             .equipped_items
             .iter()
             .filter_map(|(slot_id, item_id)| {
-                ItemSlot::from_repr(*slot_id).map(|slot| (slot, *item_id as i32))
+                ItemSlot::from_repr(*slot_id).map(|slot| {
+                    (
+                        slot,
+                        EquippedItemState {
+                            item_id: *item_id,
+                            source: EquipSource::User,
+                            gem_ids: Vec::new(),
+                        },
+                    )
+                })
             })
             .collect();
 
@@ -81,7 +94,7 @@ impl TryFrom<OptimizationRequest> for Template {
             id: 0,
             name: "optimization".to_string(),
             class,
-            slots,
+            equipped_items,
             preferences,
         })
     }

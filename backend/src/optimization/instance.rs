@@ -12,25 +12,25 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use strum::IntoEnumIterator;
 
-fn item_slot_is_available(template: &Template, item_id: i32, item_slot: ItemSlot) -> bool {
+fn item_slot_is_available(template: &Template, item_id: u32, item_slot: ItemSlot) -> bool {
     if template
-        .slots
+        .equipped_items
         .values()
-        .any(|&fixed_item_id| fixed_item_id == item_id)
+        .any(|equip| equip.item_id == item_id)
     {
         return false;
     }
 
     match item_slot {
         ItemSlot::Ring | ItemSlot::Ring2 => {
-            !template.slots.contains_key(&ItemSlot::Ring)
-                || !template.slots.contains_key(&ItemSlot::Ring2)
+            !template.equipped_items.contains_key(&ItemSlot::Ring)
+                || !template.equipped_items.contains_key(&ItemSlot::Ring2)
         }
         ItemSlot::Bracer | ItemSlot::Bracer2 => {
-            !template.slots.contains_key(&ItemSlot::Bracer)
-                || !template.slots.contains_key(&ItemSlot::Bracer2)
+            !template.equipped_items.contains_key(&ItemSlot::Bracer)
+                || !template.equipped_items.contains_key(&ItemSlot::Bracer2)
         }
-        _ => !template.slots.contains_key(&item_slot),
+        _ => !template.equipped_items.contains_key(&item_slot),
     }
 }
 
@@ -221,7 +221,7 @@ pub fn slot_atoms(template: &Template) -> Result<String> {
     writeln!(asp, "% --- TEMPLATE ---")?;
 
     for slot in ItemSlot::iter() {
-        match template.slots.get(&slot) {
+        match template.equipped_items.get(&slot) {
             Some(_) => {}
             None => writeln!(asp, "slot({},{}).", slot.id(), slot.name())?,
         }
@@ -265,7 +265,11 @@ pub fn stat_baseline_atoms(template: &Template, items: &[Item]) -> Result<String
         .map(|stat| (stat, 0))
         .collect();
 
-    let equipped_item_ids: HashSet<i32> = template.slots.values().copied().collect();
+    let equipped_item_ids: HashSet<u32> = template
+        .equipped_items
+        .values()
+        .map(|equip| equip.item_id)
+        .collect();
 
     for item in items.iter().filter(|i| equipped_item_ids.contains(&i.id)) {
         for bonus in &item.bonuses {

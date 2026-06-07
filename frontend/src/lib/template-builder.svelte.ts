@@ -1,4 +1,5 @@
 import {
+	EquipSource,
 	ItemSlot,
 	StatCategory,
 	type ClassResponse,
@@ -6,7 +7,8 @@ import {
 	type Item,
 	type Stat,
 	type StatDefinition,
-	type StatPreference
+	type StatPreference,
+	type Template
 } from '$lib/types';
 import { SvelteMap } from 'svelte/reactivity';
 
@@ -17,94 +19,88 @@ const ALL_MELEE_SKILLS_ID = 164;
 const ALL_ARCHERY_SKILLS_ID = 168;
 const ALL_DUAL_WIELD_SKILLS_ID = 167;
 
-export enum EquipSource {
-	User,
-	Optimizer
-}
-export interface EquippedItem {
-	item: Item;
-	source: EquipSource;
-	gems: Gem[];
-}
-
-export interface TemplateBuilderSnapshot {
-	equipped_items: Record<number, number>;
-	preferences: Record<number, StatPreference>;
-}
-
 export class TemplateBuilder {
-	equippedItems = $state<Partial<Record<ItemSlot, EquippedItem>>>({});
-	preferences = $state<Record<number, StatPreference>>({});
-	getTemplateClass: () => ClassResponse;
+	template: Template = $state() as Template;
+	templateClass: ClassResponse;
 
-	private getStatDictionary: () => Record<number, StatDefinition>;
+	items: Record<number, Item>;
+	gems: Record<number, Gem>;
+	stats: Record<number, StatDefinition>;
 
-	constructor(statDict: () => Record<number, StatDefinition>, templateClass: () => ClassResponse) {
-		this.getStatDictionary = statDict;
-		this.getTemplateClass = templateClass;
+	constructor(
+		template: Template,
+		templateClass: ClassResponse,
+		items: Record<number, Item>,
+		gems: Record<number, Gem>,
+		stats: Record<number, StatDefinition>
+	) {
+		this.template = template;
+		this.templateClass = templateClass;
+		this.items = items;
+		this.gems = gems;
+		this.stats = stats;
 	}
 
-	equipItem(slot: ItemSlot, item: Item, source: EquipSource, gems: Gem[] = []) {
-		this.equippedItems[slot] = { item, source, gems };
+	equipItem(slot: ItemSlot, itemId: number, gemIds: number[] = []) {
+		this.template.equipped_items[slot] = {
+			item_id: itemId,
+			source: EquipSource.User,
+			gem_ids: gemIds
+		};
 	}
 
 	applyOptimizationResult(
-		equipMap: Partial<Record<ItemSlot, Item>>,
-		slottedGems: Partial<Record<ItemSlot, Gem[]>>
+		optimizerItems: Record<number, number>,
+		optimizerGems: Record<number, number[]>
 	) {
-		for (const [slotStr, item] of Object.entries(equipMap)) {
-			const slot = parseInt(slotStr) as ItemSlot;
-			if (this.equippedItems[slot] && this.equippedItems[slot]!.source === EquipSource.User) {
-				continue;
-			}
+		for (const [slotStr, itemId] of Object.entries(optimizerItems)) {
+			const slot = parseInt(slotStr, 10);
+			const existing = this.template.equipped_items[slot];
 
-			this.equippedItems[slot] = {
-				item: item!,
-				source: EquipSource.Optimizer,
-				gems: slottedGems[slot] ?? []
-			};
+			if (!existing || existing.source !== EquipSource.User) {
+				this.template.equipped_items[slot] = {
+					item_id: itemId,
+					source: EquipSource.Optimizer,
+					gem_ids: optimizerGems[itemId] || []
+				};
+			}
 		}
 	}
 
 	unequipItem(slot: ItemSlot) {
-		delete this.equippedItems[slot];
+		delete this.template.equipped_items[slot];
 	}
 
-	userEquippedItems = $derived(() =>
-		Object.values(this.equippedItems)
+	userEquippedItems = $derived.by(() =>
+		Object.values(this.template.equipped_items)
 			.filter((equip) => equip.source === EquipSource.User)
-			.map((equip) => equip.item)
+			.map((equip) => equip.item_id)
 	);
 
 	setPreferences(preferences: Record<number, StatPreference>) {
-		this.preferences = preferences;
+		this.template.preferences = preferences;
 	}
 
-	toSnapshot(): TemplateBuilderSnapshot {
-		const equipped_items = Object.fromEntries(
-			Object.entries(this.equippedItems)
-				.filter(([, equipped]) => equipped?.source === EquipSource.User)
-				.map(([slot, equipped]) => [slot, equipped!.item.id])
-		);
+	resolvedEquipment = $derived.by(() => {
+		const equipment: Partial<Record<ItemSlot, { item: Item; gems: Gem[]; source: EquipSource }>> =
+			{};
 
-		return {
-			equipped_items,
-			preferences: { ...this.preferences }
-		};
-	}
-
-	restoreSnapshot(snapshot: TemplateBuilderSnapshot, itemDictionary: Record<number, Item>) {
-		for (const [slotStr, itemId] of Object.entries(snapshot.equipped_items ?? {})) {
+		for (const [slotStr, state] of Object.entries(this.template.equipped_items)) {
 			const slot = parseInt(slotStr, 10) as ItemSlot;
-			const item = itemDictionary[itemId];
+			const item = this.items[state.item_id];
 
 			if (item) {
-				this.equipItem(slot, item, EquipSource.User);
+				const resolvedGems = state.gem_ids.map((id) => this.gems[id]).filter(Boolean) as Gem[];
+
+				equipment[slot] = {
+					item,
+					gems: resolvedGems,
+					source: state.source
+				};
 			}
 		}
-
-		this.preferences = { ...(snapshot.preferences ?? {}) };
-	}
+		return equipment;
+	});
 
 	buckets = $derived.by(() => {
 		const b = {
@@ -115,8 +111,8 @@ export class TemplateBuilder {
 			bonuses: [] as Stat[]
 		};
 
-		const stats = this.getStatDictionary();
-		const currentClass = this.getTemplateClass();
+		const stats = this.stats;
+		const currentClass = this.templateClass;
 		const uiMap = new SvelteMap<number, Stat>();
 
 		for (const stat of Object.values(stats)) {
@@ -153,7 +149,7 @@ export class TemplateBuilder {
 			}
 
 			if (targetBucket) {
-				const StatPreference = this.preferences[stat.id] ?? { min: 0, weight: 0 };
+				const StatPreference = this.template.preferences[stat.id] ?? { min: 0, weight: 0 };
 				const activeStat: Stat = {
 					...stat,
 					value: 0,
@@ -223,7 +219,7 @@ export class TemplateBuilder {
 			}
 		}
 
-		for (const equip of Object.values(this.equippedItems)) {
+		for (const equip of Object.values(this.resolvedEquipment)) {
 			const item = equip.item;
 
 			if (!item || !item.bonuses) continue;
@@ -253,9 +249,9 @@ export class TemplateBuilder {
 		];
 
 		for (const stat of allTrackedStats) {
-			if (stat.id in this.preferences) {
+			if (stat.id in this.template.preferences) {
 				const effectiveValue = Math.max(0, Math.min(stat.value, stat.currentCap));
-				total += effectiveValue * stat.utility * (this.preferences[stat.id]?.weight ?? 0);
+				total += effectiveValue * stat.utility * (this.template.preferences[stat.id]?.weight ?? 0);
 			}
 		}
 

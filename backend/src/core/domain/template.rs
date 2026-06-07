@@ -2,7 +2,9 @@
 
 use std::collections::HashMap;
 
-use crate::core::domain::{class::Class, item_slot::ItemSlot, preference::Preference};
+use crate::core::domain::{
+    class::Class, equip::EquippedItemState, item_slot::ItemSlot, preference::Preference,
+};
 
 /// Represents a Dark Age of Camelot template.
 ///
@@ -21,8 +23,8 @@ pub struct Template {
     /// The class associated with the template.
     pub class: Class,
 
-    /// The slots and their associated items.
-    pub slots: HashMap<ItemSlot, i32>,
+    /// The equipped items
+    pub equipped_items: HashMap<ItemSlot, EquippedItemState>,
 
     pub preferences: HashMap<u16, Preference>,
 }

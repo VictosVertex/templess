@@ -32,8 +32,8 @@
 	--color-outline: oklch(86% 0.02 var(--hue));
 	--color-border-active: oklch(35% 0.12 var(--primary-hue));
 
-	--font-technical: 'Space Grotesk', monospace;
-	--font-reading: 'Inter', sans-serif;
+	--font-display: 'Luxurious Roman', serif;
+	--font-reading: 'Montserrat', sans-serif;
 }
 
 @layer base {

@@ -7,7 +7,9 @@
 
 use crate::core::domain::item_type::ItemType;
 
-use super::{class::Class, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm};
+use super::{
+    class::Class, currency::Currency, item_bonus::ItemBonus, item_slot::ItemSlot, realm::Realm,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -23,7 +25,7 @@ pub enum ItemSource {
 #[derive(Debug, PartialEq)]
 pub struct Item {
     /// The unique identifier for the item.
-    pub id: i32,
+    pub id: u32,
 
     /// The name of the item.
     pub name: String,
@@ -105,4 +107,8 @@ pub struct Item {
 
     /// JSON representation of the second reactive effect, if any.
     pub react2_json: Option<String>,
+
+    pub price: u32,
+
+    pub currency: Currency,
 }
