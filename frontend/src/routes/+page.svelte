@@ -48,10 +48,18 @@
 			const rawSave = window.localStorage.getItem(data.activeContext.storageKey);
 			if (rawSave) {
 				try {
-					initialTemplate = JSON.parse(rawSave);
-				} catch (e) {
-					console.error('Save file corrupted, starting fresh.', e);
-				}
+                    const parsedSave = JSON.parse(rawSave);
+                    
+                    if (parsedSave.class_id === data.activeContext.template.class_id) {
+                        initialTemplate = parsedSave;
+                    } else {
+                        console.warn('Local storage class mismatch (stale data). Discarding save.');
+                        window.localStorage.removeItem(data.activeContext.storageKey);
+                    }
+                } catch (e) {
+                    console.error('Save file corrupted, starting fresh.', e);
+                    window.localStorage.removeItem(data.activeContext.storageKey);
+                }
 			}
 		}
 
@@ -83,12 +91,17 @@
 		requestAnimationFrame(() => {
 			isMounted = true;
 		});
-
-		if (!backend) return;
-
-		backend.connect();
-		return () => backend.disconnect();
 	});
+
+	$effect(() => {
+        if (!backend) return;
+
+        backend.connect();
+
+        return () => {
+            backend.disconnect();
+        };
+    });
 </script>
 
 <div
