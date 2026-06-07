@@ -112,6 +112,7 @@
 >
 	<Header
 		templateName={data.activeContext?.template.name || null}
+		className={data.activeContext?.templateClass.name || null}
 		showContext={nav.activeSlide !== AppSlide.Hero && data.activeContext !== null}
 	/>
 </div>
