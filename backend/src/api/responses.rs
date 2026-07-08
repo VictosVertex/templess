@@ -80,10 +80,19 @@ pub struct ItemResponse {
 
     /// The currency of the price
     pub currency: u8,
+
+    /// Human readable label for the price currency.
+    pub currency_label: String,
 }
 
 impl From<Item> for ItemResponse {
     fn from(item: Item) -> Self {
+        let currency_label = format!("{:?}", item.currency)
+            .replace("SummonersHall", "Summoner's Hall")
+            .replace("TrialsOfAtlantis", "Trials of Atlantis")
+            .replace("DarknessFalls", "Darkness Falls")
+            .replace("BountyPoints", "Bounty Points");
+
         ItemResponse {
             id: item.id,
             name: item.name,
@@ -100,6 +109,7 @@ impl From<Item> for ItemResponse {
             source: item.source,
             price: item.price,
             currency: item.currency as u8,
+            currency_label,
         }
     }
 }

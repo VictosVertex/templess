@@ -58,6 +58,8 @@
 			backend.optimizationStatus === OptimizationStatus.Ready ||
 			backend.optimizationStatus === OptimizationStatus.Finished
 		) {
+			builder.clearOptimizationResults();
+
 			const equipped_items: Record<number, number> = {};
 			for (const [slotStr, state] of Object.entries(builder.template.equipped_items)) {
 				if (state.source !== EquipSource.User) continue;
@@ -162,8 +164,6 @@
 					height="aspect-square"
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
-					gems={builder.resolvedEquipment[slot]?.gems ?? []}
-					{stats}
 				/>
 			</div>
 		{/each}
@@ -182,8 +182,6 @@
 					height="aspect-square"
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
-					gems={builder.resolvedEquipment[slot]?.gems ?? []}
-					{stats}
 				/>
 			</div>
 		{/each}
@@ -201,8 +199,6 @@
 					height="aspect-square"
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
-					gems={builder.resolvedEquipment[slot]?.gems ?? []}
-					{stats}
 				/>
 			</div>
 		{/each}

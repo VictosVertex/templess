@@ -41,8 +41,14 @@
 }
 
 @layer base {
+	html {
+        /* Force Gecko rendering engine to treat programmatic transitions smoothly */
+        scroll-behavior: smooth;
+    }
+
 	body {
 		@apply bg-background font-reading text-foreground;
+		overscroll-behavior-y: none;
 	}
 
 	.base-scrollbar {

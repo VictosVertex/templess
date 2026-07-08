@@ -19,6 +19,7 @@
     import PresentationSlide from '$lib/slides/presentation/PresentationSlide.svelte';
     import MotivationSlide from '$lib/slides/presentation/MotivationSlide.svelte';
     import Hero from '$lib/slides/Hero.svelte';
+    import Checkout from '$lib/slides/Checkout.svelte';
     import TemplateCreation from '$lib/slides/TemplateCreation.svelte';
     import TemplateHistory from '$lib/slides/TemplateHistory.svelte';
     import Optimization from '$lib/slides/optimization/Optimization.svelte';
@@ -29,21 +30,38 @@
         equipped_items?: Record<number, EquippedItemState>;
     };
 
+    function parseTemplateDraft(rawSave: string): TemplateDraft | null {
+        const parsedSave = JSON.parse(rawSave);
+
+        if (typeof parsedSave !== 'object' || parsedSave === null) {
+            return null;
+        }
+
+        if (typeof parsedSave.class_id !== 'number') {
+            return null;
+        }
+
+        return {
+            class_id: parsedSave.class_id,
+            preferences: parsedSave.preferences,
+            equipped_items: parsedSave.equipped_items
+        };
+    }
+
     let { data } = $props();
 
     let isMounted = $state(false);
     let persistedTemplate = $state<Template | null>(null);
-    let builder = $state<TemplateBuilder | null>(null);
-    let backend = $state<Backend | null>(null);
+    let builder = $state.raw<TemplateBuilder | null>(null);
+    let backend = $state.raw<Backend | null>(null);
 
     let activeNavigation = $derived.by(() => {
         const base = [AppSlide.Hero, AppSlide.Intro, AppSlide.Creation, AppSlide.History];
-        return data.activeContext ? [...base, AppSlide.Optimization, AppSlide.Manifest] : base;
+        return data.activeContext ? [...base, AppSlide.Optimization, AppSlide.Checkout] : base;
     });
 
     $effect(() => {
         const ctx = data.activeContext;
-        
         if (!ctx) {
             builder = null;
             return;
@@ -56,17 +74,24 @@
     });
 
     $effect(() => {
-        if (!builder || !data.activeContext) return;
+        if (!builder || !data.activeContext) {
+            backend = null;
+            return;
+        }
 
-        backend = new Backend((result) => {
+        const activeBackend = new Backend((result) => {
             builder?.applyOptimizationResult(result.equipped_items, result.equipped_gems);
         });
 
-        backend.connect();
+        activeBackend.connect();
+        backend = activeBackend;
 
         return () => {
-            backend?.disconnect();
-            backend = null;
+            activeBackend.disconnect();
+
+            if (backend === activeBackend) {
+                backend = null;
+            }
         };
     });
 
@@ -99,25 +124,17 @@
 
     function discardDraft() {
         if (!browser || !builder || !data.activeContext) return;
-
         window.localStorage.removeItem(data.activeContext.storageKey);
-        if (persistedTemplate) {
-            builder.resetToTemplate(persistedTemplate);
-        }
+        if (persistedTemplate) builder.resetToTemplate(persistedTemplate);
     }
 
     async function saveTemplate() {
         if (!builder || !data.activeContext) return;
-
         persistedTemplate = await api.updateTemplate(builder.template.id, {
             preferences: builder.template.preferences,
             equipped_items: builder.template.equipped_items
         });
-
-        if (browser) {
-            window.localStorage.removeItem(data.activeContext.storageKey);
-        }
-
+        if (browser) window.localStorage.removeItem(data.activeContext.storageKey);
         builder.resetToTemplate(persistedTemplate);
     }
 
@@ -136,45 +153,24 @@
                     const parsedSave = parseTemplateDraft(rawSave);
 
                     if (parsedSave?.class_id === ctx.template.class_id) {
-                        initialTemplate = mergeTemplateDraft(initialTemplate, parsedSave);
+                        initialTemplate = {
+                            ...initialTemplate,
+                            preferences: { ...initialTemplate.preferences, ...(parsedSave.preferences ?? {}) },
+                            equipped_items: { ...initialTemplate.equipped_items, ...(parsedSave.equipped_items ?? {}) }
+                        };
                         hasStoredDraft = true;
                     } else {
-                        console.warn('Local storage class mismatch. Discarding stale save.');
                         window.localStorage.removeItem(ctx.storageKey);
                     }
-                } catch (e) {
-                    console.error('Save file corrupted, starting fresh.', e);
+                } catch {
                     window.localStorage.removeItem(ctx.storageKey);
                 }
             }
         }
 
         const nextBuilder = new TemplateBuilder(initialTemplate, ctx.templateClass, ctx.items, gems, stats);
-        if (hasStoredDraft) {
-            nextBuilder.draftRevision = 1;
-        }
-
+        if (hasStoredDraft) nextBuilder.draftRevision = 1;
         return nextBuilder;
-    }
-
-    function mergeTemplateDraft(template: Template, draft: TemplateDraft): Template {
-        return {
-            ...template,
-            preferences: { ...template.preferences, ...(draft.preferences ?? {}) },
-            equipped_items: { ...template.equipped_items, ...(draft.equipped_items ?? {}) }
-        };
-    }
-
-    function parseTemplateDraft(rawSave: string): TemplateDraft | null {
-        const parsedSave = JSON.parse(rawSave);
-        if (typeof parsedSave !== 'object' || parsedSave === null || typeof parsedSave.class_id !== 'number') {
-            return null;
-        }
-        return {
-            class_id: parsedSave.class_id,
-            preferences: parsedSave.preferences,
-            equipped_items: parsedSave.equipped_items
-        };
     }
 </script>
 
@@ -190,7 +186,7 @@
     <NavigationBar slides={activeNavigation} />
 </div>
 
-<div class="h-dvh w-full snap-y snap-mandatory snap-normal overflow-x-hidden overflow-y-auto bg-background pb-19 transition-opacity duration-300 lg:pb-0 {nav.activeSlide < AppSlide.Hero ? 'no-scrollbar' : ''} {isMounted ? 'opacity-100' : 'opacity-0'}">
+<div class="h-dvh w-full snap-y snap-mandatory snap-normal overflow-x-hidden overflow-y-auto bg-background pb-19 transition-opacity duration-300 motion-safe:scroll-smooth lg:pb-0 {nav.activeSlide < AppSlide.Hero ? 'no-scrollbar' : ''} {isMounted ? 'opacity-100' : 'opacity-0'}">
     
     <Slide index={AppSlide.Title}>
         <Title />
@@ -240,10 +236,8 @@
             />
         </Slide>
 
-        <Slide index={AppSlide.Manifest}>
-            <div class="flex h-full w-full items-center justify-center">
-                <div class="font-sovereign text-primary">Manifest Placeholder</div>
-            </div>
+        <Slide index={AppSlide.Checkout}>
+            <Checkout {builder} />
         </Slide>
     {/if}
 </div>

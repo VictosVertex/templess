@@ -10,7 +10,7 @@ export enum AppSlide {
 	Creation = 102,
 	History = 103,
 	Optimization = 104,
-	Manifest = 105
+	Checkout = 105
 }
 
 export const SlideLabels: Record<AppSlide, string> = {
@@ -22,7 +22,7 @@ export const SlideLabels: Record<AppSlide, string> = {
 	[AppSlide.Creation]: 'Creation',
 	[AppSlide.History]: 'History',
 	[AppSlide.Optimization]: 'Optimization',
-	[AppSlide.Manifest]: 'Manifest'
+	[AppSlide.Checkout]: 'Checkout'
 };
 
 function getSlideFromHash(hash: string): AppSlide | null {

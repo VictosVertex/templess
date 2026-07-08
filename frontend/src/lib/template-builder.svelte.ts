@@ -83,6 +83,23 @@ export class TemplateBuilder {
 		}
 	}
 
+	clearOptimizationResults() {
+		let removedAny = false;
+
+		for (const [slotStr, state] of Object.entries(this.template.equipped_items)) {
+			if (state.source !== EquipSource.Optimizer) {
+				continue;
+			}
+
+			delete this.template.equipped_items[parseInt(slotStr, 10)];
+			removedAny = true;
+		}
+
+		if (removedAny) {
+			this.markDraftChanged();
+		}
+	}
+
 	unequipItem(slot: ItemSlot) {
 		delete this.template.equipped_items[slot];
 		this.markDraftChanged();

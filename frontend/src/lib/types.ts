@@ -127,6 +127,9 @@ export interface Item {
 	utility: number;
 	bonuses: Record<number, number>;
 	source: ItemSource;
+	price: number;
+	currency: number;
+	currency_label: string;
 }
 
 export interface Gem {
