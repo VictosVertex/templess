@@ -1,17 +1,31 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
 	import { SLOT_NAMES } from '$lib/constants';
+	import {
+		downloadCraftingReport,
+		type CraftingReportEntry
+	} from '$lib/crafting-report';
 	import type { TemplateBuilder } from '$lib/template-builder.svelte';
-	import { type Gem, type ItemSlot } from '$lib/types';
+	import { ItemSource, type Gem, type ItemSlot } from '$lib/types';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	let { builder }: { builder: TemplateBuilder } = $props();
 
 	const GOLD_CURRENCY = 1;
+	const CURRENCY_SHORTCUTS: Record<number, string> = {
+		2: 'epic',
+		3: 'sh',
+		4: 'toa',
+		5: 'dr',
+		6: 'df',
+		7: 'bp'
+	};
 
 	type ResolvedEntry = {
 		slot: ItemSlot;
 		slotName: string;
 		itemName: string;
+		itemSource: ItemSource;
 		price: number;
 		currency: number;
 		currencyLabel: string;
@@ -24,7 +38,8 @@
 
 	function formatCurrencyAmount(amount: number, currency: number): string {
 		if (currency !== GOLD_CURRENCY) {
-			return amount.toLocaleString();
+			const shortcut = CURRENCY_SHORTCUTS[currency];
+			return shortcut ? `${amount.toLocaleString()} ${shortcut}` : amount.toLocaleString();
 		}
 
 		const copper = amount % 100;
@@ -42,6 +57,10 @@
 		].join(' ');
 	}
 
+	function formatGemLabel(gem: Gem): string {
+		return (builder.stats[gem.stat_id]?.name ?? `stat_${gem.stat_id}`).replace(/_/g, ' ');
+	}
+
 	let checkoutEntries = $derived.by(() =>
 		Object.entries(builder.resolvedEquipment)
 			.map(([slotStr, equipment]) => {
@@ -54,6 +73,7 @@
 					slot,
 					slotName: SLOT_NAMES[slot],
 					itemName: equipment.item.name,
+					itemSource: equipment.item.source,
 					price: equipment.item.price,
 					currency: equipment.item.currency,
 					currencyLabel: equipment.item.currency_label,
@@ -96,10 +116,26 @@
 				itemName: entry.itemName,
 				gems: entry.gems.map((gem) => ({
 					id: gem.id,
-					label: (builder.stats[gem.stat_id]?.name ?? `stat_${gem.stat_id}`).replace(/_/g, ' '),
+					stat_id: gem.stat_id,
+					label: formatGemLabel(gem),
 					value: gem.value,
 					tier: gem.tier,
 					ipCost: gem.ip_cost
+				}))
+			}))
+	);
+
+	let craftingReportEntries = $derived.by<CraftingReportEntry[]>(() =>
+		checkoutEntries
+			.filter((entry) => entry.itemSource === ItemSource.Crafted)
+			.map((entry) => ({
+				slotName: entry.slotName,
+				itemName: entry.itemName,
+				gems: entry.gems.map((gem) => ({
+					id: gem.id,
+					label: formatGemLabel(gem),
+					value: gem.value,
+					tier: gem.tier
 				}))
 			}))
 	);
@@ -201,5 +237,18 @@
 				</div>
 			{/if}
 		</section>
+	</div>
+
+	<div class="flex justify-center pt-2">
+		<Button
+			onClick={() => downloadCraftingReport(builder.template.name, craftingReportEntries)}
+			disabled={craftingReportEntries.length === 0}
+			title={craftingReportEntries.length === 0
+				? 'Equip at least one crafted item to generate a crafting report'
+				: 'Download a text report for crafted items and gems'}
+			class="min-w-[18rem]"
+		>
+			Create Crafting Report
+		</Button>
 	</div>
 </div>
