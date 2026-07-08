@@ -3,8 +3,7 @@ use axum::{Json, Router, extract::State, routing::get};
 use crate::{
     core::database::schema::{create_tables, is_initialized},
     error::{Error, Result},
-    initialization::craft_base_init::initialize_craft_bases,
-    initialization::item_init::initialize_items,
+    initialization::{craft_base_init::initialize_craft_bases, item_init::initialize_items, preference_init::initialize_preference_presets},
     state::SharedState,
 };
 
@@ -34,6 +33,7 @@ async fn initialize(State(state): State<SharedState>) -> Result<()> {
     let raw_data_path = std::path::PathBuf::from(&state.config.data.raw_data_path);
     let items_path = raw_data_path.join("items.json");
     let craft_bases_path = raw_data_path.join("craft_bases.json");
+    let preferences_path = raw_data_path.join("preferences.json");
     create_tables(&connection)?;
 
     if items_path.exists() {
@@ -54,6 +54,18 @@ async fn initialize(State(state): State<SharedState>) -> Result<()> {
             path: craft_bases_path.to_string_lossy().into_owned(),
         });
     }
+
+   if preferences_path.exists() {
+        initialize_preference_presets(
+            &mut connection,
+            preferences_path.to_string_lossy().into_owned(),
+        )?;
+    } else {
+        return Err(Error::DataMissing {
+            path: preferences_path.to_string_lossy().into_owned(),
+        });
+    }
+
 
     Ok(())
 }

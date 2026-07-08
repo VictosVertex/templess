@@ -54,6 +54,13 @@ export interface StatPreference {
 	weight: number;
 }
 
+export interface PreferencePreset {
+	id: number;
+	class_id: number;
+	name: string;
+	preferences: Record<number, StatPreference>;
+}
+
 export interface StatDefinition {
 	id: number;
 	name: string;
@@ -76,6 +83,7 @@ export interface AppData {
 	realms: Realm[];
 	templates: Template[];
 	activeContext: OptimizationContext | null;
+	preferencePresets: Partial<Record<number, PreferencePreset[]>>;
 }
 
 export interface OptimizationContext {
@@ -159,6 +167,17 @@ export interface OptimizationRequest {
 	class_id: number;
 	equipped_items: Record<number, number>;
 	preferences: Record<number, StatPreference>;
+}
+
+export interface CreateTemplateRequest {
+	name: string;
+	class_id: number;
+	preference_preset_id: number | null;
+}
+
+export interface UpdateTemplateRequest {
+	preferences: Record<number, StatPreference>;
+	equipped_items: Record<number, EquippedItemState>;
 }
 
 export enum ClientMessageType {

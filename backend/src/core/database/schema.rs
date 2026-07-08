@@ -8,9 +8,6 @@ use rusqlite::Connection;
 
 /// Creates the necessary database tables if they do not already exist.
 ///
-/// # Parameters
-/// - `connection`: A reference to the database connection.
-///
 /// # Returns
 /// - `Ok(())` if the tables were created successfully.
 /// - `Err(Box<dyn Error>)` if an error occurred during the table creation.
@@ -98,6 +95,18 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
     )?;
 
     connection.execute(
+        "CREATE TABLE IF NOT EXISTS template_slot_gem (
+            template_id INTEGER NOT NULL,
+            slot_id INTEGER NOT NULL,
+            gem_id INTEGER NOT NULL,
+            PRIMARY KEY (template_id, slot_id, gem_id),
+            FOREIGN KEY(template_id, slot_id) REFERENCES template_slot(template_id, slot_id) ON DELETE CASCADE,
+            FOREIGN KEY(template_id) REFERENCES template(id) ON DELETE CASCADE
+        )",
+        [],
+    )?;
+
+    connection.execute(
         "CREATE TABLE IF NOT EXISTS craft_base (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
@@ -110,13 +119,31 @@ pub fn create_tables(connection: &Connection) -> CoreResult<()> {
         [],
     )?;
 
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS preference_preset (
+            id INTEGER PRIMARY KEY,
+            class_id INTEGER NOT NULL,
+            name TEXT NOT NULL
+        )",
+        [],
+    )?;
+
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS preference (
+            preset_id INTEGER NOT NULL,
+            stat_id INTEGER NOT NULL,
+            min INTEGER NOT NULL,
+            weight INTEGER NOT NULL,
+            PRIMARY KEY (preset_id, stat_id),
+            FOREIGN KEY(preset_id) REFERENCES preference_preset(id) ON DELETE CASCADE
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 
 /// Checks if the database has been initialized by verifying the existence of the `item` table.
-///
-/// # Parameters
-/// - `connection`: A reference to the database connection.
 pub fn is_initialized(connection: &Connection) -> CoreResult<bool> {
     let mut stmt =
         connection.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='item'")?;

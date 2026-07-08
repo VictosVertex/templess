@@ -9,9 +9,19 @@
 	import Preferences from './components/Preferences.svelte';
 	import { Backend } from '$lib/backend.svelte.js';
 	import Button from '$lib/components/Button.svelte';
-	import { History, Save, SlidersHorizontal } from 'lucide-svelte';
+	import { History, LoaderCircle, RotateCcw, Save, SlidersHorizontal } from 'lucide-svelte';
 
-	let { builder, backend }: { builder: TemplateBuilder; backend: Backend } = $props();
+	let {
+		builder,
+		backend,
+		onDiscardDraft,
+		onSaveTemplate
+	}: {
+		builder: TemplateBuilder;
+		backend: Backend;
+		onDiscardDraft: () => void;
+		onSaveTemplate: () => Promise<void>;
+	} = $props();
 
 	let activeSlot = $state<ItemSlot | null>(null);
 	let isEditingPreferences = $state<boolean>(false);
@@ -89,6 +99,21 @@
 		builder.setPreferences(preferences);
 		handleClosePreferences();
 	}
+
+	let isSaving = $state(false);
+
+	async function handleSaveTemplate() {
+		if (isSaving || !hasDraft) return;
+
+		isSaving = true;
+		try {
+			await onSaveTemplate();
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	let hasDraft = $derived(builder.draftRevision > 0);
 </script>
 
 <div class="mx-auto flex w-full max-w-400 flex-col items-center gap-10 px-4 py-8 sm:px-8">
@@ -149,10 +174,24 @@
 			/>
 
 			<div class="mt-8 flex items-center justify-center gap-6">
-				<Button variant="pill" onClick={() => {}}>
-					<Save size={14} /> Save
+				<Button
+					variant="pill"
+					onClick={handleSaveTemplate}
+					disabled={!hasDraft || isSaving}
+					title={hasDraft ? 'Unsaved draft changes' : ''}
+				>
+					{#if isSaving}
+						<LoaderCircle size={14} class="animate-spin" />
+						Saving
+					{:else}
+						<Save size={14} />
+						Save
+					{/if}
 				</Button>
-				<Button variant="pill" onClick={handleOpenPreferences}>
+				<Button variant="pill" onClick={onDiscardDraft} disabled={!hasDraft || isSaving}>
+					<RotateCcw size={14} /> Discard
+				</Button>
+				<Button variant="pill" onClick={handleOpenPreferences} disabled={isSaving}>
 					<SlidersHorizontal size={14} /> Preferences
 				</Button>
 				<Button variant="pill" onClick={() => {}}>

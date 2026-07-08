@@ -1,6 +1,6 @@
 import { api } from '$lib/api';
 import type { LayoutLoad } from './$types';
-import type { AppData, Template, ClassResponse, OptimizationContext } from '$lib/types';
+import type { AppData, ClassResponse, OptimizationContext, Template } from '$lib/types';
 
 export const load: LayoutLoad = async ({ url, fetch }): Promise<AppData> => {
 	const isInitialized = await api.checkInitialization(fetch);
@@ -13,16 +13,18 @@ export const load: LayoutLoad = async ({ url, fetch }): Promise<AppData> => {
 			gems: [],
 			realms: [],
 			templates: [],
-			activeContext: null
+			activeContext: null,
+			preferencePresets: {}
 		};
 	}
 
-	const [stats, classes, gems, realms, templates] = await Promise.all([
+	const [stats, classes, gems, realms, templates, preferencePresets] = await Promise.all([
 		api.getStats(fetch),
 		api.getClasses(fetch),
 		api.getGems(fetch),
 		api.getRealms(fetch),
-		api.getTemplates(fetch)
+		api.getTemplates(fetch),
+		api.getPreferences(fetch)
 	]);
 
 	const templateParam = url.searchParams.get('template');
@@ -30,9 +32,10 @@ export const load: LayoutLoad = async ({ url, fetch }): Promise<AppData> => {
 
 	if (templateParam) {
 		const templateId = parseInt(templateParam, 10);
-		const activeTemplate = templates.find((t: Template) => t.id === templateId);
+		const templateSummary = templates.find((template: Template) => template.id === templateId);
 
-		if (activeTemplate) {
+		if (templateSummary) {
+			const activeTemplate = await api.getTemplate(templateId, fetch);
 			const items = await api.getItemsByClass(activeTemplate.class_id, fetch);
 			const templateClass = classes.find((c: ClassResponse) => c.id === activeTemplate.class_id);
 
@@ -54,6 +57,7 @@ export const load: LayoutLoad = async ({ url, fetch }): Promise<AppData> => {
 		gems,
 		realms,
 		templates,
-		activeContext
+		activeContext,
+		preferencePresets
 	};
 };

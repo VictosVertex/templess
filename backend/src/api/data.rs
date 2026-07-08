@@ -1,5 +1,5 @@
 use crate::api::responses::{
-    ClassResponse, GemResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
+    ClassResponse, GemResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, PreferencePresetResponse, StatResponse
 };
 use crate::core::database::craft_base_sql::get_craft_bases_by_class;
 use crate::core::database::item_sql::get_items_by_class;
@@ -25,6 +25,7 @@ pub fn router() -> Router<SharedState> {
         .route("/realms", get(list_realms))
         .route("/gems", get(list_gems))
         .route("/stats", get(list_stats))
+        .route("/preferences", get(list_preference_presets))
 }
 
 async fn list_classes(State(_state): State<SharedState>) -> Result<Json<Vec<ClassResponse>>> {
@@ -95,4 +96,18 @@ async fn list_item_type(State(_state): State<SharedState>) -> Result<Json<Vec<It
         .collect::<Vec<_>>();
 
     Ok(Json(item_types))
+}
+
+async fn list_preference_presets(State(state): State<SharedState>) -> Result<Json<Vec<PreferencePresetResponse>>> {
+    let connection = state
+        .db_connection
+        .lock()
+        .expect("Failed to lock database connection");
+
+    let presets = crate::core::database::preference_preset_sql::get_all_preference_presets(&connection)?
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<_>>();
+
+    Ok(Json(presets))
 }

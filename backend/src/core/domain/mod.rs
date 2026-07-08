@@ -10,6 +10,7 @@ pub mod item_bonus;
 pub mod item_slot;
 pub mod item_type;
 pub mod preference;
+pub mod preference_preset;
 pub mod realm;
 pub mod stat;
 pub mod stat_category;

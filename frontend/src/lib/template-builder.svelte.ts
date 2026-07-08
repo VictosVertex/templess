@@ -22,6 +22,7 @@ const ALL_DUAL_WIELD_SKILLS_ID = 167;
 export class TemplateBuilder {
 	template: Template = $state() as Template;
 	templateClass: ClassResponse;
+	draftRevision = $state(0);
 
 	items: Record<number, Item>;
 	gems: Record<number, Gem>;
@@ -41,12 +42,26 @@ export class TemplateBuilder {
 		this.stats = stats;
 	}
 
+	resetToTemplate(template: Template) {
+		this.template = {
+			...template,
+			preferences: { ...template.preferences },
+			equipped_items: { ...template.equipped_items }
+		};
+		this.draftRevision = 0;
+	}
+
+	private markDraftChanged() {
+		this.draftRevision += 1;
+	}
+
 	equipItem(slot: ItemSlot, itemId: number, gemIds: number[] = []) {
 		this.template.equipped_items[slot] = {
 			item_id: itemId,
 			source: EquipSource.User,
 			gem_ids: gemIds
 		};
+		this.markDraftChanged();
 	}
 
 	applyOptimizationResult(
@@ -63,12 +78,14 @@ export class TemplateBuilder {
 					source: EquipSource.Optimizer,
 					gem_ids: optimizerGems[itemId] || []
 				};
+				this.markDraftChanged();
 			}
 		}
 	}
 
 	unequipItem(slot: ItemSlot) {
 		delete this.template.equipped_items[slot];
+		this.markDraftChanged();
 	}
 
 	userEquippedItems = $derived.by(() =>
@@ -79,6 +96,7 @@ export class TemplateBuilder {
 
 	setPreferences(preferences: Record<number, StatPreference>) {
 		this.template.preferences = preferences;
+		this.markDraftChanged();
 	}
 
 	resolvedEquipment = $derived.by(() => {

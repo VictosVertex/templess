@@ -62,6 +62,8 @@ export class Backend {
 					this.onNewModelReceived(message.data);
 					break;
 			}
+
+			console.log('Received message:', message);
 		};
 
 		this.socket.onclose = () => {

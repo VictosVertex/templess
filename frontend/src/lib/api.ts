@@ -1,5 +1,13 @@
 import { API_BASE_URL } from './constants';
-import type { StatDefinition, Gem, Item } from '$lib/types';
+import type {
+	CreateTemplateRequest,
+	Template,
+	StatDefinition,
+	Gem,
+	Item,
+	PreferencePreset,
+	UpdateTemplateRequest
+} from '$lib/types';
 
 async function fetchWithError(
 	url: string,
@@ -50,6 +58,14 @@ export const api = {
 		return await response.json();
 	},
 
+	getPreferences: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/data/preferences`, {}, customFetch);
+
+		const data: PreferencePreset[] = await response.json();
+
+		return Object.groupBy(data, (preset) => preset.class_id);
+	},
+
 	// --- TEMPLATES & ITEMS ---
 
 	getTemplates: async (customFetch: typeof window.fetch = fetch) => {
@@ -60,6 +76,41 @@ export const api = {
 	getTemplate: async (id: number, customFetch: typeof window.fetch = fetch) => {
 		const response = await fetchWithError(`${API_BASE_URL}/templates/${id}`, {}, customFetch);
 		return await response.json();
+	},
+
+	createTemplate: async (
+		payload: CreateTemplateRequest,
+		customFetch: typeof window.fetch = fetch
+	) => {
+		const response = await fetchWithError(
+			`${API_BASE_URL}/templates`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			},
+			customFetch
+		);
+
+		return (await response.json()) as number;
+	},
+
+	updateTemplate: async (
+		id: number,
+		payload: UpdateTemplateRequest,
+		customFetch: typeof window.fetch = fetch
+	) => {
+		const response = await fetchWithError(
+			`${API_BASE_URL}/templates/${id}`,
+			{
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			},
+			customFetch
+		);
+
+		return (await response.json()) as Template;
 	},
 
 	getItemsByClass: async (classId: number, customFetch: typeof window.fetch = fetch) => {

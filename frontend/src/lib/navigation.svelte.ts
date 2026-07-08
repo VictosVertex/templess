@@ -3,6 +3,8 @@ import { resolve } from '$app/paths';
 
 export enum AppSlide {
 	Title = 0,
+	OverviewSlide = 1,
+	MotivationSlide = 2,
 	Hero = 100,
 	Intro = 101,
 	Creation = 102,
@@ -13,6 +15,8 @@ export enum AppSlide {
 
 export const SlideLabels: Record<AppSlide, string> = {
 	[AppSlide.Title]: 'Title',
+	[AppSlide.OverviewSlide]: 'Overview',
+	[AppSlide.MotivationSlide]: 'Motivation',
 	[AppSlide.Hero]: 'Hero',
 	[AppSlide.Intro]: 'Intro',
 	[AppSlide.Creation]: 'Creation',

@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, equip::EquippedItemState, gem::Gem, item::Item, item_slot::ItemSlot,
-    item_type::ItemType, preference::Preference, realm::Realm, stat::Stat, template::Template,
+    class::Class, equip::EquippedItemState, gem::Gem, item::Item, item_slot::ItemSlot, item_type::ItemType, preference::Preference, preference_preset::PreferencePreset, realm::Realm, stat::Stat, template::Template
 };
 
 #[derive(serde::Serialize)]
@@ -206,6 +205,29 @@ impl From<EquippedItemState> for EquippedItemStateResponse {
                 }
             },
             gem_ids: equip.gem_ids,
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct PreferencePresetResponse {
+    pub id: u32,
+    pub class_id: u16,
+    pub name: String,
+    pub preferences: HashMap<u16, PreferenceResponse>,
+}
+
+impl From<PreferencePreset> for PreferencePresetResponse {
+    fn from(preset: PreferencePreset) -> Self {
+        Self {
+            id: preset.id(),
+            class_id: preset.class().id(),
+            name: preset.name().to_string(),
+            preferences: preset
+                .preferences()
+                .iter()
+                .map(|(stat, pref)| (stat.id(), pref.clone().into()))
+                .collect(),
         }
     }
 }
