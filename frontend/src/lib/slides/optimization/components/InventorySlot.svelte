@@ -9,6 +9,7 @@
 		height = 'h-[70px]',
 		itemSource = null,
 		equipSource = null,
+		highlightedValue = null,
 		onclick,
 		onremove
 	}: {
@@ -18,6 +19,7 @@
 		height?: string;
 		itemSource?: ItemSource | null;
 		equipSource?: EquipSource | null;
+		highlightedValue?: number | null;
 		onclick?: () => void;
 		onremove?: (e: MouseEvent) => void;
 	} = $props();
@@ -51,7 +53,13 @@
 			class="flex h-full w-full cursor-pointer items-center justify-center transition-all duration-200 {shapeClass} {slotStyles}"
 			aria-label="Modify {name} slot"
 		>
-			<Plus size={24} />
+			{#if highlightedValue !== null}
+				<span class="font-display text-[clamp(12px,2.8cqi,18px)] font-bold tracking-wide">
+					{highlightedValue}
+				</span>
+			{:else if equipSource === null}
+				<Plus size={24} />
+			{/if}
 		</button>
 
 		{#if equipSource !== null}

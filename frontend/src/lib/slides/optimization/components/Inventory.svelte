@@ -16,6 +16,7 @@
 		builder,
 		backend,
 		stats,
+		hoveredStatId = null,
 		onOpenSlot,
 		startTimer,
 		stopTimer,
@@ -25,6 +26,7 @@
 		builder: TemplateBuilder;
 		backend: Backend;
 		stats: Record<number, StatDefinition>;
+		hoveredStatId?: number | null;
 		onOpenSlot: (slot: ItemSlot) => void;
 		startTimer: () => void;
 		stopTimer: () => void;
@@ -116,6 +118,25 @@
 			backend.optimizationStatus === OptimizationStatus.Solving
 		);
 	});
+
+	function getHighlightedValue(slot: ItemSlot): number | null {
+		if (hoveredStatId === null) {
+			return null;
+		}
+
+		const equipment = builder.resolvedEquipment[slot];
+		if (!equipment) {
+			return null;
+		}
+
+		const itemValue = equipment.item.bonuses[hoveredStatId] ?? 0;
+		const gemValue = equipment.gems
+			.filter((gem) => gem.stat_id === hoveredStatId)
+			.reduce((sum, gem) => sum + gem.value, 0);
+
+		const totalValue = itemValue + gemValue;
+		return totalValue > 0 ? totalValue : null;
+	}
 </script>
 
 <div
@@ -162,6 +183,7 @@
 					shapeClass="rounded-full"
 					width="w-full"
 					height="aspect-square"
+					highlightedValue={getHighlightedValue(slot)}
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
 				/>
@@ -180,6 +202,7 @@
 					shapeClass="rounded-b-full"
 					width="w-full"
 					height="aspect-square"
+					highlightedValue={getHighlightedValue(slot)}
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
 				/>
@@ -197,6 +220,7 @@
 					shapeClass="rounded-none"
 					width="w-full"
 					height="aspect-square"
+					highlightedValue={getHighlightedValue(slot)}
 					itemSource={builder.resolvedEquipment[slot]?.item.source ?? null}
 					equipSource={builder.resolvedEquipment[slot]?.source ?? null}
 				/>

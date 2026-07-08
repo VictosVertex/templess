@@ -1,17 +1,27 @@
 <script lang="ts">
-	import { ItemSlot, StatCategory, type Item, type Stat, type StatDefinition } from '$lib/types';
+	import {
+		ItemSlot,
+		ItemSource,
+		StatCategory,
+		type Gem,
+		type Item,
+		type Stat,
+		type StatDefinition
+	} from '$lib/types';
 	import { fade } from 'svelte/transition';
 
 	let {
 		items,
 		targetSlot,
 		currentItem,
+		currentGems = [],
 		stats,
 		onSelect
 	}: {
 		items: Item[];
 		targetSlot: ItemSlot | null;
 		currentItem: Item | null;
+		currentGems?: Gem[];
 		stats: Record<number, StatDefinition>;
 		onSelect: (item: Item) => void;
 	} = $props();
@@ -82,6 +92,23 @@
 
 		return preview;
 	});
+
+	let previewGems = $derived.by(() => {
+		if (!previewItem || !currentItem || previewItem.id !== currentItem.id) {
+			return [];
+		}
+
+		if (previewItem.source !== ItemSource.Crafted) {
+			return [];
+		}
+
+		return currentGems.map((gem) => ({
+			id: gem.id,
+			label: (stats[gem.stat_id]?.name ?? `stat_${gem.stat_id}`).replace(/_/g, ' '),
+			value: gem.value,
+			tier: gem.tier
+		}));
+	});
 </script>
 
 <div class="flex h-[60vh] min-h-125 w-full">
@@ -138,6 +165,26 @@
 						{/if}
 					</div>
 				</div>
+
+				{#if previewGems.length > 0}
+					<div class="mt-6 shrink-0 border-t border-foreground/10 pt-6">
+						<h3 class="mb-4 text-xs font-bold tracking-widest text-foreground-secondary uppercase">
+							Slotted Gems
+						</h3>
+						<div class="flex flex-col gap-3">
+							{#each previewGems as gem (gem.id)}
+								<div class="flex items-center justify-between px-2 py-1">
+									<span class="text-foreground-secondary capitalize">
+										{gem.label}
+									</span>
+									<span class="text-primary">
+										{gem.value} <span class="text-foreground-secondary/60">T{gem.tier + 1}</span>
+									</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
 
 				<div class="mt-8 shrink-0 pt-4">
 					<button

@@ -10,47 +10,48 @@
   export let footerTitle = "";
   export let slideNumber = "1 / 15";
 </script>
+
 <div class="flex h-dvh w-screen items-center justify-center overflow-hidden bg-[#050505]">
-<div class="@container relative aspect-video max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex flex-col overflow-hidden bg-white font-sans text-[#030c3e]">
-  
-  <main class="flex-1 flex flex-col items-center justify-center px-16 space-y-20">
+  <div class="@container relative aspect-video max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex flex-col overflow-hidden bg-white font-sans text-[#030c3e]">
     
-    <h1 class="text-4xl md:text-7xl leading-tight font-medium text-center">
-      {title}
-    </h1>
+    <main class="flex flex-1 flex-col items-center justify-center px-24 text-center">
+      
+      <h1 class="max-w-[20ch] text-6xl font-semibold tracking-tight text-[#030c3e] leading-[1.15] md:text-[5.5rem]">
+        {title}
+      </h1>
 
-    <div class="flex flex-col items-center space-y-5">
-      <h2 class="text-2xl md:text-5xl">
-        {authors}
-      </h2>
-      <h3 class="text-3xl text-[#8F92AC]">
-        {affiliation}
-      </h3>
-    </div>
+      <div class="mt-16 flex flex-col items-center space-y-4">
+        <h2 class="text-3xl font-medium text-[#030c3e] md:text-[2.75rem]">
+          {authors}
+        </h2>
+        <h3 class="text-2xl font-normal text-[#8F92AC] md:text-3xl">
+          {affiliation}
+        </h3>
+      </div>
 
-    <div class="pt-20">
-      <img
-        src={potasscoTechnologiesLogo}
-        alt="Potassco Technologies logo"
-        class="h-80 w-auto object-contain"
-      />
-    </div>
-    
-  </main>
+      <div class="mt-24">
+        <img
+          src={potasscoTechnologiesLogo}
+          alt="Potassco Technologies logo"
+          class="h-32 w-auto object-contain md:h-40"
+        />
+      </div>
+      
+    </main>
 
-  <footer class="flex justify-between items-center w-full px-4 py-2 text-3xl bg-gray-100 text-black">
-    <div class="flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-      {footerAuthor}
-    </div>
+    <footer class="flex w-full items-center justify-between border-t border-gray-200 bg-gray-50 px-8 py-4 text-xl text-[#8F92AC] md:text-2xl">
+      <div class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left font-medium text-[#030c3e]">
+        {footerAuthor}
+      </div>
+      
+      <div class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-center">
+        {footerTitle}
+      </div>
+      
+      <div class="flex-1 whitespace-nowrap text-right font-medium text-[#030c3e]">
+        {slideNumber}
+      </div>
+    </footer>
     
-    <div class="flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis">
-      {footerTitle}
-    </div>
-    
-    <div class="flex-1 text-right whitespace-nowrap">
-      {slideNumber}
-    </div>
-  </footer>
-  
-</div>
+  </div>
 </div>

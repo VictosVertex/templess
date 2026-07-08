@@ -1,24 +1,17 @@
 <script lang="ts">
-	import { SlideLabels, type AppSlide } from "$lib/navigation.svelte";
-	import type { Snippet } from "svelte";
-
-  
+  import { SlideLabels, type AppSlide } from "$lib/navigation.svelte";
+  import type { Snippet } from "svelte";
 
   let {
-		index,
-		children
-	}: {
-		index: AppSlide;
-		children: Snippet;
-	} = $props();
+    index,
+    children
+  }: {
+    index: AppSlide;
+    children: Snippet;
+  } = $props();
 
-  const colors = {
-    navy: "#030c3e",
-    navyMid: "#8F92AC"
-  };
-
-  let title = $derived(SlideLabels[index])
-  let slideNumber = $derived(index + 1)
+  let title = $derived(SlideLabels[index]);
+  let slideNumber = $derived(index + 1);
 
   let footerAuthor = "Dominik Gerndt";
   let footerTitle = $derived("TempLess (UI) \u2013 " + title);
@@ -27,30 +20,30 @@
 </script>
 
 <div class="flex h-dvh w-screen items-center justify-center overflow-hidden bg-[#050505]">
-  <div class="@container relative aspect-video max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex flex-col overflow-hidden bg-white font-sans text-[${colors.navy}]">
+  <div class="@container relative flex aspect-video max-h-dvh w-full max-w-[calc(100dvh*16/9)] flex-col overflow-hidden bg-white font-sans text-[#030c3e]">
     
-    <header class="px-12 pt-10">
+    <header class="px-16 pt-12">
       {#if title}
-        <h2 class="text-4xl md:text-7xl font-medium" style="color: {colors.navy}">
+        <h2 class="text-5xl font-semibold tracking-tight text-[#030c3e] md:text-[4rem]">
           {title}
         </h2>
       {/if}
     </header>
 
-    <main class="flex-1 px-12  mx-auto w-400">
+    <main class="flex-1 w-full px-16">
       {@render children()} 
     </main>
 
-    <footer class="flex justify-between items-center w-full px-4 py-2 text-3xl bg-gray-100 text-black">
-      <div class="flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis">
+    <footer class="flex w-full items-center justify-between border-t border-gray-200 bg-gray-50 px-8 py-4 text-xl text-[#8F92AC] md:text-2xl">
+      <div class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left font-medium text-[#030c3e]">
         {footerAuthor}
       </div>
       
-      <div class="flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis">
+      <div class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-center">
         {footerTitle}
       </div>
       
-      <div class="flex-1 text-right whitespace-nowrap">
+      <div class="flex-1 whitespace-nowrap text-right font-medium text-[#030c3e]">
         {slideNumber} / {slideMaxNumber}
       </div>
     </footer>

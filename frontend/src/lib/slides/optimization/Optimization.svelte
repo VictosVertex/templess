@@ -25,6 +25,7 @@
 
 	let activeSlot = $state<ItemSlot | null>(null);
 	let isEditingPreferences = $state<boolean>(false);
+	let hoveredStatId = $state<number | null>(null);
 
 	let modelTimer = $state<number>(0);
 	let modelTimerInterval: ReturnType<typeof setInterval> | null = null;
@@ -114,6 +115,14 @@
 	}
 
 	let hasDraft = $derived(builder.draftRevision > 0);
+
+	function handleHoverStat(statId: number) {
+		hoveredStatId = statId;
+	}
+
+	function handleLeaveStat() {
+		hoveredStatId = null;
+	}
 </script>
 
 <div class="mx-auto flex w-full max-w-400 flex-col items-center gap-10 px-4 py-8 sm:px-8">
@@ -121,8 +130,18 @@
 		class="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-[320px_minmax(0,1fr)_320px] lg:gap-8 xl:gap-16"
 	>
 		<div class="flex w-full flex-col gap-12">
-			<Attributes title="Base Stats" stats={builder.buckets.baseStats} />
-			<Attributes title="Resists" stats={builder.buckets.resists} />
+			<Attributes
+				title="Base Stats"
+				stats={builder.buckets.baseStats}
+				onHoverStat={handleHoverStat}
+				onLeaveStat={handleLeaveStat}
+			/>
+			<Attributes
+				title="Resists"
+				stats={builder.buckets.resists}
+				onHoverStat={handleHoverStat}
+				onLeaveStat={handleLeaveStat}
+			/>
 		</div>
 
 		<div class="relative flex w-full flex-col items-center justify-start pt-2">
@@ -167,6 +186,7 @@
 				{builder}
 				{backend}
 				stats={builder.stats}
+				{hoveredStatId}
 				startTimer={startModelTimer}
 				stopTimer={stopModelTimer}
 				{startFullTimer}
@@ -201,10 +221,17 @@
 		</div>
 
 		<div class="flex w-full flex-col gap-12">
-			<Attributes title="Skills" stats={builder.buckets.skills} />
+			<Attributes
+				title="Skills"
+				stats={builder.buckets.skills}
+				onHoverStat={handleHoverStat}
+				onLeaveStat={handleLeaveStat}
+			/>
 			<Attributes
 				title="Bonuses"
 				stats={builder.buckets.bonuses.filter((stat) => stat.value !== 0)}
+				onHoverStat={handleHoverStat}
+				onLeaveStat={handleLeaveStat}
 			/>
 		</div>
 	</div>
@@ -218,6 +245,7 @@
 		items={Object.values(builder.items)}
 		targetSlot={activeSlot}
 		currentItem={activeSlot !== null ? (builder.resolvedEquipment[activeSlot]?.item ?? null) : null}
+		currentGems={activeSlot !== null ? (builder.resolvedEquipment[activeSlot]?.gems ?? []) : []}
 		stats={builder.stats}
 		onSelect={handleItemSelection}
 	/>

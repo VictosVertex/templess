@@ -1,7 +1,15 @@
 <script lang="ts">
 	import type { Stat } from '$lib/types';
 
-	let { stat }: { stat: Stat } = $props();
+	let {
+		stat,
+		onHover,
+		onLeave
+	}: {
+		stat: Stat;
+		onHover?: (statId: number) => void;
+		onLeave?: () => void;
+	} = $props();
 
 	let fillPercentage = $derived(Math.min((stat.value / stat.currentCap) * 100, 100));
 	let minPercentage = $derived(Math.min((stat.min / stat.currentCap) * 100, 100));
@@ -19,7 +27,12 @@
 	});
 </script>
 
-<div class="flex flex-col gap-1.5">
+<div
+	class="flex flex-col gap-1.5"
+	role="presentation"
+	onmouseenter={() => onHover?.(stat.id)}
+	onmouseleave={() => onLeave?.()}
+>
 	<div class="flex items-baseline justify-between">
 		<span class="font-display text-sm tracking-wider text-foreground capitalize">
 			{stat.name.replace(/_/g, ' ')}

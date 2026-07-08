@@ -1,59 +1,36 @@
-<script>
-  import { LucideCircle } from 'lucide-svelte';
-import { fade } from 'svelte/transition';
-    let step = 0;
-
-  /**
-	 * @param {{ code: string; preventDefault: () => void; }} e
-	 */
-  function handleKeydown(e) {
-    if (e.code === 'Space') {
-      e.preventDefault();
+<div class="flex h-full w-full flex-col justify-center py-16 pl-8">
+  <div class="border-l-4 border-[#030c3e] pl-16">
+    
+    <h2 class="mb-14 text-3xl font-bold tracking-widest text-[#8F92AC] uppercase">
+      Agenda
+    </h2>
+    
+    <ul class="flex flex-col space-y-12">
+      <li class="flex items-center space-x-10">
+        <span class="text-4xl font-bold text-[#8F92AC]/50">01</span>
+        <span class="text-6xl font-medium text-[#030c3e]">Motivation</span>
+      </li>
       
-      if (step < 4) {
-        step++;
-      }
-    }
-  }
-</script>
-
-<svelte:window on:keydown={handleKeydown} />
-
-<div class="flex flex-col justify-center h-full pl-16 md:pl-32 pb-20 text-3xl md:text-6xl">
-  <ul class="space-y-9">
-    
-    <li class="flex items-center gap-6">
-      <LucideCircle class="text-[#9DA322] mt-2" size={30}/>
-      <span>Motivation</span>
-    </li>
-    
-    {#if step >= 1}
-      <li transition:fade={{ duration: 300 }} class="flex items-center gap-6">
-        <LucideCircle class="text-[#9DA322] mt-2" size={30}/>
-        <span>Problem</span>
+      <li class="flex items-center space-x-10">
+        <span class="text-4xl font-bold text-[#8F92AC]/50">02</span>
+        <span class="text-6xl font-medium text-[#030c3e]">Problem</span>
       </li>
-    {/if}
-    
-    {#if step >= 2}
-      <li transition:fade={{ duration: 300 }} class="flex items-center gap-6">
-        <LucideCircle class="text-[#9DA322] mt-2" size={30}/>
-        <span>Current State</span>
+      
+      <li class="flex items-center space-x-10">
+        <span class="text-4xl font-bold text-[#8F92AC]/50">03</span>
+        <span class="text-6xl font-medium text-[#030c3e]">Current State</span>
       </li>
-    {/if}
+      
+      <li class="flex items-center space-x-10">
+        <span class="text-4xl font-bold text-[#8F92AC]/50">04</span>
+        <span class="text-6xl font-medium text-[#030c3e]">TempLess</span>
+      </li>
+      
+      <li class="flex items-center space-x-10">
+        <span class="text-4xl font-bold text-[#8F92AC]/50">05</span>
+        <span class="text-6xl font-medium text-[#030c3e]">Conclusion</span>
+      </li>
+    </ul>
 
-    {#if step >= 3}
-      <li transition:fade={{ duration: 300 }} class="flex items-center gap-6">
-        <LucideCircle class="text-[#9DA322] mt-2" size={30}/>
-        <span>Templess</span>
-      </li>
-    {/if}
-
-    {#if step >= 4}
-      <li transition:fade={{ duration: 300 }} class="flex items-center gap-6">
-        <LucideCircle class="text-[#9DA322] mt-2" size={30}/>
-        <span>Conclusion</span>
-      </li>
-    {/if}
-    
-  </ul>
+  </div>
 </div>

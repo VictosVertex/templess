@@ -23,6 +23,10 @@
     import TemplateCreation from '$lib/slides/TemplateCreation.svelte';
     import TemplateHistory from '$lib/slides/TemplateHistory.svelte';
     import Optimization from '$lib/slides/optimization/Optimization.svelte';
+	import DAoCSlide from '$lib/slides/presentation/DAoCSlide.svelte';
+	import SourceSlide from '$lib/slides/presentation/SourceSlide.svelte';
+	import StatsSlide from '$lib/slides/presentation/StatsSlide.svelte';
+	import CurrentStateSlide from '$lib/slides/presentation/CurrentStateSlide.svelte';
 
     type TemplateDraft = {
         class_id: number;
@@ -200,7 +204,31 @@
 
     <Slide index={AppSlide.MotivationSlide}>
         <PresentationSlide index={AppSlide.MotivationSlide}>
-            <MotivationSlide />
+            <MotivationSlide isActive={nav.activeSlide === AppSlide.MotivationSlide} />
+        </PresentationSlide>
+    </Slide>
+
+	<Slide index={AppSlide.DaocSlide}>
+        <PresentationSlide index={AppSlide.DaocSlide}>
+            <DAoCSlide isActive={nav.activeSlide === AppSlide.DaocSlide} />
+        </PresentationSlide>
+    </Slide>
+
+	<Slide index={AppSlide.SourceSlide}>
+        <PresentationSlide index={AppSlide.SourceSlide}> 
+            <SourceSlide isActive={nav.activeSlide === AppSlide.SourceSlide} />
+        </PresentationSlide>
+    </Slide>
+
+	<Slide index={AppSlide.StatsSlide}>
+        <PresentationSlide index={AppSlide.StatsSlide}>
+            <StatsSlide isActive={nav.activeSlide === AppSlide.StatsSlide} />
+        </PresentationSlide>
+    </Slide>
+
+	<Slide index={AppSlide.CurrentStateSlide}>
+        <PresentationSlide index={AppSlide.CurrentStateSlide}>
+            <CurrentStateSlide isActive={nav.activeSlide === AppSlide.CurrentStateSlide} />
         </PresentationSlide>
     </Slide>
 

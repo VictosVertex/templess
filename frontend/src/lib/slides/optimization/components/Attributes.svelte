@@ -2,7 +2,17 @@
 	import type { Stat } from '$lib/types';
 	import Attribute from './Attribute.svelte';
 
-	let { title, stats }: { title: string; stats: Stat[] } = $props();
+	let {
+		title,
+		stats,
+		onHoverStat,
+		onLeaveStat
+	}: {
+		title: string;
+		stats: Stat[];
+		onHoverStat?: (statId: number) => void;
+		onLeaveStat?: () => void;
+	} = $props();
 </script>
 
 <div class="flex w-full flex-col gap-5">
@@ -16,7 +26,7 @@
 
 	<div class="flex flex-col gap-4 px-8">
 		{#each stats as stat (stat.name)}
-			<Attribute {stat} />
+			<Attribute {stat} onHover={onHoverStat} onLeave={onLeaveStat} />
 		{/each}
 	</div>
 </div>
