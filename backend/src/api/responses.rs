@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use crate::core::domain::{
-    class::Class, item::Item, item_slot::ItemSlot, item_type::ItemType, realm::Realm, stat::Stat,
-    template::Template,
+    class::Class, equip::EquippedItemState, gem::Gem, item::Item, item_slot::ItemSlot, item_type::ItemType, preference::Preference, preference_preset::PreferencePreset, realm::Realm, stat::Stat, template::Template
 };
 
 #[derive(serde::Serialize)]
@@ -50,7 +49,7 @@ impl From<Class> for ClassResponse {
 #[derive(serde::Serialize)]
 pub struct ItemResponse {
     /// The unique identifier for the item.
-    pub id: i32,
+    pub id: u32,
 
     /// The name of the item.
     pub name: String,
@@ -72,10 +71,28 @@ pub struct ItemResponse {
 
     /// The ids of the bonuses applied to the item and their corresponding values.
     pub bonuses: HashMap<u16, u16>,
+
+    /// Whether the item is a dropped item or a craft base.
+    pub source: crate::core::domain::item::ItemSource,
+
+    /// The price of the item in the specified currency.
+    pub price: u32,
+
+    /// The currency of the price
+    pub currency: u8,
+
+    /// Human readable label for the price currency.
+    pub currency_label: String,
 }
 
 impl From<Item> for ItemResponse {
     fn from(item: Item) -> Self {
+        let currency_label = format!("{:?}", item.currency)
+            .replace("SummonersHall", "Summoner's Hall")
+            .replace("TrialsOfAtlantis", "Trials of Atlantis")
+            .replace("DarknessFalls", "Darkness Falls")
+            .replace("BountyPoints", "Bounty Points");
+
         ItemResponse {
             id: item.id,
             name: item.name,
@@ -89,6 +106,10 @@ impl From<Item> for ItemResponse {
                 .iter()
                 .map(|bonus| (bonus.stat.id(), bonus.value))
                 .collect(),
+            source: item.source,
+            price: item.price,
+            currency: item.currency as u8,
+            currency_label,
         }
     }
 }
@@ -97,6 +118,7 @@ impl From<Item> for ItemResponse {
 pub struct StatResponse {
     pub id: u16,
     pub name: String,
+    pub utility: f32,
     pub cap: u16,
     pub category_id: u16,
     pub base_stat_id: Option<u16>,
@@ -108,8 +130,30 @@ impl From<Stat> for StatResponse {
             id: stat.id(),
             name: stat.to_string(),
             cap: stat.cap(),
+            utility: stat.utility_per_point(),
             category_id: stat.category().id(),
             base_stat_id: stat.base_stat().map(|s| s.id()),
+        }
+    }
+}
+
+#[derive(Clone, serde::Serialize)]
+pub struct GemResponse {
+    pub id: u32,
+    pub stat_id: u16,
+    pub tier: u16,
+    pub value: u16,
+    pub ip_cost: f32,
+}
+
+impl From<Gem> for GemResponse {
+    fn from(gem: Gem) -> Self {
+        GemResponse {
+            id: gem.id,
+            stat_id: gem.stat.id(),
+            tier: gem.tier,
+            value: gem.value,
+            ip_cost: gem.ip_cost,
         }
     }
 }
@@ -145,11 +189,81 @@ impl From<ItemSlot> for ItemSlotResponse {
 }
 
 #[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EquipSourceResponse {
+    #[serde(rename = "user")]
+    User,
+    #[serde(rename = "optimizer")]
+    Optimizer,
+}
+
+#[derive(serde::Serialize)]
+pub struct EquippedItemStateResponse {
+    pub item_id: u32,
+    pub source: EquipSourceResponse,
+    pub gem_ids: Vec<u32>,
+}
+
+impl From<EquippedItemState> for EquippedItemStateResponse {
+    fn from(equip: EquippedItemState) -> Self {
+        EquippedItemStateResponse {
+            item_id: equip.item_id,
+            source: match equip.source {
+                crate::core::domain::equip::EquipSource::User => EquipSourceResponse::User,
+                crate::core::domain::equip::EquipSource::Optimizer => {
+                    EquipSourceResponse::Optimizer
+                }
+            },
+            gem_ids: equip.gem_ids,
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct PreferencePresetResponse {
+    pub id: u32,
+    pub class_id: u16,
+    pub name: String,
+    pub preferences: HashMap<u16, PreferenceResponse>,
+}
+
+impl From<PreferencePreset> for PreferencePresetResponse {
+    fn from(preset: PreferencePreset) -> Self {
+        Self {
+            id: preset.id(),
+            class_id: preset.class().id(),
+            name: preset.name().to_string(),
+            preferences: preset
+                .preferences()
+                .iter()
+                .map(|(stat, pref)| (stat.id(), pref.clone().into()))
+                .collect(),
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+pub struct PreferenceResponse {
+    pub min: u16,
+    pub weight: u16,
+}
+
+impl From<Preference> for PreferenceResponse {
+    fn from(pref: Preference) -> Self {
+        PreferenceResponse {
+            min: pref.min as u16,
+            weight: pref.weight as u16,
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
 pub struct TemplatesResponse {
     pub id: i32,
     pub name: String,
     pub class_id: u16,
-    pub slots: HashMap<u16, i32>,
+    pub equipped_items: HashMap<u16, EquippedItemStateResponse>,
+    pub preferences: HashMap<u16, PreferenceResponse>,
 }
 
 impl From<Template> for TemplatesResponse {
@@ -158,10 +272,15 @@ impl From<Template> for TemplatesResponse {
             id: template.id,
             name: template.name,
             class_id: template.class.id(),
-            slots: template
-                .slots
-                .iter()
-                .map(|(slot, item_id)| (slot.id(), *item_id))
+            equipped_items: template
+                .equipped_items
+                .into_iter()
+                .map(|(slot, equip)| (slot.id(), equip.into()))
+                .collect(),
+            preferences: template
+                .preferences
+                .into_iter()
+                .map(|(stat_id, pref)| (stat_id, pref.into()))
                 .collect(),
         }
     }

@@ -524,7 +524,7 @@ impl Stat {
                 }
             }
             HitpointsCap => StatInfo {
-                utility: 2.0,
+                utility: 0.25,
                 cap: 200,
                 category: StatCategory::PhysicalStatCaps,
             },
@@ -576,7 +576,7 @@ impl Stat {
             ArmorFactor => StatInfo {
                 utility: 1.0,
                 cap: 50,
-                category: StatCategory::OtherStats,
+                category: StatCategory::ToaBonuses,
             },
 
             BuffEffectiveness | DebuffEffectiveness | HealingEffectiveness | PowerPoolToa
@@ -588,7 +588,7 @@ impl Stat {
 
             SpellRange | MeleeSpeed | MeleeDamage | RangedDamage | ArcherySpeed | CastingSpeed
             | ResistPierce | SpellDamage | StyleDamage | ArcaneSyphon => StatInfo {
-                utility: 2.0,
+                utility: 5.0,
                 cap: 10,
                 category: StatCategory::ToaBonuses,
             },

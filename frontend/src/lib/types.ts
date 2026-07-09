@@ -54,10 +54,18 @@ export interface StatPreference {
 	weight: number;
 }
 
+export interface PreferencePreset {
+	id: number;
+	class_id: number;
+	name: string;
+	preferences: Record<number, StatPreference>;
+}
+
 export interface StatDefinition {
 	id: number;
 	name: string;
 	cap: number;
+	utility: number;
 	category_id: StatCategory;
 	base_stat_id: number | null;
 }
@@ -70,15 +78,43 @@ export interface Stat extends StatDefinition, StatPreference {
 export interface AppData {
 	isInitialized: boolean;
 	stats: Record<number, StatDefinition>;
+	gems: Record<number, Gem>;
 	classes: ClassResponse[];
 	realms: Realm[];
 	templates: Template[];
+	activeContext: OptimizationContext | null;
+	preferencePresets: Partial<Record<number, PreferencePreset[]>>;
+}
+
+export interface OptimizationContext {
+	template: Template;
+	templateClass: ClassResponse;
+	items: Record<number, Item>;
+	storageKey: string;
+}
+
+export enum EquipSource {
+	User = 'user',
+	Optimizer = 'optimizer'
+}
+
+export interface EquippedItemState {
+	item_id: number;
+	source: EquipSource;
+	gem_ids: number[];
 }
 
 export interface Template {
 	id: number;
 	name: string;
 	class_id: number;
+	preferences: Record<number, StatPreference>;
+	equipped_items: Record<number, EquippedItemState>;
+}
+
+export enum ItemSource {
+	Dropped = 'dropped',
+	Crafted = 'crafted'
 }
 
 export interface Item {
@@ -90,6 +126,23 @@ export interface Item {
 	utility_single: number;
 	utility: number;
 	bonuses: Record<number, number>;
+	source: ItemSource;
+	price: number;
+	currency: number;
+	currency_label: string;
+}
+
+export interface Gem {
+	id: number;
+	stat_id: number;
+	tier: number;
+	value: number;
+	ip_cost: number;
+}
+
+export interface OptimizationResult {
+	equipped_items: Record<number, number>;
+	equipped_gems: Record<number, number[]>;
 }
 
 export enum ItemSlot {
@@ -117,6 +170,17 @@ export interface OptimizationRequest {
 	class_id: number;
 	equipped_items: Record<number, number>;
 	preferences: Record<number, StatPreference>;
+}
+
+export interface CreateTemplateRequest {
+	name: string;
+	class_id: number;
+	preference_preset_id: number | null;
+}
+
+export interface UpdateTemplateRequest {
+	preferences: Record<number, StatPreference>;
+	equipped_items: Record<number, EquippedItemState>;
 }
 
 export enum ClientMessageType {
@@ -150,7 +214,7 @@ export type ServerMessage =
 	| { type: ServerMessageType.Setup }
 	| { type: ServerMessageType.Grounding }
 	| { type: ServerMessageType.Solving }
-	| { type: ServerMessageType.NewModel; data: { optimized_items: Record<number, number> } }
+	| { type: ServerMessageType.NewModel; data: OptimizationResult }
 	| { type: ServerMessageType.Finished }
 	| { type: ServerMessageType.Canceled }
 	| { type: ServerMessageType.Error; data: { message: string } };

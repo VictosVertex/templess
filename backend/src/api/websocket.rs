@@ -8,12 +8,14 @@ use axum::{
 
 use super::messages::{ClientMessage, ServerMessage};
 use crate::{
-    core::{database::item_sql::get_items_by_class, domain::template::Template},
+    core::{
+        database::craft_base_sql::get_craft_bases_by_class, database::item_sql::get_items_by_class,
+        domain::template::Template,
+    },
     optimization::worker::{OptimizationHandle, OptimizeStatus, start_optimization_worker},
     state::SharedState,
 };
 use futures_util::{sink::SinkExt, stream::StreamExt};
-use std::{collections::HashMap, sync::Arc};
 use tokio::sync::mpsc;
 
 pub async fn handler(ws: WebSocketUpgrade, State(state): State<SharedState>) -> impl IntoResponse {
@@ -56,31 +58,41 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                 handle.cancel();
                             }
 
-                            let items = {
-                                let connection = match _state.db_connection.lock() {
-                                    Ok(connection) => connection,
-                                    Err(error) => {
-                                        let _ = message_tx.send(ServerMessage::Error {
-                                            message: format!(
-                                                "Failed to lock database connection: {error}"
-                                            ),
-                                        });
-                                        continue;
-                                    }
-                                };
+                            let connection = match _state.db_connection.lock() {
+                                Ok(connection) => connection,
+                                Err(error) => {
+                                    let _ = message_tx.send(ServerMessage::Error {
+                                        message: format!(
+                                            "Failed to lock database connection: {error}"
+                                        ),
+                                    });
+                                    continue;
+                                }
+                            };
 
-                                match get_items_by_class(&connection, template.class) {
-                                    Ok(items) => {
-                                        items.into_iter().map(Arc::new).collect::<Vec<_>>()
-                                    }
+                            let items = match get_items_by_class(&connection, template.class) {
+                                Ok(items) => items,
+                                Err(error) => {
+                                    let _ = message_tx.send(ServerMessage::Error {
+                                        message: error.to_string(),
+                                    });
+                                    continue;
+                                }
+                            };
+
+                            let craft_bases =
+                                match get_craft_bases_by_class(&connection, template.class) {
+                                    Ok(craft_bases) => craft_bases,
                                     Err(error) => {
                                         let _ = message_tx.send(ServerMessage::Error {
                                             message: error.to_string(),
                                         });
                                         continue;
                                     }
-                                }
-                            };
+                                };
+
+                            let mut items = items;
+                            items.extend(craft_bases.into_iter().map(Into::into));
 
                             let (status_tx, mut status_rx) =
                                 mpsc::unbounded_channel::<OptimizeStatus>();
@@ -92,14 +104,11 @@ pub async fn handle_socket(socket: WebSocket, _state: SharedState) {
                                         OptimizeStatus::Setup => Some(ServerMessage::Setup),
                                         OptimizeStatus::Grounding => Some(ServerMessage::Grounding),
                                         OptimizeStatus::Solving => Some(ServerMessage::Solving),
-                                        OptimizeStatus::NewModel(template) => {
-                                            let optimized_items: HashMap<u16, u32> = template
-                                                .slots
-                                                .into_iter()
-                                                .map(|(slot, item_id)| (slot.id(), item_id as u32))
-                                                .collect();
-
-                                            Some(ServerMessage::NewModel { optimized_items })
+                                        OptimizeStatus::NewModel(result) => {
+                                            Some(ServerMessage::NewModel {
+                                                equipped_items: result.equipped_items,
+                                                equipped_gems: result.equipped_gem_ids,
+                                            })
                                         }
                                         OptimizeStatus::Finished => Some(ServerMessage::Finished),
                                         OptimizeStatus::Error(message) => {

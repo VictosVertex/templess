@@ -27,8 +27,8 @@ pub struct DatabaseConfig {
 /// This struct represents the data configuration section of the application.
 #[derive(Debug, Deserialize)]
 pub struct DataConfig {
-    /// The path to the items (json) data file.
-    pub items_path: String,
+    /// The path to the raw data directory.
+    pub raw_data_path: String,
 }
 
 /// Loads the configuration from a TOML file at the specified path.

@@ -3,14 +3,15 @@
 //! It was introduced because the increase to some stats may result in an increase to other stats.
 //! For example, increasing acuity also increases intelligence if the character is a caster with intelligence as a primary stat.
 
-use strum::FromRepr;
+use strum::{Display, FromRepr};
 
 /// Represents the different categories of stats in the game.
 ///
 /// Each variant corresponds to a specific category of stats, such as general stats,
 /// acuity stats, stat caps, and various skill categories.
 #[repr(u16)]
-#[derive(Debug, Clone, Copy, FromRepr)]
+#[derive(Debug, Clone, Copy, FromRepr, Display)]
+#[strum(serialize_all = "snake_case")]
 pub enum StatCategory {
     /// Represents general stats like strength, dexterity, etc.
     PhysicalStats = 0,

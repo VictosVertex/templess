@@ -17,6 +17,13 @@ pub enum Error {
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         let error_message = self.to_string();
-        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, error_message).into_response()
+        let status = match self {
+            Error::DataMissing { .. } => axum::http::StatusCode::NOT_FOUND,
+            Error::MutexLockFailed { .. } | Error::Core(_) => {
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            }
+        };
+
+        (status, error_message).into_response()
     }
 }

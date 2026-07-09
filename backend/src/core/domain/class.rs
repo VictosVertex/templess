@@ -74,6 +74,9 @@ pub enum Class {
     /// Heretic class from Albion.
     Heretic = 33,
 
+    /// Occultist class from Albion.
+    Occultist = 63,
+
     /// Thane class from Midgard.
     Thane = 21,
 
@@ -197,6 +200,7 @@ impl Class {
             | Class::Necromancer
             | Class::Cabalist
             | Class::Reaver
+            | Class::Occultist
             | Class::Heretic => &Realm::Albion,
 
             Class::Thane
@@ -257,6 +261,11 @@ impl Class {
 
         match self {
             Bard => add(&[Nurture, Regrowth, Music, Blade, Blunt]),
+            Cleric => add(&[Rejuvenation, Enhancement, Smiting]),
+            Theurgist => add(&[Earth, Cold, Wind]),
+            Paladin => add(&[
+                Slashing, Thrusting, Crushing, TwoHanded, Shield, Parry, Chants,
+            ]),
             _ => {}
         }
 
@@ -278,6 +287,8 @@ impl Class {
 
         match self {
             Bard => Some(Charisma),
+            Cleric => Some(Piety),
+            Theurgist => Some(Intelligence),
             _ => None,
         }
     }
@@ -309,6 +320,9 @@ impl Class {
 
         match self {
             Bard => add(&[Reinforced, Instrument, Blade, Blunt, Shield]),
+            Cleric => add(&[Chain, Shield, Crush]),
+            Theurgist => add(&[Cloth, Staff]),
+            Paladin => add(&[Plate, Slash, Thrust, Crush, TwoHanded, Shield]),
             _ => {}
         }
 

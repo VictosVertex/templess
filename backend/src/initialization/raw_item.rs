@@ -3,8 +3,14 @@
 //! `RawItems` are items as they are found in the json data scraped from the game server's website.
 
 use crate::core::domain::{
-    class::Class, item::Item, item_bonus::ItemBonus, item_slot::ItemSlot, item_type::ItemType,
-    realm::Realm, stat::Stat,
+    class::Class,
+    currency,
+    item::{Item, ItemSource},
+    item_bonus::ItemBonus,
+    item_slot::ItemSlot,
+    item_type::ItemType,
+    realm::Realm,
+    stat::Stat,
 };
 
 use serde::Deserialize;
@@ -103,6 +109,12 @@ pub struct RawItem {
 
     /// JSON representations of the second reactive effect.
     pub react2_json: Option<String>,
+
+    /// The merchant price (if available).
+    pub price: Option<u32>,
+
+    /// The merchant currency (if available).
+    pub currency: Option<String>,
 }
 
 impl RawItem {
@@ -136,7 +148,11 @@ impl RawItem {
             .object_type
             .parse()
             .expect("Failed to parse object_type");
-        let object_type = ItemType::from_repr(object_type_id).expect("Invalid object_type repr");
+        let object_type = ItemType::from_repr(object_type_id).expect(&format!(
+            "Invalid object_type ID found in JSON: {}",
+            object_type_id
+        ));
+
         let item_slot_id = self
             .item_type
             .parse::<u16>()
@@ -181,6 +197,13 @@ impl RawItem {
             .expect("Failed to parse utility_single");
         let utility = self.utility.parse().expect("Failed to parse utility");
 
+        let currency = self
+            .currency
+            .as_deref()
+            .map(|f| f.split(";").next().unwrap_or("none"))
+            .map(currency::Currency::from_string)
+            .unwrap_or(currency::Currency::None);
+
         Some(Item {
             id,
             name: self.name.clone(),
@@ -200,6 +223,7 @@ impl RawItem {
             is_tradable,
             utility_single,
             utility,
+            source: ItemSource::Dropped,
             allowed_classes,
             bonuses,
             proc1_json: self.proc1_json.clone(),
@@ -209,6 +233,8 @@ impl RawItem {
             passive_json: self.passive_json.clone(),
             react1_json: self.react1_json.clone(),
             react2_json: self.react2_json.clone(),
+            price: self.price.unwrap_or(0),
+            currency,
         })
     }
 }

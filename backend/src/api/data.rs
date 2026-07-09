@@ -1,7 +1,9 @@
 use crate::api::responses::{
-    ClassResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, StatResponse,
+    ClassResponse, GemResponse, ItemResponse, ItemSlotResponse, ItemTypeResponse, PreferencePresetResponse, StatResponse
 };
+use crate::core::database::craft_base_sql::get_craft_bases_by_class;
 use crate::core::database::item_sql::get_items_by_class;
+use crate::core::domain::gem::Gem;
 use crate::core::domain::item_slot::ItemSlot;
 use crate::core::domain::item_type::ItemType;
 use crate::core::domain::stat::Stat;
@@ -21,7 +23,9 @@ pub fn router() -> Router<SharedState> {
         .route("/item_slots", get(list_item_slots))
         .route("/item_types", get(list_item_type))
         .route("/realms", get(list_realms))
+        .route("/gems", get(list_gems))
         .route("/stats", get(list_stats))
+        .route("/preferences", get(list_preference_presets))
 }
 
 async fn list_classes(State(_state): State<SharedState>) -> Result<Json<Vec<ClassResponse>>> {
@@ -48,8 +52,13 @@ async fn search_items(
     let class = Class::from_repr(filter.class_id).ok_or(crate::error::Error::DataMissing {
         path: format!("Class with id {} not found", filter.class_id),
     })?;
-    let items: Vec<Item> = get_items_by_class(&connection, class)?;
-    let response_items: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
+    let mut items: Vec<Item> = get_items_by_class(&connection, class)?;
+    items.extend(
+        get_craft_bases_by_class(&connection, class)?
+            .into_iter()
+            .map(Into::into),
+    );
+    let response_items: Vec<ItemResponse> = items.into_iter().map(ItemResponse::from).collect();
 
     Ok(Json(response_items))
 }
@@ -69,6 +78,12 @@ async fn list_stats(State(_state): State<SharedState>) -> Result<Json<Vec<StatRe
     Ok(Json(stats))
 }
 
+async fn list_gems(State(_state): State<SharedState>) -> Result<Json<Vec<GemResponse>>> {
+    let gems = Gem::all().into_iter().map(Into::into).collect::<Vec<_>>();
+
+    Ok(Json(gems))
+}
+
 async fn list_item_slots(State(_state): State<SharedState>) -> Result<Json<Vec<ItemSlotResponse>>> {
     let item_slots = ItemSlot::iter().map(|slot| slot.into()).collect::<Vec<_>>();
 
@@ -81,4 +96,18 @@ async fn list_item_type(State(_state): State<SharedState>) -> Result<Json<Vec<It
         .collect::<Vec<_>>();
 
     Ok(Json(item_types))
+}
+
+async fn list_preference_presets(State(state): State<SharedState>) -> Result<Json<Vec<PreferencePresetResponse>>> {
+    let connection = state
+        .db_connection
+        .lock()
+        .expect("Failed to lock database connection");
+
+    let presets = crate::core::database::preference_preset_sql::get_all_preference_presets(&connection)?
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<_>>();
+
+    Ok(Json(presets))
 }

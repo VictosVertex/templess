@@ -1,42 +1,130 @@
 import { API_BASE_URL } from './constants';
+import type {
+	CreateTemplateRequest,
+	Template,
+	StatDefinition,
+	Gem,
+	Item,
+	PreferencePreset,
+	UpdateTemplateRequest
+} from '$lib/types';
+
+async function fetchWithError(
+	url: string,
+	options: RequestInit,
+	customFetch: typeof window.fetch = fetch
+) {
+	const response = await customFetch(url, options);
+	if (!response.ok) {
+		throw new Error(`API Error at ${url}: ${response.statusText}`);
+	}
+	return response;
+}
+
+function toDictionary<T extends { id: number }>(array: T[]): Record<number, T> {
+	return Object.fromEntries(array.map((item) => [item.id, item]));
+}
 
 export const api = {
-	initialize: async () => {
-		const response = await fetch(`${API_BASE_URL}/init`, { method: 'POST' });
+	checkInitialization: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/init`, { method: 'GET' }, customFetch);
+		return (await response.json()) as boolean;
+	},
 
-		if (!response.ok) {
-			throw new Error(`Failed to initialize: ${response.statusText}`);
-		}
+	initialize: async (customFetch: typeof window.fetch = fetch) => {
+		await fetchWithError(`${API_BASE_URL}/init`, { method: 'POST' }, customFetch);
+		return;
+	},
 
+	getStats: async (customFetch: typeof window.fetch = fetch) => {
+		const res = await fetchWithError(`${API_BASE_URL}/data/stats`, {}, customFetch);
+		const data = await res.json();
+		return toDictionary<StatDefinition>(data);
+	},
+
+	getClasses: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/data/classes`, {}, customFetch);
 		return await response.json();
 	},
+
+	getGems: async (customFetch: typeof window.fetch = fetch) => {
+		const res = await fetchWithError(`${API_BASE_URL}/data/gems`, {}, customFetch);
+		const data = await res.json();
+		return toDictionary<Gem>(data);
+	},
+
+	getRealms: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/data/realms`, {}, customFetch);
+		return await response.json();
+	},
+
+	getPreferences: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/data/preferences`, {}, customFetch);
+
+		const data: PreferencePreset[] = await response.json();
+
+		return Object.groupBy(data, (preset) => preset.class_id);
+	},
+
+	// --- TEMPLATES & ITEMS ---
+
+	getTemplates: async (customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/templates`, {}, customFetch);
+		return await response.json();
+	},
+
+	getTemplate: async (id: number, customFetch: typeof window.fetch = fetch) => {
+		const response = await fetchWithError(`${API_BASE_URL}/templates/${id}`, {}, customFetch);
+		return await response.json();
+	},
+
+	createTemplate: async (
+		payload: CreateTemplateRequest,
+		customFetch: typeof window.fetch = fetch
+	) => {
+		const response = await fetchWithError(
+			`${API_BASE_URL}/templates`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			},
+			customFetch
+		);
+
+		return (await response.json()) as number;
+	},
+
+	updateTemplate: async (
+		id: number,
+		payload: UpdateTemplateRequest,
+		customFetch: typeof window.fetch = fetch
+	) => {
+		const response = await fetchWithError(
+			`${API_BASE_URL}/templates/${id}`,
+			{
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			},
+			customFetch
+		);
+
+		return (await response.json()) as Template;
+	},
+
+	getItemsByClass: async (classId: number, customFetch: typeof window.fetch = fetch) => {
+		const res = await fetchWithError(
+			`${API_BASE_URL}/data/items?class_id=${classId}`,
+			{},
+			customFetch
+		);
+		const data = await res.json();
+		return toDictionary<Item>(data);
+	},
+
 	deleteTemplate: async (id: number) => {
-		const response = await fetch(`${API_BASE_URL}/templates/${id}`, {
-			method: 'DELETE'
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to delete: ${response.statusText}`);
-		}
-
+		await fetchWithError(`${API_BASE_URL}/templates/${id}`, { method: 'DELETE' });
 		return true;
-	},
-	getTemplate: async (id: number, customFetch: typeof window.fetch) => {
-		const response = await customFetch(`${API_BASE_URL}/templates/${id}`);
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch template: ${response.statusText}`);
-		}
-
-		return await response.json();
-	},
-	getItemsByClass: async (classId: number, customFetch: typeof window.fetch) => {
-		const response = await customFetch(`${API_BASE_URL}/data/items?class_id=${classId}`);
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch items: ${response.statusText}`);
-		}
-
-		return await response.json();
 	}
 };

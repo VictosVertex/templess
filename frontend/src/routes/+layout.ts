@@ -1,43 +1,63 @@
-import { API_BASE_URL } from '$lib/constants';
+import { api } from '$lib/api';
 import type { LayoutLoad } from './$types';
-import type { AppData, ClassResponse, Realm, StatDefinition, Template } from '$lib/types';
+import type { AppData, ClassResponse, OptimizationContext, Template } from '$lib/types';
 
-export const load: LayoutLoad = async ({ fetch }): Promise<AppData> => {
-	const initRes = await fetch(`${API_BASE_URL}/init`);
-	const isInitialized: boolean = await initRes.json();
+export const load: LayoutLoad = async ({ url, fetch }): Promise<AppData> => {
+	const isInitialized = await api.checkInitialization(fetch);
 
 	if (!isInitialized) {
 		return {
 			isInitialized: false,
 			stats: {},
 			classes: [],
+			gems: [],
 			realms: [],
-			templates: []
+			templates: [],
+			activeContext: null,
+			preferencePresets: {}
 		};
 	}
 
-	const [statsRes, classesRes, realmsRes, templatesRes] = await Promise.all([
-		fetch(`${API_BASE_URL}/data/stats`),
-		fetch(`${API_BASE_URL}/data/classes`),
-		fetch(`${API_BASE_URL}/data/realms`),
-		fetch(`${API_BASE_URL}/templates`)
+	const [stats, classes, gems, realms, templates, preferencePresets] = await Promise.all([
+		api.getStats(fetch),
+		api.getClasses(fetch),
+		api.getGems(fetch),
+		api.getRealms(fetch),
+		api.getTemplates(fetch),
+		api.getPreferences(fetch)
 	]);
 
-	const rawStats: StatDefinition[] = await statsRes.json();
+	const templateParam = url.searchParams.get('template');
+	let activeContext: OptimizationContext | null = null;
 
-	const statDict = rawStats.reduce(
-		(acc, stat) => {
-			acc[stat.id] = stat;
-			return acc;
-		},
-		{} as Record<number, StatDefinition>
-	);
+	if (templateParam) {
+		const templateId = parseInt(templateParam, 10);
+		const templateSummary = templates.find((template: Template) => template.id === templateId);
+
+		if (templateSummary) {
+			const activeTemplate = await api.getTemplate(templateId, fetch);
+			const items = await api.getItemsByClass(activeTemplate.class_id, fetch);
+			const templateClass = classes.find((c: ClassResponse) => c.id === activeTemplate.class_id);
+
+			if (!templateClass) throw new Error('Class not found for template');
+
+			activeContext = {
+				template: activeTemplate,
+				templateClass,
+				items,
+				storageKey: `template-draft:${activeTemplate.id}`
+			};
+		}
+	}
 
 	return {
 		isInitialized: true,
-		stats: statDict,
-		classes: (await classesRes.json()) as ClassResponse[],
-		realms: (await realmsRes.json()) as Realm[],
-		templates: (await templatesRes.json()) as Template[]
+		stats,
+		classes,
+		gems,
+		realms,
+		templates,
+		activeContext,
+		preferencePresets
 	};
 };
