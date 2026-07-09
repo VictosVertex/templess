@@ -84,14 +84,14 @@
 			.sort((left, right) => left.slot - right.slot)
 	);
 
+	let pricedEntries = $derived.by(() =>
+		checkoutEntries.filter((entry) => entry.price > 0 && entry.currency !== 0)
+	);
+
 	let currencySummary = $derived.by(() => {
 		const totals = new SvelteMap<number, { currency: number; label: string; total: number; items: ResolvedEntry[] }>();
 
-		for (const entry of checkoutEntries) {
-			if (!entry.price || entry.currency === 0) {
-				continue;
-			}
-
+		for (const entry of pricedEntries) {
 			const existing = totals.get(entry.currency) ?? {
 				currency: entry.currency,
 				label: entry.currencyLabel,
@@ -153,40 +153,46 @@
 			</div>
 
 			{#if currencySummary.length > 0}
-				<div class="flex flex-col gap-6 px-4 sm:px-8">
-					{#each currencySummary as currency (currency.currency)}
-						<div class="flex flex-col gap-3">
-							<div class="flex items-end justify-between gap-4 border-b border-outline/30 pb-2">
+				<div class="flex flex-col gap-4 px-4 sm:px-8">
+					<div class="flex flex-wrap gap-3">
+						{#each currencySummary as currency (currency.currency)}
+							<div class="flex items-center gap-3 rounded-full border border-outline/25 bg-surface-low/25 px-4 py-2">
 								<div>
-									<p class="font-display text-sm tracking-widest text-foreground uppercase">
+									<p class="font-display text-[11px] tracking-[0.18em] text-foreground uppercase">
 										{currency.label}
 									</p>
-									<p class="mt-1 text-xs text-foreground-secondary">
+									<p class="text-[10px] text-foreground-secondary">
 										{currency.items.length} {currency.items.length === 1 ? 'item' : 'items'}
 									</p>
 								</div>
-								<p class="font-display text-xl text-primary">
+								<p class="font-display text-base text-primary sm:text-lg">
 									{formatCurrencyAmount(currency.total, currency.currency)}
 								</p>
 							</div>
+						{/each}
+					</div>
 
-							<div class="flex flex-col gap-2">
-								{#each currency.items as item (item.slot)}
-									<div class="flex items-center justify-between gap-4 text-sm">
-										<div>
-											<p class="font-display tracking-wide text-foreground uppercase">
-												{item.slotName}
-											</p>
-											<p class="text-foreground-secondary">{item.itemName}</p>
-										</div>
-										<p class="font-display text-primary">
-											{formatCurrencyAmount(item.price, item.currency)}
-										</p>
-									</div>
-								{/each}
-							</div>
+					<div class="overflow-hidden rounded-2xl border border-outline/20 bg-surface-low/20">
+						<div class="grid grid-cols-[72px_minmax(0,1fr)_auto] gap-3 border-b border-outline/15 px-4 py-2 text-[10px] font-bold tracking-[0.18em] text-foreground-secondary uppercase">
+							<span>Slot</span>
+							<span>Item</span>
+							<span>Cost</span>
 						</div>
-					{/each}
+
+						<div class="grid">
+							{#each pricedEntries as item (item.slot)}
+								<div class="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-3 border-b border-outline/10 px-4 py-2 last:border-b-0">
+									<p class="font-display text-[12px] tracking-wide text-foreground uppercase">
+										{item.slotName}
+									</p>
+									<p class="truncate text-sm text-foreground-secondary">{item.itemName}</p>
+									<p class="shrink-0 font-display text-sm text-primary">
+										{formatCurrencyAmount(item.price, item.currency)}
+									</p>
+								</div>
+							{/each}
+						</div>
+					</div>
 				</div>
 			{:else}
 				<div class="px-4 text-sm text-foreground-secondary sm:px-8">

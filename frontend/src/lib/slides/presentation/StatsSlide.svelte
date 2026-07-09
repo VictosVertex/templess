@@ -29,9 +29,9 @@
   };
 
   const items: DemoItem[] = [
-    { id: 'i1', name: 'Dropped Ring', description: '+45 Raw Strength', strength: 45, strengthCap: 0 },
-    { id: 'i2', name: 'Crafted Chest', description: '+45 Raw Strength', strength: 45, strengthCap: 0 },
-    { id: 'i3', name: 'Champion Bracer', description: '+10 Overcap Limit', strength: 0, strengthCap: 10 }
+    { id: 'i1', name: 'Dropped Ring', description: '+45 Strength', strength: 45, strengthCap: 0 },
+    { id: 'i2', name: 'Crafted Chest', description: '+45 Strength', strength: 45, strengthCap: 0 },
+    { id: 'i3', name: 'Champion Bracer', description: '+10 Strength Overcap', strength: 0, strengthCap: 10 }
   ];
 
   // All items start unselected for a clean slate
