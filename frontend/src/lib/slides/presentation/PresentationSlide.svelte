@@ -16,7 +16,7 @@
   let footerAuthor = "Dominik Gerndt";
   let footerTitle = $derived("TempLess (UI) \u2013 " + title);
 
-  let slideMaxNumber = 1337;
+  let slideMaxNumber = 9;
 </script>
 
 <div class="flex h-dvh w-screen items-center justify-center overflow-hidden bg-[#050505]">

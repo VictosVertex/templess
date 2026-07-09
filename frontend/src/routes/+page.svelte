@@ -27,6 +27,8 @@
 	import SourceSlide from '$lib/slides/presentation/SourceSlide.svelte';
 	import StatsSlide from '$lib/slides/presentation/StatsSlide.svelte';
 	import CurrentStateSlide from '$lib/slides/presentation/CurrentStateSlide.svelte';
+	import TemplessSlide from '$lib/slides/presentation/TemplessSlide.svelte';
+    import ConclusionSlide from '$lib/slides/presentation/ConclusionSlide.svelte';
 
     type TemplateDraft = {
         class_id: number;
@@ -232,6 +234,12 @@
         </PresentationSlide>
     </Slide>
 
+	<Slide index={AppSlide.TemplessSlide}>
+        <PresentationSlide index={AppSlide.TemplessSlide}>
+            <TemplessSlide isActive={nav.activeSlide === AppSlide.TemplessSlide} />
+        </PresentationSlide>
+    </Slide>
+
     <Slide index={AppSlide.Hero}>
         <Hero onBegin={() => nav.scrollTo(AppSlide.Intro)} />
     </Slide>
@@ -268,4 +276,10 @@
             <Checkout {builder} />
         </Slide>
     {/if}
+
+    <Slide index={AppSlide.ConclusionSlide}>
+        <PresentationSlide index={AppSlide.ConclusionSlide}>
+            <ConclusionSlide isActive={nav.activeSlide === AppSlide.ConclusionSlide} />
+        </PresentationSlide>
+    </Slide>
 </div>
